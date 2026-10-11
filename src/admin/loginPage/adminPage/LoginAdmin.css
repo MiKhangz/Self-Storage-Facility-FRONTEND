@@ -1,0 +1,250 @@
+/* Base Resets */
+* {
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+body, html {
+    margin: 0;
+    padding: 0;
+}
+
+/* Master Layout Split */
+.portal-container {
+    display: flex;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* LEFT PANEL (Dark Blue Branding) */
+.left-panel {
+    flex: 4.5; /* Approximating the layout in the image */
+    background-color: #0b2545; /* Rich deep navy blue */
+    color: #ffffff;
+    padding: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.brand-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.portal-logo {
+    width: 40px;
+    height: 40px;
+}
+.brand-name {
+    font-size: 22px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.brand-subtitle {
+    font-size: 11px;
+    color: #8da9c4;
+    letter-spacing: 1.5px;
+}
+
+.hero-section {
+    margin-top: 40px;
+}
+.hero-title {
+    font-size: 36px;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-bottom: 16px;
+}
+.hero-desc {
+    color: #c4d7ed;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Role Information Layout */
+.role-cards-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin: 30px 0;
+}
+.role-card {
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+.role-icon {
+    font-size: 20px;
+    opacity: 0.8;
+}
+.role-details h3 {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    font-weight: 600;
+}
+.role-details p {
+    margin: 0;
+    font-size: 12px;
+    color: #a3b8cc;
+}
+
+.footer-notice {
+    font-size: 12px;
+    color: #647c94;
+}
+
+/* RIGHT PANEL (White Form Base) */
+.right-panel {
+    flex: 5.5;
+    background-color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+}
+
+.form-wrapper {
+    width: 100%;
+    max-width: 460px;
+}
+
+/* Form Badges & Headings */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background-color: #eef9f6;
+    color: #118a7e;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 14px;
+    border-radius: 20px;
+    margin-bottom: 24px;
+}
+.badge .dot {
+    width: 6px;
+    height: 6px;
+    background-color: #118a7e;
+    border-radius: 50%;
+}
+
+.form-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: #0b2545;
+    margin: 0 0 8px 0;
+}
+.form-subtitle {
+    color: #6c757d;
+    font-size: 14px;
+    margin-bottom: 32px;
+}
+
+/* Stacked Form Controls */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.input-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #333333;
+}
+
+/* Horizontal positioning for inputs and their decorative inner icons */
+.input-with-icon {
+    display: flex;
+    align-items: center;
+    border: 1px solid #ced4da;
+    border-radius: 6px;
+    padding: 0 14px;
+    background-color: #ffffff;
+    transition: border-color 0.2s;
+}
+.input-with-icon:focus-within {
+    border-color: #118a7e;
+}
+.field-icon {
+    color: #adb5bd;
+    margin-right: 10px;
+}
+.input-with-icon input {
+    border: none;
+    outline: none;
+    width: 100%;
+    padding: 12px 0;
+    font-size: 14px;
+    color: #495057;
+}
+
+/* Options Bar Structure */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    margin-top: 4px;
+}
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: #495057;
+}
+.forgot-link {
+    color: #118a7e;
+    text-decoration: none;
+    font-weight: 600;
+}
+.forgot-link:hover {
+    text-decoration: underline;
+}
+
+/* Submit Action Styles */
+.btn-signin {
+    background-color: #118a7e; /* Emerald teal style accent */
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 14px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-top: 10px;
+}
+.btn-signin:hover {
+    background-color: #0e7268;
+}
+
+/* Warnings Footer Layout */
+.security-banner {
+    display: flex;
+    gap: 12px;
+    background-color: #f8f9fa;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-top: 32px;
+    border: 1px solid #e9ecef;
+}
+.shield-icon {
+    font-size: 16px;
+}
+.security-banner p {
+    margin: 0;
+    font-size: 12px;
+    color: #6c757d;
+    line-height: 1.4;
+}
