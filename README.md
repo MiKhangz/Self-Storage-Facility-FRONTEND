@@ -57,4 +57,4 @@ the user out. Wrap protected routes in `<RequireAuth roles={[...]} loginPath="..
 | Path | Screen | Who |
 |---|---|---|
 | `/admin/login` | Admin sign-in | anyone |
-| `/admin/facilities` | Facility overview | staff, manager, operations, admin |
+| `/admin` | Dashboard layout; its sidebar switches between Dashboard and Facilities | staff, manager, operations, admin |

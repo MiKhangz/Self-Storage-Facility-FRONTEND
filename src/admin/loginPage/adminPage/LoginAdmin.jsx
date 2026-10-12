@@ -34,7 +34,7 @@ function LoginAdmin() {
                 setErrorMessage('This portal is for staff accounts. Customers sign in on the customer site.')
                 return
             }
-            navigate(location.state?.from ?? '/admin/facilities', { replace: true })
+            navigate(location.state?.from ?? '/admin', { replace: true })
         } catch (error) {
             setErrorMessage(apiErrorMessage(error))
         } finally {
