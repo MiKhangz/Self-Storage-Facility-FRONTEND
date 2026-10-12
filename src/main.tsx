@@ -7,6 +7,8 @@ import { RequireAuth } from './features/auth/RequireAuth'
 import { ADMIN_PORTAL_ROLES } from './features/auth/roles'
 import LoginAdmin from './admin/loginPage/adminPage/LoginAdmin.jsx'
 import DashboardLayout from './admin/dashboard/DashboardLayout.jsx'
+import CustomerLayout from './customer/layout/CustomerLayout.jsx'
+import HomePage from './customer/home/HomePage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -42,8 +44,11 @@ createRoot(document.getElementById('root')!).render(
                 </RequireAuth>
               }
             />
-            {/* Customer screens are not built yet, so everything else lands on the admin sign-in. */}
-            <Route path="*" element={<Navigate to="/admin/login" replace />} />
+            <Route element={<CustomerLayout />}>
+              <Route path="/" element={<HomePage />} />
+            </Route>
+            {/* Customer screens not built yet land on the home page. */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

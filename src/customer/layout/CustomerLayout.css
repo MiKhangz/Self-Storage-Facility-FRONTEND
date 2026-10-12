@@ -1,0 +1,89 @@
+/* Design tokens from the Figma file, shared by every customer screen. */
+:root {
+    --se-teal: #0e8c8c;
+    --se-teal-dark: #0a6b6b;
+    --se-teal-light: #5fd4d4;
+    --se-teal-soft: #e6f4f4;
+    --se-navy: #0f2a44;
+    --se-navy-deep: #0a1e31;
+    --se-ink: #1b2733;
+    --se-muted: #5b6b7a;
+    --se-faint: #98a2b3;
+    --se-line: #e3e8ee;
+    --se-bg-soft: #f5f8fa;
+    --se-amber: #f59e0b;
+}
+
+.se-page {
+    font-family: 'Be Vietnam Pro', system-ui, sans-serif;
+    color: var(--se-ink);
+    background: #fff;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+.se-page main { flex: 1; }
+.se-page *, .se-page *::before, .se-page *::after { box-sizing: border-box; }
+.se-page a { color: inherit; text-decoration: none; }
+
+.se-container { max-width: 1280px; margin: 0 auto; padding: 0 16px; }
+
+/* Buttons */
+.se-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    height: 44px; padding: 0 22px; border-radius: 8px;
+    font-family: inherit; font-size: 15px; font-weight: 600; cursor: pointer;
+    border: 1px solid transparent; white-space: nowrap;
+}
+.se-btn-primary { background: var(--se-teal); color: #fff !important; }
+.se-btn-primary:hover { background: var(--se-teal-dark); }
+.se-btn-ghost { background: #fff; border-color: var(--se-line); color: var(--se-navy) !important; }
+.se-btn-outline { background: #fff; border-color: var(--se-teal); color: var(--se-teal) !important; }
+.se-btn-outline:hover { background: var(--se-teal-soft); }
+.se-btn-amber { background: var(--se-amber); color: var(--se-navy) !important; }
+.se-btn-white { background: #fff; color: var(--se-navy) !important; }
+.se-btn-lg { height: 52px; padding: 0 28px; font-size: 16px; }
+.se-btn-block { width: 100%; }
+
+/* Brand */
+.se-brand { display: inline-flex; align-items: center; gap: 10px; }
+.se-brand-mark {
+    width: 36px; height: 36px; border-radius: 8px; background: var(--se-teal); color: #fff;
+    display: grid; place-items: center;
+}
+.se-brand-name { font-size: 22px; font-weight: 800; color: var(--se-navy); }
+.se-brand-name span { color: var(--se-teal); }
+
+/* Header */
+.se-header { background: #fff; border-bottom: 1px solid var(--se-line); position: sticky; top: 0; z-index: 10; }
+.se-header-row { height: 78px; display: flex; align-items: center; gap: 24px; }
+.se-nav { display: flex; gap: 32px; margin: 0 auto; font-size: 15px; font-weight: 500; color: var(--se-navy); }
+.se-nav a:hover, .se-nav a.active { color: var(--se-teal); }
+.se-header-actions { display: flex; align-items: center; gap: 12px; }
+.se-phone { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; color: var(--se-navy); margin-right: 4px; }
+.se-phone svg { color: var(--se-teal); }
+
+/* Footer */
+.se-footer { background: var(--se-navy-deep); color: #b8c4d0; padding: 56px 0 32px; font-size: 14px; }
+.se-footer .se-brand-name { color: #fff; }
+.se-footer .se-brand-name span { color: var(--se-teal-light); }
+.se-footer-grid { display: grid; grid-template-columns: 1.6fr repeat(4, 1fr); gap: 32px; }
+.se-footer-about p { margin: 16px 0 0; line-height: 1.6; }
+.se-footer h4 { margin: 0 0 14px; color: #fff; font-size: 14px; font-weight: 700; }
+.se-footer ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.se-footer-bottom {
+    margin-top: 40px; padding-top: 24px; border-top: 1px solid #24405c;
+    display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--se-faint);
+}
+.se-lang { font-weight: 700; color: #b8c4d0; }
+
+@media (max-width: 1100px) {
+    .se-nav, .se-phone { display: none; }
+    .se-header-actions { margin-left: auto; }
+    .se-footer-grid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 560px) {
+    .se-header-actions .se-btn { padding: 0 14px; }
+    .se-footer-grid { grid-template-columns: 1fr; }
+    .se-footer-bottom { flex-direction: column; }
+}
