@@ -1,4 +1,8 @@
 import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useAuth } from '../../../features/auth/AuthContext'
+import { ADMIN_PORTAL_ROLES } from '../../../features/auth/roles'
+import { errorMessage as apiErrorMessage } from '../../../api/axiosClient'
 import './LoginAdmin.css'
 import Logo from '../../assets/logo.svg'
 import PeopleLogo from '../../assets/people.svg'
@@ -6,35 +10,36 @@ import Business from '../../assets/business.svg'
 import Building from '../../assets/building.svg'
 import Key from '../../assets/key.svg'
 
-const DEMO_CREDENTIALS = {
-    email: 'admin@storeease.vn',
-    password: 'Password@123'
-}
-
 function LoginAdmin() {
+    const { login, logout } = useAuth()
+    const navigate = useNavigate()
+    const location = useLocation()
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
+    // The token is held in memory only, so this checkbox cannot keep anyone signed in across a reload yet.
     const [keepSignedIn, setKeepSignedIn] = useState(false)
 
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [submitting, setSubmitting] = useState(false)
     const [errorMessage, setErrorMessage] = useState('')
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault()
-        setErrorMessage('') 
-
-        // 3. Check credentials on submit
-        if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
-            console.log('Login successful! Redirecting...')
-            setIsLoggedIn(true) // Switch view state
-        } else {
-            setErrorMessage('Invalid work email or password. Please try again.')
+        setErrorMessage('')
+        setSubmitting(true)
+        try {
+            const session = await login(email, password)
+            if (!ADMIN_PORTAL_ROLES.includes(session.role)) {
+                logout()
+                setErrorMessage('This portal is for staff accounts. Customers sign in on the customer site.')
+                return
+            }
+            navigate(location.state?.from ?? '/admin/facilities', { replace: true })
+        } catch (error) {
+            setErrorMessage(apiErrorMessage(error))
+        } finally {
+            setSubmitting(false)
         }
-    }
-
-    if (isLoggedIn) {
-        return 
     }
 
     
@@ -115,7 +120,7 @@ function LoginAdmin() {
                                 <input 
                                     type="email" 
                                     id="email" 
-                                    placeholder="admin@storeease.vn"
+                                    placeholder="admin@storease.vn"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required 
@@ -152,7 +157,10 @@ function LoginAdmin() {
                         </div>
 
                         {/* Submit Action */}
-                        <button type="submit" className="btn-signin">Sign in</button>
+                        {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
+                        <button type="submit" className="btn-signin" disabled={submitting}>
+                            {submitting ? 'Signing in…' : 'Sign in'}
+                        </button>
                     </form>
 
                     {/* Warning/Security Banner */}

@@ -248,3 +248,15 @@ body, html {
     color: #6c757d;
     line-height: 1.4;
 }
+
+/* API error under the form */
+.form-error {
+    margin: 0 0 12px;
+    color: #c0392b;
+    font-size: 14px;
+}
+
+.btn-signin:disabled {
+    opacity: 0.7;
+    cursor: wait;
+}
