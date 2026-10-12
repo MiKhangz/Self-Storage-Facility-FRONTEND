@@ -45,6 +45,62 @@
 .se-btn-lg { height: 52px; padding: 0 28px; font-size: 16px; }
 .se-btn-block { width: 100%; }
 
+/* Shared section pieces, cards and badges */
+.se-section { padding: 80px 0; }
+.se-section.soft { background: var(--se-bg-soft); }
+.se-section-head { margin-bottom: 40px; }
+.se-section-head.center { text-align: center; }
+.se-eyebrow { font-size: 13px; font-weight: 700; letter-spacing: 1px; color: var(--se-teal); }
+.se-section-head h2 { margin: 10px 0 12px; font-size: 40px; font-weight: 700; color: var(--se-navy); line-height: 1.2; }
+.se-section-head p { margin: 0; font-size: 17px; color: var(--se-muted); }
+
+.se-card { background: #fff; border: 1px solid var(--se-line); border-radius: 14px; }
+.se-card h3 { margin: 0; font-size: 17px; font-weight: 700; color: var(--se-navy); }
+.se-card p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--se-muted); }
+.se-icon-tile {
+    width: 44px; height: 44px; border-radius: 10px; background: var(--se-teal-soft); color: var(--se-teal);
+    display: grid; place-items: center; flex-shrink: 0;
+}
+.se-icon-tile.sm { width: 36px; height: 36px; border-radius: 8px; }
+.se-link { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--se-teal) !important; }
+
+.se-pill {
+    display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px;
+    background: var(--se-teal-soft); color: var(--se-teal-dark); font-size: 12px; font-weight: 600;
+}
+.se-pill::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--se-teal-dark); }
+
+/* Availability badges: ok / low / none */
+.se-badge {
+    display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
+    font-size: 12px; font-weight: 600; white-space: nowrap; background: #e3f6ec; color: #1a7f55;
+}
+.se-badge::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: currentColor; }
+.se-badge.low { background: #fef3c7; color: #b45309; }
+.se-badge.none { background: #fdecec; color: #d92d20; }
+
+/* Page head with breadcrumb (U04, U05, ...) */
+.se-page-head { background: var(--se-teal-soft); padding: 40px 0 44px; }
+.se-crumbs { font-size: 13px; color: var(--se-muted); }
+.se-crumbs a:hover { color: var(--se-teal); }
+.se-crumbs span { margin: 0 8px; }
+.se-crumbs strong { color: var(--se-navy); font-weight: 600; }
+.se-page-head h1 { margin: 12px 0 14px; font-size: 40px; font-weight: 800; color: var(--se-navy); }
+.se-page-head p { margin: 0; max-width: 720px; font-size: 18px; line-height: 1.5; color: var(--se-muted); }
+.se-empty { padding: 32px; text-align: center; color: var(--se-muted); font-size: 14px; }
+@media (max-width: 640px) { .se-page-head h1 { font-size: 30px; } }
+
+/* Icon + select/input box used by search and filter bars */
+.se-field {
+    display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 12px;
+    border: 1px solid var(--se-line); border-radius: 8px; color: var(--se-muted);
+}
+.se-field:focus-within { border-color: var(--se-teal); }
+.se-field select, .se-field input {
+    flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
+    font-family: inherit; font-size: 14px; color: var(--se-ink);
+}
+
 /* Brand */
 .se-brand { display: inline-flex; align-items: center; gap: 10px; }
 .se-brand-mark {

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Icon from '../components/Icon.jsx';
+import { todayIso } from '../components/format.js';
 import AuthShell, { PasswordInput } from './AuthShell.jsx';
 
 const BENEFITS = [
@@ -66,7 +67,7 @@ export default function RegisterPage() {
                         <p className={`se-hint${show('citizenId') ? ' error' : ''}`}>{show('citizenId') ? errors.citizenId : 'Required to sign the rental contract'}</p>
                     </label>
                     <label><span>Date of birth</span>
-                        <div className="se-input"><Icon name="calendar" size={16} /><input type="date" value={form.dateOfBirth} onChange={set('dateOfBirth')} max={new Date().toISOString().slice(0, 10)} /></div>
+                        <div className="se-input"><Icon name="calendar" size={16} /><input type="date" value={form.dateOfBirth} onChange={set('dateOfBirth')} max={todayIso()} /></div>
                     </label>
                 </div>
                 <div className="se-form-row">

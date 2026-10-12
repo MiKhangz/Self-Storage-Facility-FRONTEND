@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { facilitiesApi, unitTypesApi } from '../../api/generated';
 import Icon from '../components/Icon.jsx';
+import { todayIso } from '../components/format.js';
 import './HomePage.css';
 
 const SERVICES = [
@@ -86,7 +87,7 @@ function QuickSearch() {
             <label>
                 <span>Move-in date</span>
                 <div className="se-field"><Icon name="calendar" />
-                    <input type="date" value={form.moveInDate} min={new Date().toISOString().slice(0, 10)} onChange={set('moveInDate')} />
+                    <input type="date" value={form.moveInDate} min={todayIso()} onChange={set('moveInDate')} />
                 </div>
             </label>
             <label>

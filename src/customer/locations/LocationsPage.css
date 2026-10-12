@@ -1,0 +1,54 @@
+.se-locations-page { display: grid; grid-template-columns: 1fr 560px; gap: 28px; padding-top: 32px; padding-bottom: 72px; align-items: start; }
+
+.se-loc-filters { display: flex; gap: 12px; margin-bottom: 16px; }
+.se-loc-search { flex: 1; }
+.se-loc-filters .se-field:last-child { width: 180px; }
+
+.se-loc-list { display: grid; gap: 16px; }
+.se-loc { display: flex; align-items: center; gap: 18px; padding: 18px; }
+.se-loc.active { border: 2px solid var(--se-teal); padding: 17px; }
+.se-loc-thumb {
+    width: 110px; height: 110px; border-radius: 10px; background: #b8dcdc; color: var(--se-teal-dark);
+    display: grid; place-items: center; flex-shrink: 0;
+}
+.se-loc-body { flex: 1; min-width: 0; }
+.se-loc-title { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.se-loc-title h3 { font-size: 18px; }
+.se-loc .se-loc-addr { margin: 6px 0 4px; display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.se-loc .se-loc-meta { font-size: 13px; color: var(--se-ink); font-weight: 500; }
+.se-loc-count { margin: 16px 0 0; font-size: 13px; color: var(--se-muted); }
+
+.se-loc-map {
+    position: sticky; top: 100px; height: 820px; border-radius: 14px; overflow: hidden; background-color: #dcebeb;
+    background-image: linear-gradient(to right, #fff 3px, transparent 3px), linear-gradient(to bottom, #fff 3px, transparent 3px);
+    background-size: 75px 40px; background-position: 20px 20px;
+}
+.se-loc-map::after {
+    content: ''; position: absolute; left: 0; bottom: 0; width: 130px; height: 70px; background: #b5d8e8;
+    clip-path: polygon(0 0, 100% 100%, 0 100%);
+}
+/* .se-map-pin comes from the home page; repeated here because pages load their CSS independently. */
+.se-loc-map .se-map-pin {
+    position: absolute; transform: translate(-50%, -50%); width: 34px; height: 34px; border-radius: 50%;
+    background: var(--se-teal); color: #fff; display: grid; place-items: center; box-shadow: 0 4px 12px rgba(15, 42, 68, 0.2);
+}
+.se-loc-map .se-map-pin.hq { background: var(--se-amber); }
+.se-map-tip {
+    position: absolute; transform: translate(-50%, calc(-100% - 26px)); background: #fff; border-radius: 10px;
+    padding: 10px 14px; box-shadow: 0 8px 24px rgba(15, 42, 68, 0.15); white-space: nowrap;
+}
+.se-map-tip.below { transform: translate(-50%, 26px); }
+.se-map-tip strong { display: block; font-size: 14px; color: var(--se-navy); }
+.se-map-tip small { font-size: 12px; color: var(--se-muted); }
+
+@media (max-width: 1100px) {
+    .se-locations-page { grid-template-columns: 1fr; }
+    .se-loc-map { position: relative; top: 0; height: 360px; order: -1; }
+}
+@media (max-width: 640px) {
+    .se-loc-filters { flex-direction: column; }
+    .se-loc-filters .se-field:last-child { width: 100%; }
+    .se-loc { flex-wrap: wrap; }
+    .se-loc-thumb { width: 64px; height: 64px; }
+    .se-loc .se-btn { width: 100%; }
+}

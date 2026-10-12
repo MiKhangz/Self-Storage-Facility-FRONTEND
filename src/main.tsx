@@ -12,6 +12,8 @@ import HomePage from './customer/home/HomePage.jsx'
 import LoginPage from './customer/auth/LoginPage.jsx'
 import RegisterPage from './customer/auth/RegisterPage.jsx'
 import ForgotPasswordPage from './customer/auth/ForgotPasswordPage.jsx'
+import SizesPage from './customer/sizes/SizesPage.jsx'
+import LocationsPage from './customer/locations/LocationsPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -52,6 +54,8 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/login" element={<LoginPage />} />
               <Route path="/register" element={<RegisterPage />} />
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+              <Route path="/sizes" element={<SizesPage />} />
+              <Route path="/locations" element={<LocationsPage />} />
             </Route>
             {/* Customer screens not built yet land on the home page. */}
             <Route path="*" element={<Navigate to="/" replace />} />
