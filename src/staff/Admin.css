@@ -193,3 +193,10 @@
 .sa-ticket-foot { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--se-muted); }
 .sa-ticket-foot > span:last-child { display: inline-flex; align-items: center; gap: 6px; }
 .se-avatar.sm { width: 22px; height: 22px; font-size: 9px; background: var(--se-teal); }
+
+/* A10 users & permission matrix */
+.sa-matrix td, .sa-matrix th { padding: 8px 10px; font-size: 12px; }
+.sa-matrix th.hl, .sa-matrix td.hl { background: var(--se-teal-soft); }
+.sa-yes { width: 18px; height: 18px; border-radius: 4px; background: var(--se-teal); color: #fff; display: inline-grid; place-items: center; }
+.sa-no { width: 18px; height: 18px; border-radius: 4px; border: 1px solid var(--se-line); display: inline-block; }
+.sa-checklist { display: grid; gap: 8px; }

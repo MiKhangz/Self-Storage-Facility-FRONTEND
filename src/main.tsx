@@ -34,6 +34,7 @@ import CheckInPage from './staff/pages/CheckInPage.jsx'
 import ContractsPage from './staff/pages/ContractsPage.jsx'
 import PricingPage from './staff/pages/PricingPage.jsx'
 import TicketsPage from './staff/pages/TicketsPage.jsx'
+import UsersPage from './staff/pages/UsersPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -65,6 +66,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/contracts" element={<ContractsPage />} />
               <Route path="/admin/pricing" element={<PricingPage />} />
               <Route path="/admin/tickets" element={<TicketsPage />} />
+              <Route path="/admin/users" element={<UsersPage />} />
             </Route>
             <Route element={<CustomerLayout />}>
               <Route path="/" element={<HomePage />} />
