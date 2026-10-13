@@ -30,6 +30,10 @@ import DashboardPage from './staff/pages/DashboardPage.jsx'
 import FacilitiesPage from './staff/pages/FacilitiesPage.jsx'
 import UnitsPage from './staff/pages/UnitsPage.jsx'
 import ReservationsPage from './staff/pages/ReservationsPage.jsx'
+import CheckInPage from './staff/pages/CheckInPage.jsx'
+import ContractsPage from './staff/pages/ContractsPage.jsx'
+import PricingPage from './staff/pages/PricingPage.jsx'
+import TicketsPage from './staff/pages/TicketsPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -57,6 +61,10 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/facilities" element={<FacilitiesPage />} />
               <Route path="/admin/units" element={<UnitsPage />} />
               <Route path="/admin/reservations" element={<ReservationsPage />} />
+              <Route path="/admin/check-in" element={<CheckInPage />} />
+              <Route path="/admin/contracts" element={<ContractsPage />} />
+              <Route path="/admin/pricing" element={<PricingPage />} />
+              <Route path="/admin/tickets" element={<TicketsPage />} />
             </Route>
             <Route element={<CustomerLayout />}>
               <Route path="/" element={<HomePage />} />

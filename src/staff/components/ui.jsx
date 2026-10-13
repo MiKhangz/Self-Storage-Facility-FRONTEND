@@ -66,3 +66,12 @@ export function SearchFilter({ value, onChange, placeholder }) {
 
 /** Case-insensitive match of a search term against any of the given values. */
 export const matches = (term, ...values) => !term.trim() || values.some((v) => String(v ?? '').toLowerCase().includes(term.trim().toLowerCase()));
+
+/** Saves a file the API streams (CSV exports) under the given name. */
+export async function downloadFile(api, url, params, filename) {
+    const response = await api.get(url, { params, responseType: 'blob' });
+    const href = URL.createObjectURL(response.data);
+    const link = Object.assign(document.createElement('a'), { href, download: filename });
+    link.click();
+    URL.revokeObjectURL(href);
+}
