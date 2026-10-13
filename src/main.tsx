@@ -23,6 +23,8 @@ import UnitDetailPage from './customer/account/UnitDetailPage.jsx'
 import PaymentsPage from './customer/account/PaymentsPage.jsx'
 import SupportRequestPage from './customer/support/SupportRequestPage.jsx'
 import TicketDetailPage from './customer/support/TicketDetailPage.jsx'
+import MoveOutPage from './customer/account/MoveOutPage.jsx'
+import ProfilePage from './customer/account/ProfilePage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -85,6 +87,8 @@ createRoot(document.getElementById('root')!).render(
                   <Route path="/support/new" element={<SupportRequestPage />} />
                   <Route path="/support/requests" element={<SupportRequestPage />} />
                   <Route path="/support/requests/:ticketId" element={<TicketDetailPage />} />
+                  <Route path="/move-out" element={<MoveOutPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
                 </Route>
               </Route>
             </Route>
