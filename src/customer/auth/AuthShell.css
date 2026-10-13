@@ -29,17 +29,6 @@
 .se-form { display: grid; gap: 18px; }
 .se-form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .se-form label > span { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--se-ink); }
-.se-input {
-    display: flex; align-items: center; gap: 10px; height: 44px; padding: 0 14px;
-    border: 1px solid var(--se-line); border-radius: 8px; color: var(--se-muted); background: #fff;
-}
-.se-input:focus-within { border-color: var(--se-teal); }
-.se-input.invalid { border-color: #e5484d; }
-.se-input input {
-    flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
-    font-family: inherit; font-size: 15px; color: var(--se-ink);
-}
-.se-input-eye { border: 0; background: none; padding: 4px; cursor: pointer; color: var(--se-muted); display: grid; }
 .se-form-split { display: flex; justify-content: space-between; align-items: center; }
 .se-form-split a { font-size: 14px; font-weight: 700; color: var(--se-teal) !important; }
 .se-form .se-btn { height: 52px; font-size: 16px; }

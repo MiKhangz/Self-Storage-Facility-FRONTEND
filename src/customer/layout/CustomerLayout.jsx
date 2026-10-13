@@ -8,7 +8,7 @@ const NAV = [
     { label: 'Unit Sizes & Prices', to: '/sizes' },
     { label: 'Locations', to: '/locations' },
     { label: 'How it works', to: '/#how-it-works' },
-    { label: 'Support', to: '/support' },
+    { label: 'Support', to: '/support/requests' },
 ];
 
 const FOOTER = [

@@ -1,0 +1,31 @@
+.se-support-grid { display: grid; grid-template-columns: 1fr 300px; gap: 20px; align-items: start; }
+.se-support-grid .se-form { display: grid; gap: 4px; }
+.se-support-grid .se-form .se-label { margin-top: 14px; }
+.se-support-grid .se-panel-grid .se-label { margin-top: 0; }
+.se-form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
+
+.se-side-title { margin: 0 0 12px !important; font-size: 18px !important; }
+.se-ticket-list { display: grid; gap: 12px; }
+.se-ticket-item { display: grid; gap: 4px; padding: 14px 16px; }
+.se-ticket-item:hover { border-color: var(--se-teal); }
+.se-ticket-item-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.se-ticket-item small { font-size: 12px; color: var(--se-muted); }
+.se-ticket-item strong { font-size: 15px; color: var(--se-navy); }
+.se-badge.muted { background: var(--se-bg-soft); color: var(--se-muted); }
+
+.se-account-title h1 .se-badge { vertical-align: middle; margin-left: 8px; font-size: 13px; }
+.se-convo h2 { display: flex; justify-content: space-between; align-items: baseline; }
+.se-convo h2 small { font-size: 12px; font-weight: 400; color: var(--se-muted); }
+.se-messages { list-style: none; margin: 0 0 16px; padding: 0; display: grid; gap: 16px; }
+.se-messages li { display: flex; gap: 12px; align-items: flex-start; }
+.se-messages li.own { flex-direction: row-reverse; }
+.se-avatar.staff { background: var(--se-teal); }
+.se-bubble { max-width: 80%; padding: 12px 14px; border-radius: 10px; background: var(--se-bg-soft); }
+.se-messages li.own .se-bubble { background: var(--se-teal-soft); }
+.se-bubble-head { display: flex; gap: 8px; align-items: baseline; margin-bottom: 4px; }
+.se-bubble-head strong { font-size: 13px; color: var(--se-navy); }
+.se-bubble-head small { font-size: 12px; color: var(--se-muted); }
+.se-bubble p { margin: 0; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
+.se-reply { display: grid; gap: 10px; justify-items: end; border-top: 1px solid var(--se-line); padding-top: 16px; }
+
+@media (max-width: 1100px) { .se-support-grid { grid-template-columns: 1fr; } }

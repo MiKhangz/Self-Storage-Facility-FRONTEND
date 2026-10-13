@@ -176,7 +176,7 @@ export default function HomePage() {
                             <ul className="se-checks">
                                 {['Free pick-up for 10+ boxes', 'Photo inventory of every box', 'Request delivery online', 'Pay only for what you store'].map((t) => <li key={t}><Icon name="check" size={16} />{t}</li>)}
                             </ul>
-                            <Link to="/support" className="se-btn se-btn-outline se-btn-block">Request shelf storage</Link>
+                            <Link to="/support/new" className="se-btn se-btn-outline se-btn-block">Request shelf storage</Link>
                         </article>
                     </div>
                 </div>
@@ -249,7 +249,7 @@ export default function HomePage() {
                         <p>Tell us what you want to store — we will suggest the right size and a free quote.</p>
                     </div>
                     <div className="se-cta-actions">
-                        <Link to="/support" className="se-btn se-btn-amber">Get a free quote</Link>
+                        <Link to="/support/new" className="se-btn se-btn-amber">Get a free quote</Link>
                         <Link to="/register" className="se-btn se-btn-white">Create an account</Link>
                     </div>
                 </div>

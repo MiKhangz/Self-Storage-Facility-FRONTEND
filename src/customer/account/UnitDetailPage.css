@@ -34,10 +34,6 @@
 .se-due-card strong { font-size: 17px; }
 .se-due-card small { font-size: 13px; margin-bottom: 8px; }
 
-.se-kv { margin: 0 0 14px; display: grid; gap: 12px; font-size: 14px; }
-.se-kv > div { display: flex; justify-content: space-between; gap: 12px; }
-.se-kv dt { color: var(--se-muted); }
-.se-kv dd { margin: 0; font-weight: 600; color: var(--se-ink); text-align: right; }
 .se-progress.flat { margin: 0; }
 
 .se-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 13px; color: var(--se-muted); }

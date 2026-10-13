@@ -114,7 +114,7 @@ export default function SizesPage() {
                     {tab === 'Shelf storage' ? (
                         <div className="se-card se-empty">
                             Shelf storage is priced per box — from 99,000 ₫ / box / month, free pick-up for 10+ boxes.{' '}
-                            <Link to="/support" className="se-link">Request shelf storage <Icon name="arrow" size={14} /></Link>
+                            <Link to="/support/new" className="se-link">Request shelf storage <Icon name="arrow" size={14} /></Link>
                         </div>
                     ) : unitTypes.isError || facilities.isError ? (
                         <div className="se-card se-empty">Prices could not be loaded. Please try again later.</div>
@@ -155,7 +155,7 @@ export default function SizesPage() {
                                                     <td>{badge && <span className={`se-badge ${badge.tone}`}>{badge.label}</span>}</td>
                                                     <td>
                                                         {t.free === 0
-                                                            ? <Link to="/support" className="se-btn se-btn-ghost se-btn-sm">Join waitlist</Link>
+                                                            ? <Link to="/support/new" className="se-btn se-btn-ghost se-btn-sm">Join waitlist</Link>
                                                             : <Link to={bookLink(t)} className="se-btn se-btn-primary se-btn-sm">Book</Link>}
                                                     </td>
                                                 </tr>
