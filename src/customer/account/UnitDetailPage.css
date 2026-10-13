@@ -52,8 +52,8 @@
 .se-summary-unit strong { display: block; color: var(--se-navy); }
 .se-summary-unit small { color: var(--se-muted); font-size: 13px; }
 .se-unit-switch { height: 36px; border: 1px solid var(--se-line); border-radius: 8px; padding: 0 8px; font-family: inherit; background: #fff; }
-.se-form h2 { margin: 24px 0 12px !important; font-size: 16px !important; }
-.se-form h2:first-child { margin-top: 0 !important; }
+.se-detail-grid .se-form h2 { margin: 24px 0 12px !important; font-size: 16px !important; }
+.se-detail-grid .se-form h2:first-child { margin-top: 0 !important; }
 .se-checklist { display: grid; gap: 14px; }
 .se-form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 24px; }
 .se-next-steps { margin: 0; padding-left: 20px; display: grid; gap: 10px; font-size: 13px; line-height: 1.5; color: var(--se-muted); }

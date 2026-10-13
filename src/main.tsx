@@ -1,12 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { AuthProvider, useAuth } from './features/auth/AuthContext'
+import { AuthProvider } from './features/auth/AuthContext'
 import { RequireAuth } from './features/auth/RequireAuth'
 import { ADMIN_PORTAL_ROLES, Roles } from './features/auth/roles'
-import LoginAdmin from './admin/loginPage/adminPage/LoginAdmin.jsx'
-import DashboardLayout from './admin/dashboard/DashboardLayout.jsx'
 import CustomerLayout from './customer/layout/CustomerLayout.jsx'
 import HomePage from './customer/home/HomePage.jsx'
 import LoginPage from './customer/auth/LoginPage.jsx'
@@ -25,25 +23,15 @@ import SupportRequestPage from './customer/support/SupportRequestPage.jsx'
 import TicketDetailPage from './customer/support/TicketDetailPage.jsx'
 import MoveOutPage from './customer/account/MoveOutPage.jsx'
 import ProfilePage from './customer/account/ProfilePage.jsx'
+// Backup admin portal (src/staff); Thiện's src/admin screens are kept but no longer routed.
+import AdminLoginPage from './staff/AdminLoginPage.jsx'
+import AdminLayout from './staff/AdminLayout.jsx'
+import DashboardPage from './staff/pages/DashboardPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
   defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
 })
-
-/** Thiện's dashboard switches pages itself; this only gives its Log out button a real session to end. */
-function AdminPortal() {
-  const { logout } = useAuth()
-  const navigate = useNavigate()
-  return (
-    <DashboardLayout
-      onLogOut={() => {
-        logout()
-        navigate('/admin/login', { replace: true })
-      }}
-    />
-  )
-}
 
 /** Customer pages that need a signed-in Storage Customer; anyone else is sent to /login and brought back. */
 function CustomerOnly() {
@@ -60,15 +48,10 @@ createRoot(document.getElementById('root')!).render(
       <BrowserRouter>
         <AuthProvider>
           <Routes>
-            <Route path="/admin/login" element={<LoginAdmin />} />
-            <Route
-              path="/admin"
-              element={
-                <RequireAuth roles={ADMIN_PORTAL_ROLES} loginPath="/admin/login">
-                  <AdminPortal />
-                </RequireAuth>
-              }
-            />
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route element={<RequireAuth roles={ADMIN_PORTAL_ROLES} loginPath="/admin/login"><AdminLayout /></RequireAuth>}>
+              <Route path="/admin" element={<DashboardPage />} />
+            </Route>
             <Route element={<CustomerLayout />}>
               <Route path="/" element={<HomePage />} />
               <Route path="/login" element={<LoginPage />} />

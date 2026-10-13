@@ -181,6 +181,11 @@
 .se-kv dd { margin: 0; font-weight: 600; color: var(--se-ink); text-align: right; }
 .se-kv { margin: 0 0 14px; }
 
+/* Progress bar */
+.se-progress { margin: 0 18px; height: 6px; border-radius: 3px; background: var(--se-line); overflow: hidden; }
+.se-progress span { display: block; height: 100%; background: var(--se-teal); border-radius: 3px; }
+.se-progress.flat { margin: 0; }
+
 /* Brand */
 .se-brand { display: inline-flex; align-items: center; gap: 10px; }
 .se-brand-mark {

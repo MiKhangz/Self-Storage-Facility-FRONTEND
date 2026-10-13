@@ -20,11 +20,16 @@ export function addMonths(isoDate, months) {
     return new Date(Date.UTC(y, m - 1 + months, Math.min(d, lastDay))).toISOString().slice(0, 10);
 }
 
+/** Date + N days (N may be negative). */
+export function addDays(isoDate, days) {
+    const d = new Date(`${isoDate}T00:00:00Z`);
+    d.setUTCDate(d.getUTCDate() + days);
+    return d.toISOString().slice(0, 10);
+}
+
 /** Last day of a rental: move-in + N months − 1 day. */
 export function rentalEndDate(isoDate, months) {
-    const end = new Date(`${addMonths(isoDate, months)}T00:00:00Z`);
-    end.setUTCDate(end.getUTCDate() - 1);
-    return end.toISOString().slice(0, 10);
+    return addDays(addMonths(isoDate, months), -1);
 }
 
 /** 2026-10-20 → 20/10/2026, without shifting the day through a time zone. */

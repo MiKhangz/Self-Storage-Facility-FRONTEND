@@ -25,8 +25,6 @@
 .se-unit dt { color: var(--se-muted); }
 .se-unit dd { margin: 0; font-weight: 600; color: var(--se-ink); text-align: right; }
 .se-unit-progress-label { margin: 8px 18px 6px !important; font-size: 12px !important; }
-.se-progress { margin: 0 18px; height: 6px; border-radius: 3px; background: var(--se-line); overflow: hidden; }
-.se-progress span { display: block; height: 100%; background: var(--se-teal); border-radius: 3px; }
 .se-unit-actions { display: flex; gap: 10px; padding: 16px 18px 18px; }
 .se-unit-actions .se-btn { flex: 1; }
 
