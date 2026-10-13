@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet } from 'react-router-dom';
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../components/Icon.jsx';
 import './CustomerLayout.css';
 
@@ -25,7 +26,20 @@ export function Brand() {
     );
 }
 
+// Vietnamese names end with the given name: "Huỳnh Minh Khang" → "KH", as in the Figma avatar.
+const initials = (name = '') => {
+    const words = name.trim().split(/\s+/).filter(Boolean);
+    return ((words.at(-1)?.[0] ?? '') + (words.length > 1 ? words[0][0] : '')).toUpperCase() || '?';
+};
+
 export default function CustomerLayout() {
+    const { session, logout } = useAuth();
+    const navigate = useNavigate();
+    const signOut = () => {
+        logout();
+        navigate('/', { replace: true });
+    };
+
     return (
         <div className="se-page">
             <header className="se-header">
@@ -39,8 +53,19 @@ export default function CustomerLayout() {
                     </nav>
                     <div className="se-header-actions">
                         <a className="se-phone" href="tel:02873001234"><Icon name="phone" size={15} /> 028 7300 1234</a>
-                        <Link to="/login" className="se-btn se-btn-ghost">Log in</Link>
-                        <Link to="/booking" className="se-btn se-btn-primary">Book now</Link>
+                        {session ? (
+                            <>
+                                <Link to="/my-storage" className="se-account">
+                                    <span className="se-avatar">{initials(session.fullName)}</span> My Storage
+                                </Link>
+                                <button type="button" className="se-btn se-btn-ghost" onClick={signOut}>Log out</button>
+                            </>
+                        ) : (
+                            <>
+                                <Link to="/login" className="se-btn se-btn-ghost">Log in</Link>
+                                <Link to="/booking" className="se-btn se-btn-primary">Book now</Link>
+                            </>
+                        )}
                     </div>
                 </div>
             </header>

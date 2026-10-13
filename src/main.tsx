@@ -1,10 +1,10 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { BrowserRouter, Navigate, Route, Routes, useNavigate } from 'react-router-dom'
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useNavigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider, useAuth } from './features/auth/AuthContext'
 import { RequireAuth } from './features/auth/RequireAuth'
-import { ADMIN_PORTAL_ROLES } from './features/auth/roles'
+import { ADMIN_PORTAL_ROLES, Roles } from './features/auth/roles'
 import LoginAdmin from './admin/loginPage/adminPage/LoginAdmin.jsx'
 import DashboardLayout from './admin/dashboard/DashboardLayout.jsx'
 import CustomerLayout from './customer/layout/CustomerLayout.jsx'
@@ -14,6 +14,9 @@ import RegisterPage from './customer/auth/RegisterPage.jsx'
 import ForgotPasswordPage from './customer/auth/ForgotPasswordPage.jsx'
 import SizesPage from './customer/sizes/SizesPage.jsx'
 import LocationsPage from './customer/locations/LocationsPage.jsx'
+import ChooseUnitPage from './customer/booking/ChooseUnitPage.jsx'
+import BookingDetailsPage from './customer/booking/BookingDetailsPage.jsx'
+import BookingConfirmedPage from './customer/booking/BookingConfirmedPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -31,6 +34,15 @@ function AdminPortal() {
         navigate('/admin/login', { replace: true })
       }}
     />
+  )
+}
+
+/** Customer pages that need a signed-in Storage Customer; anyone else is sent to /login and brought back. */
+function CustomerOnly() {
+  return (
+    <RequireAuth roles={[Roles.StorageCustomer]} loginPath="/login">
+      <Outlet />
+    </RequireAuth>
   )
 }
 
@@ -56,6 +68,11 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/sizes" element={<SizesPage />} />
               <Route path="/locations" element={<LocationsPage />} />
+              <Route path="/booking" element={<ChooseUnitPage />} />
+              <Route element={<CustomerOnly />}>
+                <Route path="/booking/details" element={<BookingDetailsPage />} />
+                <Route path="/booking/confirmed/:id" element={<BookingConfirmedPage />} />
+              </Route>
             </Route>
             {/* Customer screens not built yet land on the home page. */}
             <Route path="*" element={<Navigate to="/" replace />} />

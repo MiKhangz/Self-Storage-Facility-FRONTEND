@@ -24,7 +24,6 @@
 .se-auth-main { padding: 56px 64px; }
 .se-auth-main h1 { margin: 0 0 20px; font-size: 32px; font-weight: 800; color: var(--se-navy); }
 .se-auth-lead { margin: 0 0 24px; font-size: 15px; line-height: 1.55; color: var(--se-muted); }
-.se-back { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 20px; font-size: 15px; font-weight: 600; color: var(--se-teal) !important; }
 
 /* Form controls */
 .se-form { display: grid; gap: 18px; }
@@ -41,18 +40,11 @@
     font-family: inherit; font-size: 15px; color: var(--se-ink);
 }
 .se-input-eye { border: 0; background: none; padding: 4px; cursor: pointer; color: var(--se-muted); display: grid; }
-.se-hint { margin: 6px 0 0; font-size: 12px; color: var(--se-muted); }
-.se-hint.error { color: #e5484d; }
-.se-check { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--se-ink); }
-.se-check input { width: 18px; height: 18px; accent-color: var(--se-teal); margin: 0; }
-.se-check a { color: var(--se-teal) !important; font-weight: 600; }
 .se-form-split { display: flex; justify-content: space-between; align-items: center; }
 .se-form-split a { font-size: 14px; font-weight: 700; color: var(--se-teal) !important; }
 .se-form .se-btn { height: 52px; font-size: 16px; }
 .se-form .se-btn:disabled { opacity: 0.6; cursor: default; }
 
-.se-alert { padding: 12px 14px; border-radius: 8px; font-size: 14px; background: #fdecec; color: #b42318; }
-.se-alert.info { background: var(--se-teal-soft); color: var(--se-teal-dark); }
 .se-auth-switch { margin: 24px 0 0; text-align: center; font-size: 14px; color: var(--se-muted); }
 .se-auth-switch a { margin-left: 6px; font-weight: 700; color: var(--se-teal) !important; }
 .se-auth-note {

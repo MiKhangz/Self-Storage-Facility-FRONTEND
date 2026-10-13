@@ -8,7 +8,7 @@ export function RequireAuth({ roles, loginPath, children }: { roles: Role[]; log
   const { session } = useAuth()
   const location = useLocation()
 
-  if (!session) return <Navigate to={loginPath} replace state={{ from: location.pathname }} />
+  if (!session) return <Navigate to={loginPath} replace state={{ from: location.pathname + location.search }} />
   if (!roles.includes(session.role)) return <p style={{ padding: 24 }}>Bạn không có quyền truy cập trang này.</p>
   return <>{children}</>
 }
