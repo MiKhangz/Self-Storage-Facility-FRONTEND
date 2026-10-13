@@ -1,0 +1,50 @@
+.se-account-title h1 .se-badge { vertical-align: middle; margin-left: 8px; font-size: 13px; }
+.se-title-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.se-btn-danger { background: #fff; border-color: #f04438; color: #d92d20 !important; }
+.se-btn-danger:hover { background: #fdecec; }
+
+.se-detail-grid { display: grid; grid-template-columns: 1fr 340px; gap: 20px; align-items: start; }
+.se-detail-grid aside .se-panel + .se-panel, .se-detail-grid aside .se-due-card + .se-panel { margin-top: 20px; }
+.se-panel h2 { display: flex; align-items: center; gap: 10px; }
+
+.se-code-card { background: var(--se-navy); color: #fff; border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+.se-code-card h2 { margin: 0 0 18px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; color: #fff; }
+.se-code-card h2 svg { color: var(--se-teal-light); }
+.se-code-digits { display: flex; gap: 10px; margin-bottom: 16px; }
+.se-code-digits span {
+    width: 46px; height: 58px; border-radius: 8px; background: #1c3f5e; display: grid; place-items: center;
+    font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums;
+}
+.se-code-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.se-code-actions button {
+    display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 6px; border: 0;
+    background: #1c3f5e; color: #fff; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+}
+.se-code-actions button:disabled { opacity: 0.6; cursor: default; }
+.se-code-note { margin: 14px 0 0; font-size: 12px; color: #b8c4d0; }
+.se-code-note.error { color: #fda29b; }
+
+.se-renew-preview { margin: 16px 0; padding: 14px 16px; border-radius: 10px; background: var(--se-bg-soft); font-size: 14px; }
+.se-renew-preview strong { color: var(--se-navy); }
+.se-panel .se-hint { margin: 0 0 14px; font-size: 13px; color: var(--se-muted); line-height: 1.5; }
+
+.se-due-card {
+    display: grid; gap: 6px; padding: 18px; border-radius: 14px; background: #fef3c7; border: 1px solid #fcd34d; color: #92400e;
+}
+.se-due-card strong { font-size: 17px; }
+.se-due-card small { font-size: 13px; margin-bottom: 8px; }
+
+.se-kv { margin: 0 0 14px; display: grid; gap: 12px; font-size: 14px; }
+.se-kv > div { display: flex; justify-content: space-between; gap: 12px; }
+.se-kv dt { color: var(--se-muted); }
+.se-kv dd { margin: 0; font-weight: 600; color: var(--se-ink); text-align: right; }
+.se-progress.flat { margin: 0; }
+
+.se-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 13px; color: var(--se-muted); }
+.se-log li { display: flex; align-items: center; gap: 10px; }
+.se-log li::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--se-teal); flex-shrink: 0; }
+.se-log li.se-hint::before { display: none; }
+.se-log strong { color: var(--se-ink); }
+
+@media (max-width: 1100px) { .se-detail-grid { grid-template-columns: 1fr; } }
+@media (max-width: 480px) { .se-code-digits span { width: 38px; height: 50px; font-size: 22px; } }

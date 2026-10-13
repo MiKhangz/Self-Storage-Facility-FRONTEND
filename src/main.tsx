@@ -19,6 +19,8 @@ import BookingDetailsPage from './customer/booking/BookingDetailsPage.jsx'
 import BookingConfirmedPage from './customer/booking/BookingConfirmedPage.jsx'
 import AccountLayout from './customer/account/AccountLayout.jsx'
 import MyStoragePage from './customer/account/MyStoragePage.jsx'
+import UnitDetailPage from './customer/account/UnitDetailPage.jsx'
+import PaymentsPage from './customer/account/PaymentsPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -76,6 +78,8 @@ createRoot(document.getElementById('root')!).render(
                 <Route path="/booking/confirmed/:id" element={<BookingConfirmedPage />} />
                 <Route element={<AccountLayout />}>
                   <Route path="/my-storage" element={<MyStoragePage />} />
+                  <Route path="/my-storage/units/:contractId" element={<UnitDetailPage />} />
+                  <Route path="/payments" element={<PaymentsPage />} />
                 </Route>
               </Route>
             </Route>

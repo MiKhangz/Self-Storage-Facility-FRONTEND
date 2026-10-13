@@ -5,7 +5,7 @@ import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../components/Icon.jsx';
 import { formatDate, formatVnd, rentalEndDate, todayIso } from '../components/format.js';
 import {
-    AWAITING_CHECK_IN, LIVE_CONTRACT, OPEN_INVOICE, OPEN_TICKET,
+    AWAITING_CHECK_IN, LIVE_CONTRACT, OPEN_INVOICE, OPEN_TICKET, invoiceBadge,
     periodUsed, useMyContracts, useMyInvoices, useMyReservations, useMyTickets,
 } from './queries.js';
 import './MyStoragePage.css';
@@ -14,11 +14,6 @@ const CONTRACT_BADGE = {
     Draft: ['low', 'Awaiting handover'], Active: ['', 'Active'], PendingMoveOut: ['low', 'Moving out'],
     Overdue: ['none', 'Overdue'], Suspended: ['none', 'Access suspended'],
 };
-const INVOICE_BADGE = { Paid: ['', 'Paid'], Overdue: ['none', 'Overdue'], WrittenOff: ['none', 'Written off'] };
-
-function invoiceBadge(inv) {
-    return INVOICE_BADGE[inv.status] ?? ['low', `Due ${formatDate(inv.dueDate)}`];
-}
 
 function Stat({ icon, label, value, note }) {
     return (

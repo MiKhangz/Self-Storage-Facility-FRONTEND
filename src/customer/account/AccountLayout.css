@@ -27,3 +27,6 @@
     .se-account-side { position: static; }
     .se-account-side nav { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
 }
+.se-account-main .se-panel h2 { margin: 0 0 16px; font-size: 18px; }
+/* Lets wide tables scroll inside their card instead of stretching the grid. */
+.se-account-main { min-width: 0; }

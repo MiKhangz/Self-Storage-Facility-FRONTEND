@@ -15,23 +15,6 @@
 .se-stepper li.done { color: var(--se-navy); }
 .se-stepper li.done .se-step-num { background: var(--se-teal); color: #fff; }
 
-/* Panels */
-.se-panel { background: #fff; border: 1px solid var(--se-line); border-radius: 14px; padding: 24px; }
-.se-panel + .se-panel { margin-top: 20px; }
-.se-panel h2 { margin: 0 0 20px; font-size: 18px; font-weight: 700; color: var(--se-navy); }
-.se-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-.se-label { display: block; margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--se-ink); }
-.se-panel .se-field + .se-label, .se-panel-grid + .se-label { margin-top: 18px; }
-.se-field[aria-readonly='true'] { background: var(--se-bg-soft); }
-
-.se-chips { display: flex; flex-wrap: wrap; gap: 10px; }
-.se-chip {
-    display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 8px;
-    border: 1px solid var(--se-line); background: #fff; cursor: pointer; font-family: inherit; font-size: 14px; color: var(--se-ink);
-}
-.se-chip.active { border: 2px solid var(--se-teal); background: var(--se-teal-soft); color: var(--se-teal-dark); font-weight: 600; padding: 0 13px; }
-.se-chip small { color: inherit; opacity: 0.8; }
-
 .se-booking-note { margin-top: 16px; font-size: 14px; color: var(--se-teal-dark); font-weight: 600; }
 .se-booking-cta { margin-top: 20px; height: 52px; font-size: 16px; }
 .se-booking-cta:disabled { opacity: 0.55; cursor: default; }

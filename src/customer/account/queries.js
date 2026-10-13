@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { formatDate } from '../components/format.js';
 import { contractsApi, invoicesApi, reservationsApi, ticketQueueApi } from '../../api/generated';
 
 // ponytail: one page of 50 covers a customer's own records; add paging if anyone ever rents more.
@@ -23,3 +24,8 @@ export function periodUsed(startIso, endIso, todayIso) {
     if (total <= 0) return 100;
     return Math.min(100, Math.max(0, Math.round(((day(todayIso) - day(startIso)) / total) * 100)));
 }
+
+const INVOICE_BADGE = { Paid: ['', 'Paid'], Overdue: ['none', 'Overdue'], WrittenOff: ['none', 'Written off'] };
+
+/** [tone, label] for an invoice status badge; an open invoice shows its due date. */
+export const invoiceBadge = (inv) => INVOICE_BADGE[inv.status] ?? ['low', `Due ${formatDate(inv.dueDate)}`];

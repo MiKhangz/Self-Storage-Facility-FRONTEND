@@ -127,6 +127,37 @@
 .se-table th.hl { color: var(--se-teal); }
 .se-btn-sm { height: 32px; padding: 0 14px; font-size: 13px; }
 
+/* Tabs */
+.se-tabs { display: inline-flex; padding: 4px; border-radius: 10px; background: var(--se-bg-soft); border: 1px solid var(--se-line); }
+.se-tabs button {
+    border: 0; background: none; padding: 10px 18px; border-radius: 7px; cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 500; color: var(--se-muted);
+}
+.se-tabs button.active { background: #fff; color: var(--se-navy); font-weight: 700; box-shadow: 0 1px 3px rgba(15, 42, 68, 0.1); }
+/* Underlined tab strip (U14) */
+.se-tabs.se-tabs-line { display: flex; padding: 0; border: 0; border-bottom: 1px solid var(--se-line); border-radius: 0; background: none; margin: 24px 0 16px; }
+.se-tabs.se-tabs-line button { border-radius: 0; padding: 12px 16px; border-bottom: 2px solid transparent; }
+.se-tabs.se-tabs-line button.active { background: none; box-shadow: none; color: var(--se-teal-dark); border-bottom-color: var(--se-teal); }
+.se-count { margin-left: 6px; padding: 1px 7px; border-radius: 999px; background: var(--se-bg-soft); font-size: 11px; }
+
+/* Panels, labels and choice chips (booking, account pages) */
+.se-panel { background: #fff; border: 1px solid var(--se-line); border-radius: 14px; padding: 24px; }
+.se-panel + .se-panel { margin-top: 20px; }
+.se-panel h2 { margin: 0 0 20px; font-size: 18px; font-weight: 700; color: var(--se-navy); }
+.se-panel-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.se-label { display: block; margin: 0 0 8px; font-size: 13px; font-weight: 600; color: var(--se-ink); }
+.se-panel .se-field + .se-label, .se-panel-grid + .se-label { margin-top: 18px; }
+.se-field[aria-readonly='true'] { background: var(--se-bg-soft); }
+
+.se-chips { display: flex; flex-wrap: wrap; gap: 10px; }
+.se-chip {
+    display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 14px; border-radius: 8px;
+    border: 1px solid var(--se-line); background: #fff; cursor: pointer; font-family: inherit; font-size: 14px; color: var(--se-ink);
+}
+.se-chip.active { border: 2px solid var(--se-teal); background: var(--se-teal-soft); color: var(--se-teal-dark); font-weight: 600; padding: 0 13px; }
+.se-chip small { color: inherit; opacity: 0.8; }
+
+
 /* Brand */
 .se-brand { display: inline-flex; align-items: center; gap: 10px; }
 .se-brand-mark {
@@ -169,6 +200,7 @@
 }
 .se-lang { font-weight: 700; color: #b8c4d0; }
 
+@media (max-width: 640px) { .se-panel-grid { grid-template-columns: 1fr; } }
 @media (max-width: 1100px) {
     .se-nav, .se-phone { display: none; }
     .se-header-actions { margin-left: auto; }

@@ -13,13 +13,18 @@ export function availability(count) {
     return { tone: '', label: `${count} available` };
 }
 
-/** Last day of a rental: move-in + N months − 1 day, clamping 31 Jan + 1 month to 28/29 Feb like .NET AddMonths. */
-export function rentalEndDate(isoDate, months) {
+/** Date + N months, clamping 31 Jan + 1 month to 28/29 Feb like .NET DateOnly.AddMonths. */
+export function addMonths(isoDate, months) {
     const [y, m, d] = isoDate.split('-').map(Number);
-    const target = new Date(Date.UTC(y, m - 1 + months, 1));
-    const lastDay = new Date(Date.UTC(target.getUTCFullYear(), target.getUTCMonth() + 1, 0)).getUTCDate();
-    target.setUTCDate(Math.min(d, lastDay) - 1);
-    return target.toISOString().slice(0, 10);
+    const lastDay = new Date(Date.UTC(y, m - 1 + months + 1, 0)).getUTCDate();
+    return new Date(Date.UTC(y, m - 1 + months, Math.min(d, lastDay))).toISOString().slice(0, 10);
+}
+
+/** Last day of a rental: move-in + N months − 1 day. */
+export function rentalEndDate(isoDate, months) {
+    const end = new Date(`${addMonths(isoDate, months)}T00:00:00Z`);
+    end.setUTCDate(end.getUTCDate() - 1);
+    return end.toISOString().slice(0, 10);
 }
 
 /** 2026-10-20 → 20/10/2026, without shifting the day through a time zone. */
