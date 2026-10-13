@@ -95,3 +95,37 @@
 .sa-attention-item { display: flex; align-items: center; gap: 12px; padding: 12px 4px; border-bottom: 1px solid var(--se-line); font-size: 14px; }
 .sa-attention-item > span:nth-child(2) { flex: 1; }
 .sa-attention-item svg:last-child { color: var(--se-muted); }
+
+/* List + side panel layout (A04, A05, ...) */
+.sa-split { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
+.sa-split.open { grid-template-columns: minmax(0, 1fr) 340px; }
+.sa-side-panel { position: sticky; top: 16px; display: grid; gap: 12px; }
+.sa-side-panel .sa-card-title { margin: 0; }
+.sa-side-panel h2 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.sa-side-panel .se-kv { margin: 0; }
+.sa-close { border: 0; background: var(--se-bg-soft); border-radius: 6px; width: 30px; height: 30px; display: grid; place-items: center; cursor: pointer; color: var(--se-muted); }
+.sa-table tbody tr { cursor: pointer; }
+.sa-table a:hover { color: var(--se-teal); }
+.sa-inline-bar { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+.sa-inline-bar .se-progress { flex: 1; }
+
+.sa-chip-row { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 14px; }
+.sa-chip-row button {
+    display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 14px; border-radius: 999px;
+    border: 1px solid var(--se-line); background: #fff; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--se-ink); cursor: pointer;
+}
+.sa-chip-row button.active { background: var(--se-navy); border-color: var(--se-navy); color: #fff; }
+.sa-chip-row b { font-weight: 600; opacity: 0.7; }
+.dot { width: 7px; height: 7px; border-radius: 50%; background: var(--se-muted); }
+.dot.Available { background: #22a06b; } .dot.Occupied { background: #2f6fe4; } .dot.Reserved { background: #d97706; }
+.dot.Maintenance { background: #d92d20; } .dot.Retired { background: #98a2b3; }
+
+.sa-unit-options { display: grid; gap: 8px; }
+.sa-unit-option { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--se-line); border-radius: 10px; cursor: pointer; }
+.sa-unit-option.active { border: 2px solid var(--se-teal); background: var(--se-teal-soft); padding: 9px 11px; }
+.sa-unit-option input { accent-color: var(--se-teal); }
+.sa-unit-option span:nth-child(2) { flex: 1; }
+.sa-unit-option strong { display: block; font-size: 14px; color: var(--se-navy); }
+.sa-unit-option small { font-size: 12px; color: var(--se-muted); }
+
+@media (max-width: 1200px) { .sa-split.open { grid-template-columns: 1fr; } .sa-side-panel { position: static; } }

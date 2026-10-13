@@ -27,6 +27,9 @@ import ProfilePage from './customer/account/ProfilePage.jsx'
 import AdminLoginPage from './staff/AdminLoginPage.jsx'
 import AdminLayout from './staff/AdminLayout.jsx'
 import DashboardPage from './staff/pages/DashboardPage.jsx'
+import FacilitiesPage from './staff/pages/FacilitiesPage.jsx'
+import UnitsPage from './staff/pages/UnitsPage.jsx'
+import ReservationsPage from './staff/pages/ReservationsPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -51,6 +54,9 @@ createRoot(document.getElementById('root')!).render(
             <Route path="/admin/login" element={<AdminLoginPage />} />
             <Route element={<RequireAuth roles={ADMIN_PORTAL_ROLES} loginPath="/admin/login"><AdminLayout /></RequireAuth>}>
               <Route path="/admin" element={<DashboardPage />} />
+              <Route path="/admin/facilities" element={<FacilitiesPage />} />
+              <Route path="/admin/units" element={<UnitsPage />} />
+              <Route path="/admin/reservations" element={<ReservationsPage />} />
             </Route>
             <Route element={<CustomerLayout />}>
               <Route path="/" element={<HomePage />} />
