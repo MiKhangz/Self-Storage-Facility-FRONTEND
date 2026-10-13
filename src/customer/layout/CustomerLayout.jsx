@@ -27,7 +27,7 @@ export function Brand() {
 }
 
 // Vietnamese names end with the given name: "Huỳnh Minh Khang" → "KH", as in the Figma avatar.
-const initials = (name = '') => {
+export const initials = (name = '') => {
     const words = name.trim().split(/\s+/).filter(Boolean);
     return ((words.at(-1)?.[0] ?? '') + (words.length > 1 ? words[0][0] : '')).toUpperCase() || '?';
 };

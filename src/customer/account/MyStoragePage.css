@@ -1,0 +1,37 @@
+.se-due {
+    display: flex; align-items: center; gap: 14px; padding: 14px 18px; margin-bottom: 20px; border-radius: 10px;
+    background: #fef3c7; border: 1px solid #fcd34d; color: #92400e;
+}
+.se-due.overdue { background: #fdecec; border-color: #f5a3a3; color: #b42318; }
+.se-due div { flex: 1; }
+.se-due strong { display: block; font-size: 15px; }
+.se-due small { font-size: 13px; }
+
+.se-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.se-stat { padding: 18px; display: grid; gap: 6px; }
+.se-stat-label { margin-top: 8px; font-size: 13px; color: var(--se-muted); }
+.se-stat strong { font-size: 24px; font-weight: 700; color: var(--se-navy); }
+.se-stat small { font-size: 12px; color: var(--se-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.se-units { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
+.se-unit { overflow: hidden; }
+.se-unit header { background: var(--se-navy); color: #fff; padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
+.se-unit header div { flex: 1; }
+.se-unit header strong { display: block; font-size: 18px; }
+.se-unit header small { font-size: 12px; color: #b8c4d0; }
+.se-unit-icon { width: 40px; height: 40px; border-radius: 8px; background: #1c3f5e; color: var(--se-teal-light); display: grid; place-items: center; }
+.se-unit dl { margin: 0; padding: 16px 18px 4px; display: grid; gap: 10px; font-size: 14px; }
+.se-unit dl > div { display: flex; justify-content: space-between; gap: 12px; }
+.se-unit dt { color: var(--se-muted); }
+.se-unit dd { margin: 0; font-weight: 600; color: var(--se-ink); text-align: right; }
+.se-unit-progress-label { margin: 8px 18px 6px !important; font-size: 12px !important; }
+.se-progress { margin: 0 18px; height: 6px; border-radius: 3px; background: var(--se-line); overflow: hidden; }
+.se-progress span { display: block; height: 100%; background: var(--se-teal); border-radius: 3px; }
+.se-unit-actions { display: flex; gap: 10px; padding: 16px 18px 18px; }
+.se-unit-actions .se-btn { flex: 1; }
+
+@media (max-width: 1100px) { .se-stats { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 640px) {
+    .se-stats, .se-units { grid-template-columns: 1fr; }
+    .se-due { flex-wrap: wrap; }
+}

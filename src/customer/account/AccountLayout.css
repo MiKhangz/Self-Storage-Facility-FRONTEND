@@ -1,0 +1,29 @@
+.se-account-page { background: var(--se-bg-soft); padding: 32px 0 72px; }
+.se-account-grid { display: grid; grid-template-columns: 234px 1fr; gap: 28px; align-items: start; }
+
+.se-account-side { background: #fff; border: 1px solid var(--se-line); border-radius: 14px; padding: 18px 12px; position: sticky; top: 100px; }
+.se-account-who { display: flex; align-items: center; gap: 12px; padding: 4px 10px 18px; border-bottom: 1px solid var(--se-line); margin-bottom: 8px; }
+.se-account-who strong { display: block; font-size: 14px; color: var(--se-navy); }
+.se-account-who small { font-size: 12px; color: var(--se-muted); }
+.se-avatar.lg { width: 40px; height: 40px; font-size: 13px; flex-shrink: 0; }
+.se-account-side nav { display: grid; gap: 4px; }
+.se-account-side nav a, .se-account-side nav button {
+    display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 8px; border: 0; background: none;
+    font-family: inherit; font-size: 14px; font-weight: 500; color: var(--se-ink); cursor: pointer; text-align: left;
+}
+.se-account-side nav a:hover, .se-account-side nav button:hover { background: var(--se-bg-soft); }
+.se-account-side nav a.active { background: var(--se-teal-soft); color: var(--se-teal-dark); font-weight: 600; }
+.se-account-side nav svg { color: var(--se-muted); }
+.se-account-side nav a.active svg { color: var(--se-teal); }
+
+/* Page title row used by every account page */
+.se-account-title { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
+.se-account-title h1 { margin: 0 0 4px; font-size: 30px; font-weight: 800; color: var(--se-navy); }
+.se-account-title p { margin: 0; color: var(--se-muted); font-size: 15px; }
+.se-account-main h2 { margin: 28px 0 14px; font-size: 20px; font-weight: 700; color: var(--se-navy); }
+
+@media (max-width: 900px) {
+    .se-account-grid { grid-template-columns: 1fr; }
+    .se-account-side { position: static; }
+    .se-account-side nav { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+}

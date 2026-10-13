@@ -111,6 +111,22 @@
 .se-alert { padding: 12px 14px; border-radius: 8px; font-size: 14px; background: #fdecec; color: #b42318; }
 .se-alert.info { background: var(--se-teal-soft); color: var(--se-teal-dark); }
 
+/* Data tables (U04, U09, U14) */
+.se-table-wrap { overflow-x: auto; }
+.se-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+.se-table th {
+    text-align: left; padding: 14px 18px; background: var(--se-bg-soft); white-space: nowrap;
+    font-size: 11px; font-weight: 600; letter-spacing: 0.5px; text-transform: uppercase; color: var(--se-muted);
+}
+.se-table td { padding: 16px 18px; border-top: 1px solid var(--se-line); white-space: nowrap; }
+.se-table tbody tr { cursor: pointer; }
+.se-table tbody tr.active { background: var(--se-teal-soft); }
+.se-table .strong { font-weight: 700; color: var(--se-navy); }
+.se-table .muted { color: var(--se-muted); }
+.se-table .price { font-weight: 700; color: var(--se-navy); }
+.se-table th.hl { color: var(--se-teal); }
+.se-btn-sm { height: 32px; padding: 0 14px; font-size: 13px; }
+
 /* Brand */
 .se-brand { display: inline-flex; align-items: center; gap: 10px; }
 .se-brand-mark {

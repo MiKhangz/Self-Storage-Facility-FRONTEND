@@ -17,6 +17,8 @@ import LocationsPage from './customer/locations/LocationsPage.jsx'
 import ChooseUnitPage from './customer/booking/ChooseUnitPage.jsx'
 import BookingDetailsPage from './customer/booking/BookingDetailsPage.jsx'
 import BookingConfirmedPage from './customer/booking/BookingConfirmedPage.jsx'
+import AccountLayout from './customer/account/AccountLayout.jsx'
+import MyStoragePage from './customer/account/MyStoragePage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -72,6 +74,9 @@ createRoot(document.getElementById('root')!).render(
               <Route element={<CustomerOnly />}>
                 <Route path="/booking/details" element={<BookingDetailsPage />} />
                 <Route path="/booking/confirmed/:id" element={<BookingConfirmedPage />} />
+                <Route element={<AccountLayout />}>
+                  <Route path="/my-storage" element={<MyStoragePage />} />
+                </Route>
               </Route>
             </Route>
             {/* Customer screens not built yet land on the home page. */}
