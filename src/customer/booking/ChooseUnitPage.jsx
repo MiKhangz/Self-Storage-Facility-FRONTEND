@@ -6,6 +6,7 @@ import Icon from '../components/Icon.jsx';
 import { availability, formatDate, formatVnd, rentalEndDate, todayIso } from '../components/format.js';
 import { useFacilities } from '../sizes/SizesPage.jsx';
 import BookingStepper from './BookingStepper.jsx';
+import BookingSummary from './BookingSummary.jsx';
 
 const PERIODS = [{ months: 1 }, { months: 3, note: '−5%' }, { months: 6, note: '−10%' }, { months: 12, note: '−10%' }];
 
@@ -24,6 +25,7 @@ export default function ChooseUnitPage() {
     const facilities = useFacilities();
     const unitTypes = useQuery({ queryKey: ['unit-types'], queryFn: () => unitTypesApi.list() });
     const facilityId = Number(form.facilityId) || facilities.data?.items?.[0]?.facilityId;
+    const facility = facilities.data?.items?.find((f) => f.facilityId === facilityId);
     const types = [...(unitTypes.data ?? [])].sort((a, b) => a.areaM2 - b.areaM2);
     const unitTypeId = Number(form.unitTypeId) || types[0]?.unitTypeId;
     const type = types.find((t) => t.unitTypeId === unitTypeId);
@@ -53,7 +55,8 @@ export default function ChooseUnitPage() {
         <>
             <BookingStepper current={1} />
             <div className="se-booking">
-                <div className="se-container">
+                <div className="se-container se-booking-grid">
+                    <div>
                     <section className="se-panel">
                         <h2>1. Where and what size?</h2>
                         <span className="se-label">Facility</span>
@@ -113,9 +116,12 @@ export default function ChooseUnitPage() {
                         {(quote.isError || stock.isError) && <div className="se-alert" role="alert">Prices could not be loaded for this choice. Please try another size or date.</div>}
                     </section>
 
-                    <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta" disabled={!ready || soldOut || !quote.data} onClick={next}>
+                    </div>
+                    <BookingSummary facility={facility} type={type} moveInDate={form.moveInDate} rentalMonths={form.rentalMonths} quote={quote}>
+                        <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta" disabled={!ready || soldOut || !quote.data} onClick={next}>
                         {soldOut ? 'No units left for this size' : <>Continue to details <Icon name="arrow" size={16} /></>}
                     </button>
+                    </BookingSummary>
                 </div>
             </div>
         </>
