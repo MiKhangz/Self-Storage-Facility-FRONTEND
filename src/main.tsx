@@ -35,6 +35,15 @@ import ContractsPage from './staff/pages/ContractsPage.jsx'
 import PricingPage from './staff/pages/PricingPage.jsx'
 import TicketsPage from './staff/pages/TicketsPage.jsx'
 import UsersPage from './staff/pages/UsersPage.jsx'
+import TicketDetailPageAdmin from './staff/pages/TicketDetailPage.jsx'
+import RecordPaymentPage from './staff/pages/RecordPaymentPage.jsx'
+import MoveOutsPage from './staff/pages/MoveOutsPage.jsx'
+import CustomerPage from './staff/pages/CustomerPage.jsx'
+import FacilityDetailPage from './staff/pages/FacilityDetailPage.jsx'
+import ReportsPage from './staff/pages/ReportsPage.jsx'
+import ShiftsPage from './staff/pages/ShiftsPage.jsx'
+import InviteUserPage from './staff/pages/InviteUserPage.jsx'
+import { ActivityLogPage, AddFacilityPage, WalkInBookingPage } from './staff/pages/PendingBackendPages.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -67,6 +76,18 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/pricing" element={<PricingPage />} />
               <Route path="/admin/tickets" element={<TicketsPage />} />
               <Route path="/admin/users" element={<UsersPage />} />
+              <Route path="/admin/users/invite" element={<InviteUserPage />} />
+              <Route path="/admin/tickets/:ticketId" element={<TicketDetailPageAdmin />} />
+              <Route path="/admin/payments" element={<RecordPaymentPage />} />
+              <Route path="/admin/move-outs" element={<MoveOutsPage />} />
+              <Route path="/admin/customers/:customerId" element={<CustomerPage />} />
+              <Route path="/admin/facilities/new" element={<AddFacilityPage />} />
+              <Route path="/admin/facilities/:facilityId" element={<FacilityDetailPage />} />
+              <Route path="/admin/reports" element={<ReportsPage />} />
+              <Route path="/admin/staff" element={<ShiftsPage />} />
+              <Route path="/admin/activity" element={<ActivityLogPage />} />
+              <Route path="/admin/walk-in" element={<WalkInBookingPage />} />
+              <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
             </Route>
             <Route element={<CustomerLayout />}>
               <Route path="/" element={<HomePage />} />

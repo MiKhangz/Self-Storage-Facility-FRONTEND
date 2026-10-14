@@ -1,0 +1,102 @@
+import { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { supportTicketsApi, ticketQueueApi } from '../../api/generated';
+import { errorMessage } from '../../api/axiosClient';
+import { useAuth } from '../../features/auth/AuthContext';
+import { Roles } from '../../features/auth/roles';
+import Icon from '../../customer/components/Icon.jsx';
+import { initials } from '../../customer/layout/CustomerLayout.jsx';
+import { formatDateTime } from '../../customer/support/support.js';
+import { PageHeader, Status } from '../components/ui.jsx';
+import { humanize } from '../queries.js';
+import '../../customer/support/Support.css';
+
+// Moves staff may make, per the backend's ticket status rules; Closed is left to the customer or a manager.
+const NEXT = { New: ['InProgress'], InProgress: ['WaitingForCustomer', 'Resolved'], WaitingForCustomer: ['InProgress', 'Resolved'], Resolved: ['InProgress'] };
+
+/** A20: one ticket from the staff side — conversation, internal notes, status and assignment. */
+export default function TicketDetailPage() {
+    const ticketId = Number(useParams().ticketId);
+    const { session } = useAuth();
+    const queryClient = useQueryClient();
+    const [body, setBody] = useState('');
+    const [internal, setInternal] = useState(false);
+    const [nextStatus, setNextStatus] = useState('');
+    const ticket = useQuery({ queryKey: ['tickets', ticketId], queryFn: () => supportTicketsApi.getById(ticketId) });
+    const messages = useQuery({ queryKey: ['tickets', ticketId, 'messages'], queryFn: () => supportTicketsApi.getMessages(ticketId) });
+    const refresh = () => queryClient.invalidateQueries({ queryKey: ['tickets'] });
+
+    const send = useMutation({
+        mutationFn: () => supportTicketsApi.postMessages(ticketId, { body: body.trim(), isInternalNote: internal, ...(nextStatus && !internal ? { nextStatus } : {}) }),
+        onSuccess: () => { setBody(''); setNextStatus(''); refresh(); },
+    });
+    const move = useMutation({ mutationFn: (status) => ticketQueueApi.status(ticketId, { status }), onSuccess: refresh });
+    const assign = useMutation({ mutationFn: () => ticketQueueApi.assign(ticketId, { assigneeId: session.userId }), onSuccess: refresh });
+
+    if (ticket.isLoading) return <p className="se-empty">Loading ticket…</p>;
+    if (ticket.isError) return <div className="se-alert" role="alert">{errorMessage(ticket.error)}</div>;
+    const t = ticket.data;
+    const closed = t.status === 'Closed';
+    const isManager = session?.role === Roles.FacilityManager;
+    const error = send.error ?? move.error ?? assign.error;
+
+    return (
+        <>
+            <Link to="/admin/tickets" className="se-back"><Icon name="arrowLeft" size={16} /> Back to the ticket board</Link>
+            <PageHeader title={`${t.ticketCode} · ${t.subject}`} subtitle={`Opened ${formatDateTime(t.createdAt)} by ${t.customerName}${t.unitCode ? ` · unit ${t.unitCode}` : ''} · ${t.facilityName}`}>
+                {isManager && !closed && <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm('Close this ticket?') && move.mutate('Closed')}>Close ticket</button>}
+                {(NEXT[t.status] ?? []).includes('Resolved') && <button type="button" className="se-btn se-btn-primary" disabled={move.isPending} onClick={() => move.mutate('Resolved')}><Icon name="check" size={16} /> Resolve ticket</button>}
+            </PageHeader>
+            {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
+            <div className="se-support-grid">
+                <section className="se-panel se-convo">
+                    <h2>Conversation <span><Status value={t.priority} /> <Status value={t.status} /></span></h2>
+                    <ol className="se-messages">
+                        {messages.data?.map((m) => (
+                            <li key={m.messageId} className={m.senderId === t.customerId ? '' : 'own'}>
+                                <span className={`se-avatar${m.senderId === t.customerId ? '' : ' staff'}`}>{initials(m.senderName)}</span>
+                                <div className={`se-bubble${m.isInternalNote ? ' internal' : ''}`}>
+                                    <div className="se-bubble-head"><strong>{m.senderName}</strong><small>{formatDateTime(m.sentAt)}{m.isInternalNote ? ' · internal note' : ''}</small></div>
+                                    <p>{m.body}</p>
+                                </div>
+                            </li>
+                        ))}
+                    </ol>
+                    {!closed && (
+                        <form className="se-reply" onSubmit={(e) => { e.preventDefault(); if (body.trim()) send.mutate(); }}>
+                            <div className="se-tabs" role="tablist">
+                                <button type="button" role="tab" aria-selected={!internal} className={!internal ? 'active' : ''} onClick={() => setInternal(false)}>Reply to customer</button>
+                                <button type="button" role="tab" aria-selected={internal} className={internal ? 'active' : ''} onClick={() => setInternal(true)}>Internal note</button>
+                            </div>
+                            <textarea className="se-textarea" rows={3} maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} placeholder={internal ? 'Only staff can see this note…' : 'Type your reply…'} aria-label="Message" />
+                            <div className="sa-form-actions">
+                                {!internal && !!NEXT[t.status]?.length && (
+                                    <label className="sa-filter"><span className="sr-only">Status after sending</span>
+                                        <select value={nextStatus} onChange={(e) => setNextStatus(e.target.value)} aria-label="Status after sending">
+                                            <option value="">Keep status</option>
+                                            {NEXT[t.status].map((s) => <option key={s} value={s}>Set to {humanize(s)}</option>)}
+                                        </select>
+                                    </label>
+                                )}
+                                <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={!body.trim() || send.isPending}>{send.isPending ? 'Sending…' : internal ? 'Save note' : 'Send reply'}</button>
+                            </div>
+                        </form>
+                    )}
+                </section>
+                <aside className="se-panel">
+                    <h2>Ticket</h2>
+                    <dl className="se-kv">
+                        <div><dt>Status</dt><dd><Status value={t.status} /></dd></div>
+                        <div><dt>Priority</dt><dd><Status value={t.priority} /></dd></div>
+                        <div><dt>Category</dt><dd>{t.categoryName}</dd></div>
+                        <div><dt>Customer</dt><dd><Link to={`/admin/customers/${t.customerId}`} className="se-link">{t.customerName}</Link></dd></div>
+                        {t.unitCode && <div><dt>Unit</dt><dd>{t.unitCode}</dd></div>}
+                        <div><dt>Due</dt><dd>{t.dueDate ? formatDateTime(t.dueDate) : '—'}</dd></div>
+                    </dl>
+                    {isManager && !closed && <button type="button" className="se-btn se-btn-outline se-btn-block" disabled={assign.isPending} onClick={() => assign.mutate()}>Assign to me</button>}
+                </aside>
+            </div>
+        </>
+    );
+}
