@@ -1,22 +1,27 @@
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 
 /** The single HTTP client. Every request goes through here so the bearer token and error shape stay consistent. */
 export const api = axios.create({
   // Empty in development: requests go to /api on the Vite server, which proxies them to the backend.
-  baseURL: import.meta.env.VITE_API_BASE_URL ?? '',
+  // Set VITE_API_URL (e.g. https://api.example.com) only for a build that calls the API on another origin.
+  baseURL: import.meta.env.VITE_API_URL ?? '',
   headers: { 'Content-Type': 'application/json' },
 })
 
 // The token lives only in memory (React state in AuthProvider), never in localStorage. The provider hands it
 // over here so requests made outside components still carry it.
-let accessToken: string | null = null
-let onUnauthorized: (() => void) | null = null
+/** @type {string|null} */
+let accessToken = null
+/** @type {(() => void)|null} */
+let onUnauthorized = null
 
-export function setAccessToken(token: string | null) {
+/** @param {string|null} token */
+export function setAccessToken(token) {
   accessToken = token
 }
 
-export function setUnauthorizedHandler(handler: (() => void) | null) {
+/** @param {(() => void)|null} handler */
+export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler
 }
 
@@ -27,19 +32,24 @@ api.interceptors.request.use((config) => {
 
 api.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
+  (error) => {
     // A failed login is also a 401, but there is no session to end yet.
     if (error.response?.status === 401 && accessToken) onUnauthorized?.()
     return Promise.reject(error)
   },
 )
 
-type ProblemDetails = { title?: string; errors?: Record<string, string[]> }
+/** @typedef {{ title?: string, errors?: Object<string, string[]> }} ProblemDetails RFC 7807 error body */
 
-/** The message to show the user: the API's ProblemDetails title, or every field error for a 400. */
-export function errorMessage(error: unknown): string {
-  if (axios.isAxiosError<ProblemDetails>(error)) {
+/**
+ * The message to show the user: the API's ProblemDetails title, or every field error for a 400.
+ * @param {unknown} error
+ * @returns {string}
+ */
+export function errorMessage(error) {
+  if (axios.isAxiosError(error)) {
     if (!error.response) return 'Không kết nối được máy chủ. Vui lòng thử lại.'
+    /** @type {ProblemDetails|undefined} */
     const problem = error.response.data
     const fieldErrors = problem?.errors ? Object.values(problem.errors).flat() : []
     if (fieldErrors.length) return fieldErrors.join(' ')

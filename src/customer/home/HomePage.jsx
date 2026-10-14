@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { facilitiesApi, unitTypesApi } from '../../api/generated';
+import { useQueries, useQuery } from '@tanstack/react-query';
+import { unitTypesApi } from '../../api/generated';
 import Icon from '../components/Icon.jsx';
-import { todayIso } from '../components/format.js';
+import { formatVnd, todayIso } from '../components/format.js';
+import { useFacilities } from '../sizes/SizesPage.jsx';
 import './HomePage.css';
 
 const SERVICES = [
@@ -15,27 +16,11 @@ const SERVICES = [
     { icon: 'briefcase', title: 'Business inventory', text: 'Stock for online shops and SMEs, with receiving support.' },
 ];
 
-// ponytail: marketing copy straight from Figma U01; switch to unitTypesApi.quote once pricing data is seeded.
-const SIZES = [
-    { code: 'S', area: '2 m²', dims: '1.4 × 1.4 × 2.4 m', fits: 'A few boxes, a bike, suitcases', price: '890,000 ₫' },
-    { code: 'M', area: '5 m²', dims: '2.0 × 2.5 × 2.4 m', fits: 'Contents of a studio apartment', price: '1,850,000 ₫' },
-    { code: 'L', area: '10 m²', dims: '2.5 × 4.0 × 2.4 m', fits: 'A 2-bedroom apartment', price: '3,400,000 ₫' },
-    { code: 'XL', area: '20 m²', dims: '4.0 × 5.0 × 2.4 m', fits: 'A house or small office', price: '6,200,000 ₫' },
-];
-
 const STEPS = [
     { icon: 'grid', title: '1. Choose a unit', text: 'Pick a facility, unit size, move-in date and rental period.' },
     { icon: 'card', title: '2. Reserve & pay', text: 'Pay the deposit and first month online by card, e-wallet or bank transfer.' },
     { icon: 'key', title: '3. Check in', text: 'Come at your appointment, staff hand over the unit, lock and access code.' },
     { icon: 'box', title: '4. Store & manage', text: 'Renew, pay, and send support requests from your account.' },
-];
-
-const LOCATIONS = [
-    { name: 'Thu Duc – Vo Nguyen Giap', note: 'Headquarters · 320 units' },
-    { name: 'Thu Duc – An Phu', note: 'Near Metro Line 1 · 140 units' },
-    { name: 'District 1 – Tran Khac Chan', note: 'City center · 60 units' },
-    { name: 'District 7 – Tran Trong Cung', note: 'Near Phu My Hung · 110 units' },
-    { name: 'District 6 – Centre Mall', note: 'In-mall lockers · 80 units' },
 ];
 
 const MAP_PINS = [[17, 28], [35, 44], [25, 65], [42, 73], [57, 33], [68, 62], [76, 25], [88, 55]];
@@ -54,7 +39,7 @@ function SectionHead({ eyebrow, title, text, center }) {
 function QuickSearch() {
     const navigate = useNavigate();
     const [form, setForm] = useState({ facilityId: '', unitTypeId: '', moveInDate: '', rentalMonths: '3' });
-    const facilities = useQuery({ queryKey: ['facilities', { page: 1, pageSize: 50 }], queryFn: () => facilitiesApi.list({ page: 1, pageSize: 50 }) });
+    const facilities = useFacilities();
     const unitTypes = useQuery({ queryKey: ['unit-types'], queryFn: () => unitTypesApi.list() });
     const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
 
@@ -104,6 +89,20 @@ function QuickSearch() {
 }
 
 export default function HomePage() {
+    const locations = useFacilities().data?.items ?? [];
+    const unitTypes = useQuery({ queryKey: ['unit-types'], queryFn: () => unitTypesApi.list() });
+    const types = [...(unitTypes.data ?? [])].sort((a, b) => a.areaM2 - b.areaM2).slice(0, 4);
+    // "From" price: the 1-month quote at the first facility, same query the sizes page uses.
+    const quote = { facilityId: locations[0]?.facilityId, moveInDate: todayIso(), rentalMonths: 1 };
+    const quotes = useQueries({
+        queries: types.map((t) => ({
+            queryKey: ['quote', { unitTypeId: t.unitTypeId, ...quote }],
+            queryFn: () => unitTypesApi.quote(t.unitTypeId, quote),
+            enabled: !!quote.facilityId,
+        })),
+    });
+    const sizes = types.map((t, i) => ({ ...t, price: quotes[i].data?.monthlyRent }));
+
     return (
         <div className="se-home">
             <section className="se-hero">
@@ -186,19 +185,20 @@ export default function HomePage() {
                 <div className="se-container">
                     <SectionHead eyebrow="UNIT SIZES" title="Popular unit sizes" text="Not sure what fits? Each size shows what it can typically hold." />
                     <div className="se-sizes">
-                        {SIZES.map((s) => (
-                            <article key={s.code} className="se-card se-size">
+                        {sizes.map((s) => (
+                            <article key={s.unitTypeId} className="se-card se-size">
                                 <div className="se-size-top">
                                     <strong>{s.code}</strong>
-                                    <div><span>{s.area}</span><small>{s.dims}</small></div>
+                                    <div><span>{s.areaM2} m²</span><small>{s.width} × {s.depth} × {s.height} m</small></div>
                                 </div>
                                 <div className="se-size-body">
-                                    <p>Fits: {s.fits}</p>
-                                    <div className="se-size-price">{s.price} <small>/ month</small></div>
-                                    <Link to="/booking" className="se-btn se-btn-outline se-btn-block">Book</Link>
+                                    <p>{s.name}{s.isClimateControlled ? ' · climate-controlled' : ''}</p>
+                                    <div className="se-size-price">{formatVnd(s.price)} <small>/ month</small></div>
+                                    <Link to={`/booking?unitTypeId=${s.unitTypeId}`} className="se-btn se-btn-outline se-btn-block">Book</Link>
                                 </div>
                             </article>
                         ))}
+                        {!sizes.length && <p className="se-hint">{unitTypes.isLoading ? 'Loading sizes…' : 'Sizes are not available right now.'}</p>}
                     </div>
                     <Link to="/sizes" className="se-link se-more">Compare all sizes &amp; prices <Icon name="arrow" size={16} /></Link>
                 </div>
@@ -221,22 +221,22 @@ export default function HomePage() {
 
             <section className="se-section">
                 <div className="se-container">
-                    <SectionHead eyebrow="LOCATIONS" title="8 locations across Ho Chi Minh City" text="Find a facility near your home or office." />
+                    <SectionHead eyebrow="LOCATIONS" title={`${locations.length || 'Our'} location${locations.length === 1 ? '' : 's'} across Ho Chi Minh City`} text="Find a facility near your home or office." />
                     <div className="se-locations">
                         <div className="se-map" aria-hidden="true">
-                            {MAP_PINS.map(([x, y], i) => (
+                            {MAP_PINS.slice(0, Math.max(locations.length, 1)).map(([x, y], i) => (
                                 <span key={i} className={`se-map-pin${i === 0 ? ' hq' : ''}`} style={{ left: `${x}%`, top: `${y}%` }}><Icon name="pin" size={14} /></span>
                             ))}
                         </div>
                         <div className="se-location-list">
-                            {LOCATIONS.map((l, i) => (
-                                <Link key={l.name} to="/locations" className={`se-location${i === 0 ? ' active' : ''}`}>
+                            {locations.slice(0, 5).map((l, i) => (
+                                <Link key={l.facilityId} to={`/booking?facilityId=${l.facilityId}`} className={`se-location${i === 0 ? ' active' : ''}`}>
                                     <span className="se-icon-tile sm"><Icon name="building" size={16} /></span>
-                                    <span className="se-location-text"><strong>{l.name}</strong><small>{l.note}</small></span>
+                                    <span className="se-location-text"><strong>{l.name}</strong><small>{[l.district, `${l.availableUnits} units available`].filter(Boolean).join(' · ')}</small></span>
                                     <Icon name="arrow" size={16} className="se-location-arrow" />
                                 </Link>
                             ))}
-                            <Link to="/locations" className="se-btn se-btn-outline se-btn-block">View all 8 locations</Link>
+                            <Link to="/locations" className="se-btn se-btn-outline se-btn-block">View all locations</Link>
                         </div>
                     </div>
                 </div>

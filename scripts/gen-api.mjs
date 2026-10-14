@@ -1,12 +1,11 @@
-// Generates typed API functions from the backend's OpenAPI document.
+// Generates plain-JavaScript API functions, documented with JSDoc, from the backend's OpenAPI document.
 //
 //   npm run api:gen              fetch from the running backend, then generate
 //   npm run api:gen -- --offline generate from the committed openapi.json
 //
-// Output: src/api/generated/schema.d.ts (every DTO and enum) and one file per backend controller.
-// Never edit the generated files by hand; change the backend and regenerate.
+// Output in src/api/generated/: schemas.js (a JSDoc @typedef per DTO and enum, no runtime code), one file
+// per backend controller, and index.js. Never edit the generated files by hand; change the backend and regenerate.
 import { readFile, writeFile, mkdir, rm } from 'node:fs/promises'
-import openapiTS, { astToString } from 'openapi-typescript'
 
 // Swagger is served before the HTTPS redirect, so plain http avoids Node rejecting the dev certificate.
 const SOURCE = process.env.API_DOCS_URL ?? 'http://localhost:5108/swagger/v1/swagger.json'
@@ -33,14 +32,31 @@ const camel = (s) => s.replace(/[-_ ]+(\w)/g, (_, c) => c.toUpperCase()).replace
 const isParam = (segment) => segment.startsWith('{')
 const refName = (schema) => schema?.$ref?.split('/').pop()
 
-function tsType(schema) {
-  if (!schema) return 'unknown'
-  if (schema.$ref) return `S['${refName(schema)}']`
-  if (schema.type === 'array') return `${tsType(schema.items)}[]`
-  if (schema.type === 'integer' || schema.type === 'number') return 'number'
-  if (schema.type === 'boolean') return 'boolean'
-  if (schema.type === 'string') return 'string'
-  return 'unknown'
+/** JSDoc type expression for a JSON schema; `refs` collects the DTO names it mentions. */
+function jsType(schema, refs = new Set()) {
+  if (!schema) return '*'
+  let type
+  if (schema.$ref) { type = refName(schema); refs.add(type) }
+  else if (schema.enum) type = schema.enum.map((v) => JSON.stringify(v)).join('|')
+  else if (schema.type === 'array') type = `Array<${jsType(schema.items, refs)}>`
+  else if (schema.type === 'integer' || schema.type === 'number') type = 'number'
+  else if (schema.type === 'boolean') type = 'boolean'
+  else if (schema.type === 'string') type = 'string'
+  else if (schema.type === 'object' && schema.additionalProperties) type = `Object<string, ${jsType(schema.additionalProperties, refs)}>`
+  else type = 'Object'
+  return schema.nullable ? `(${type}|null)` : type
+}
+
+/** A @typedef block for one component schema: an enum union or an object with its properties. */
+function renderTypedef(name, schema) {
+  if (schema.enum) return `/** @typedef {${jsType(schema)}} ${name} */`
+  const lines = [`/**`, ` * @typedef {Object} ${name}`]
+  for (const [prop, propSchema] of Object.entries(schema.properties ?? {})) {
+    const required = schema.required?.includes(prop)
+    const note = propSchema.format ? ` ${propSchema.format}` : ''
+    lines.push(` * @property {${jsType(propSchema)}} ${required ? prop : `[${prop}]`}${note}`)
+  }
+  return [...lines, ' */'].join('\n')
 }
 
 const jsonSchema = (content) => content?.['application/json']?.schema
@@ -56,28 +72,29 @@ function functionName(path, method, methodsOnPath) {
   return methodsOnPath > 1 ? method + action[0].toUpperCase() + action.slice(1) : action
 }
 
-function renderOperation(path, method, op, methodsOnPath) {
+function renderOperation(path, method, op, methodsOnPath, refs) {
   const name = functionName(path, method, methodsOnPath)
   const params = op.parameters ?? []
   const pathParams = params.filter((p) => p.in === 'path')
   const queryParams = params.filter((p) => p.in === 'query')
   const body = jsonSchema(op.requestBody?.content)
   const okKey = Object.keys(op.responses).find((code) => code.startsWith('2'))
-  const result = tsType(jsonSchema(op.responses[okKey]?.content)) === 'unknown' ? 'void' : tsType(jsonSchema(op.responses[okKey]?.content))
+  const resultSchema = jsonSchema(op.responses[okKey]?.content)
 
-  const args = [
-    ...pathParams.map((p) => `${camel(p.name)}: ${tsType(p.schema)}`),
-    ...(body ? [`body: ${tsType(body)}`] : []),
-    ...(queryParams.length
-      ? [`params?: { ${queryParams.map((p) => `${p.name}?: ${tsType(p.schema)}`).join('; ')} }`]
-      : []),
-  ]
+  const doc = [`  /**`, `   * ${method.toUpperCase()} ${path}${op.summary ? ` — ${op.summary}` : ''}`]
+  for (const p of pathParams) doc.push(`   * @param {${jsType(p.schema, refs)}} ${camel(p.name)}`)
+  if (body) doc.push(`   * @param {${jsType(body, refs)}} body`)
+  if (queryParams.length) doc.push(`   * @param {{ ${queryParams.map((p) => `${p.name}?: ${jsType(p.schema, refs)}`).join(', ')} }} [params] query string`)
+  doc.push(`   * @returns {Promise<${resultSchema ? jsType(resultSchema, refs) : 'void'}>}`, `   */`)
+
+  const args = [...pathParams.map((p) => camel(p.name)), ...(body ? ['body'] : []), ...(queryParams.length ? ['params'] : [])]
   const url = '`' + path.replace(/\{(\w+)\}/g, (_, n) => '${' + camel(n) + '}') + '`'
+  const options = queryParams.length ? ', { params }' : ''
   const call = ['get', 'delete'].includes(method)
-    ? `api.${method}<${result}>(${url}${queryParams.length ? ', { params }' : ''})`
-    : `api.${method}<${result}>(${url}, ${body ? 'body' : 'undefined'}${queryParams.length ? ', { params }' : ''})`
+    ? `api.${method}(${url}${options})`
+    : `api.${method}(${url}, ${body ? 'body' : 'undefined'}${options})`
 
-  return { name, code: `  /** ${method.toUpperCase()} ${path} */\n  ${name}: (${args.join(', ')}) =>\n    ${call}.then((r) => r.data),` }
+  return { name, code: `${doc.join('\n')}\n  ${name}: (${args.join(', ')}) =>\n    ${call}.then((r) => r.data),` }
 }
 
 const doc = await loadDocument()
@@ -85,33 +102,38 @@ await rm(OUT, { recursive: true, force: true })
 await mkdir(OUT, { recursive: true })
 
 const header = '// Generated by scripts/gen-api.mjs from the backend OpenAPI document. Do not edit.\n'
-await writeFile(new URL('schema.d.ts', OUT), header + astToString(await openapiTS(doc)))
+const schemas = Object.entries(doc.components?.schemas ?? {})
+await writeFile(new URL('schemas.js', OUT),
+  `${header}// Request and response shapes, for editor hints only; this module has no runtime code.\n\n` +
+    schemas.map(([n, s]) => renderTypedef(n, s)).join('\n\n') + '\n\nexport {}\n')
 
 const byTag = new Map()
 for (const [path, item] of Object.entries(doc.paths)) {
   const methods = Object.keys(item).filter((m) => ['get', 'post', 'put', 'patch', 'delete'].includes(m))
   for (const method of methods) {
     const tag = item[method].tags?.[0] ?? 'Misc'
-    if (!byTag.has(tag)) byTag.set(tag, [])
-    byTag.get(tag).push(renderOperation(path, method, item[method], methods.length))
+    if (!byTag.has(tag)) byTag.set(tag, { ops: [], refs: new Set() })
+    const group = byTag.get(tag)
+    group.ops.push(renderOperation(path, method, item[method], methods.length, group.refs))
   }
 }
 
 const index = []
-for (const [tag, ops] of [...byTag].sort()) {
+for (const [tag, { ops, refs }] of [...byTag].sort()) {
   const names = ops.map((o) => o.name)
   const duplicate = names.find((n, i) => names.indexOf(n) !== i)
   if (duplicate) throw new Error(`Two ${tag} operations both map to "${duplicate}"; extend functionName().`)
 
   const file = camel(tag)
+  const typedefs = [...refs].sort().map((r) => `/** @typedef {import('./schemas.js').${r}} ${r} */`).join('\n')
   await writeFile(
-    new URL(`${file}.ts`, OUT),
-    `${header}import { api } from '../axiosClient'\nimport type { components } from './schema'\n\ntype S = components['schemas']\n\n` +
+    new URL(`${file}.js`, OUT),
+    `${header}import { api } from '../axiosClient.js'\n\n${typedefs}${typedefs ? '\n\n' : ''}` +
       `export const ${file}Api = {\n${ops.map((o) => o.code).join('\n')}\n}\n`,
   )
-  index.push(`export { ${file}Api } from './${file}'`)
+  index.push(`export { ${file}Api } from './${file}.js'`)
 }
-await writeFile(new URL('index.ts', OUT), header + index.join('\n') + `\nexport type { components } from './schema'\n`)
+await writeFile(new URL('index.js', OUT), header + index.join('\n') + '\n')
 
-const total = [...byTag.values()].reduce((n, ops) => n + ops.length, 0)
+const total = [...byTag.values()].reduce((n, g) => n + g.ops.length, 0)
 console.log(`Generated ${total} operations in ${byTag.size} files under src/api/generated/`)

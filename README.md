@@ -18,10 +18,10 @@ never sees the backend's self-signed certificate and CORS does not come into pla
 
 ## Calling the API
 
-All 70 backend operations are generated as typed functions in `src/api/generated/`, one file per backend
-controller. Use them with TanStack Query:
+All 70 backend operations are generated as plain-JavaScript functions in `src/api/generated/`, one file per
+backend controller (`reservations.js`, `storageUnits.js`, …), each documented with JSDoc. Use them with TanStack Query:
 
-```tsx
+```jsx
 import { useQuery, useMutation } from '@tanstack/react-query'
 import { reservationsApi } from '../api/generated'
 import { errorMessage } from '../api/axiosClient'
@@ -32,14 +32,17 @@ const reservations = useQuery({
 })
 
 const assign = useMutation({
-  mutationFn: (unitId: number) => reservationsApi.assignUnit(reservationId, { storageUnitId: unitId }),
+  mutationFn: (unitId) => reservationsApi.assignUnit(reservationId, { storageUnitId: unitId }),
 })
 // show errorMessage(assign.error) on failure — it reads the API's ProblemDetails title or field errors
 ```
 
-Request and response types come from `components['schemas']` in `src/api/generated/schema.d.ts` and mirror the
-backend DTOs exactly — do not re-shape field names. API field names are listed in the backend's
+Request and response shapes are JSDoc `@typedef`s in `src/api/generated/schemas.js` (your editor shows them on
+hover) and mirror the backend DTOs exactly — do not re-shape field names. API field names are listed in the backend's
 `docs/api-endpoints.md`.
+
+**Base URL.** In development leave it unset: `/api` calls go through the Vite proxy. For a build that calls the
+API on another origin, set `VITE_API_URL` (see `.env.example`).
 
 **When the backend changes**, with it running: `npm run api:gen`. That refreshes `openapi.json` and the
 generated files. Never edit `src/api/generated/` by hand. `npm run api:gen -- --offline` regenerates from the
