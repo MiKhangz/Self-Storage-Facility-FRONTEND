@@ -92,7 +92,7 @@ export default function HomePage() {
     const locations = useFacilities().data?.items ?? [];
     const unitTypes = useQuery({ queryKey: ['unit-types'], queryFn: () => unitTypesApi.list() });
     const types = [...(unitTypes.data ?? [])].sort((a, b) => a.areaM2 - b.areaM2).slice(0, 4);
-    // "From" price: the 1-month quote at the first facility, same query the sizes page uses.
+    // ponytail: prices are the 1-month quote at the first facility only; quote the customer's chosen facility once there are several.
     const quote = { facilityId: locations[0]?.facilityId, moveInDate: todayIso(), rentalMonths: 1 };
     const quotes = useQueries({
         queries: types.map((t) => ({
@@ -101,7 +101,12 @@ export default function HomePage() {
             enabled: !!quote.facilityId,
         })),
     });
-    const sizes = types.map((t, i) => ({ ...t, price: quotes[i].data?.monthlyRent }));
+    const sizes = types.map((t, i) => ({
+        ...t,
+        price: quotes[i].data?.monthlyRent,
+        // The type name is often just the area, which the card header already shows.
+        note: [t.name !== `${t.areaM2} m²` && t.name, t.isClimateControlled && 'Climate-controlled'].filter(Boolean).join(' · '),
+    }));
 
     return (
         <div className="se-home">
@@ -183,7 +188,7 @@ export default function HomePage() {
 
             <section className="se-section">
                 <div className="se-container">
-                    <SectionHead eyebrow="UNIT SIZES" title="Popular unit sizes" text="Not sure what fits? Each size shows what it can typically hold." />
+                    <SectionHead eyebrow="UNIT SIZES" title="Popular unit sizes" text={locations[0] ? `Monthly prices at ${locations[0].name} for a 1-month rental.` : 'Not sure what fits? Compare the sizes below.'} />
                     <div className="se-sizes">
                         {sizes.map((s) => (
                             <article key={s.unitTypeId} className="se-card se-size">
@@ -192,7 +197,7 @@ export default function HomePage() {
                                     <div><span>{s.areaM2} m²</span><small>{s.width} × {s.depth} × {s.height} m</small></div>
                                 </div>
                                 <div className="se-size-body">
-                                    <p>{s.name}{s.isClimateControlled ? ' · climate-controlled' : ''}</p>
+                                    {s.note && <p>{s.note}</p>}
                                     <div className="se-size-price">{formatVnd(s.price)} <small>/ month</small></div>
                                     <Link to={`/booking?unitTypeId=${s.unitTypeId}`} className="se-btn se-btn-outline se-btn-block">Book</Link>
                                 </div>

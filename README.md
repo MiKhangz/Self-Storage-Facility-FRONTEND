@@ -1,6 +1,6 @@
 # StorEase — Frontend
 
-React 18 + Vite + TypeScript. Talks to the backend in `Self-Storage-Facility-BACKEND`.
+React 18 + Vite, written in JavaScript (only `main.tsx` and the auth files in `src/features/auth/` are still TypeScript). Talks to the backend in `Self-Storage-Facility-BACKEND`.
 
 ## Run
 
