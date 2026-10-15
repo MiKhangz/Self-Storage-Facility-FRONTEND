@@ -2,7 +2,9 @@
 import { api } from '../axiosClient.js'
 
 /** @typedef {import('./schemas.js').CreateHandoverRequest} CreateHandoverRequest */
+/** @typedef {import('./schemas.js').HandoverDetailDto} HandoverDetailDto */
 /** @typedef {import('./schemas.js').HandoverDto} HandoverDto */
+/** @typedef {import('./schemas.js').HandoverPhotoDto} HandoverPhotoDto */
 
 export const handoversApi = {
   /**
@@ -12,4 +14,27 @@ export const handoversApi = {
    */
   create: (body) =>
     api.post(`/api/handovers`, body).then((r) => r.data),
+  /**
+   * GET /api/handovers/{id}
+   * @param {number} id
+   * @returns {Promise<HandoverDetailDto>}
+   */
+  getById: (id) =>
+    api.get(`/api/handovers/${id}`).then((r) => r.data),
+  /**
+   * POST /api/handovers/{id}/photos
+   * @param {number} id
+   * @param {FormData} body
+   * @returns {Promise<HandoverPhotoDto>}
+   */
+  photos: (id, body) =>
+    api.post(`/api/handovers/${id}/photos`, body, { headers: { 'Content-Type': 'multipart/form-data' } }).then((r) => r.data),
+  /**
+   * GET /api/handovers/{id}/photos/{photoId}
+   * @param {number} id
+   * @param {number} photoId
+   * @returns {Promise<void>}
+   */
+  photosById: (id, photoId) =>
+    api.get(`/api/handovers/${id}/photos/${photoId}`).then((r) => r.data),
 }

@@ -6,8 +6,16 @@ import { api } from '../axiosClient.js'
 /** @typedef {import('./schemas.js').ContractDto} ContractDto */
 /** @typedef {import('./schemas.js').ContractDtoPagedResult} ContractDtoPagedResult */
 /** @typedef {import('./schemas.js').ContractStatus} ContractStatus */
+/** @typedef {import('./schemas.js').CreateContractRequest} CreateContractRequest */
 
 export const contractsApi = {
+  /**
+   * POST /api/contracts
+   * @param {CreateContractRequest} body
+   * @returns {Promise<ContractDto>}
+   */
+  create: (body) =>
+    api.post(`/api/contracts`, body).then((r) => r.data),
   /**
    * GET /api/contracts
    * @param {{ status?: ContractStatus, page?: number, pageSize?: number }} [params] query string

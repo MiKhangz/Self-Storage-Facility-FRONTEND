@@ -68,6 +68,8 @@ function functionName(path, method, methodsOnPath) {
     const byId = segments.some(isParam)
     return { get: byId ? 'getById' : 'list', post: 'create', put: 'update', patch: 'patch', delete: 'remove' }[method]
   }
+  // A sub-resource read by id (GET /handovers/{id}/photos/{photoId}) must not clash with its list or upload.
+  if (method === 'get' && isParam(segments.at(-1))) return action + 'ById'
   // Same action reached by two verbs (e.g. GET and POST /access-codes): keep the verb so names stay unique.
   return methodsOnPath > 1 ? method + action[0].toUpperCase() + action.slice(1) : action
 }
@@ -77,19 +79,21 @@ function renderOperation(path, method, op, methodsOnPath, refs) {
   const params = op.parameters ?? []
   const pathParams = params.filter((p) => p.in === 'path')
   const queryParams = params.filter((p) => p.in === 'query')
-  const body = jsonSchema(op.requestBody?.content)
+  const multipart = op.requestBody?.content?.['multipart/form-data']
+  const body = jsonSchema(op.requestBody?.content) ?? (multipart && { type: 'object', 'x-form-data': true })
   const okKey = Object.keys(op.responses).find((code) => code.startsWith('2'))
   const resultSchema = jsonSchema(op.responses[okKey]?.content)
 
   const doc = [`  /**`, `   * ${method.toUpperCase()} ${path}${op.summary ? ` — ${op.summary}` : ''}`]
   for (const p of pathParams) doc.push(`   * @param {${jsType(p.schema, refs)}} ${camel(p.name)}`)
-  if (body) doc.push(`   * @param {${jsType(body, refs)}} body`)
+  if (body) doc.push(`   * @param {${multipart ? 'FormData' : jsType(body, refs)}} body`)
   if (queryParams.length) doc.push(`   * @param {{ ${queryParams.map((p) => `${p.name}?: ${jsType(p.schema, refs)}`).join(', ')} }} [params] query string`)
   doc.push(`   * @returns {Promise<${resultSchema ? jsType(resultSchema, refs) : 'void'}>}`, `   */`)
 
   const args = [...pathParams.map((p) => camel(p.name)), ...(body ? ['body'] : []), ...(queryParams.length ? ['params'] : [])]
   const url = '`' + path.replace(/\{(\w+)\}/g, (_, n) => '${' + camel(n) + '}') + '`'
-  const options = queryParams.length ? ', { params }' : ''
+  // The client defaults to JSON, and axios would serialise a FormData body to JSON under that header.
+  const options = multipart ? ", { headers: { 'Content-Type': 'multipart/form-data' } }" : queryParams.length ? ', { params }' : ''
   const call = ['get', 'delete'].includes(method)
     ? `api.${method}(${url}${options})`
     : `api.${method}(${url}, ${body ? 'body' : 'undefined'}${options})`

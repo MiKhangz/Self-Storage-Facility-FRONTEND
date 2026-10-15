@@ -43,6 +43,32 @@
  */
 
 /**
+ * @typedef {Object} ActivityLogDto
+ * @property {number} [logId] int64
+ * @property {number} [userId] int32
+ * @property {(string|null)} [userName]
+ * @property {(string|null)} [userEmail]
+ * @property {(number|null)} [facilityId] int32
+ * @property {(string|null)} [action]
+ * @property {(string|null)} [entityName]
+ * @property {(string|null)} [entityId]
+ * @property {(string|null)} [ipAddress]
+ * @property {ActivityResult} [result]
+ * @property {string} [createdAt] date-time
+ */
+
+/**
+ * @typedef {Object} ActivityLogDtoPagedResult
+ * @property {(Array<ActivityLogDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/** @typedef {"Success"|"Failure"} ActivityResult */
+
+/**
  * @typedef {Object} ApproveMoveOutRequest
  * @property {string} [inspectionSlot] date-time
  */
@@ -59,11 +85,35 @@
  */
 
 /**
+ * @typedef {Object} BillingRunDto
+ * @property {string} [date] date
+ * @property {number} [invoicesIssued] int32
+ * @property {number} [invoicesMarkedOverdue] int32
+ * @property {number} [casesOpened] int32
+ * @property {number} [lateFeesUpdated] int32
+ * @property {number} [contractsLockedOut] int32
+ * @property {number} [casesClearedOut] int32
+ * @property {number} [remindersSent] int32
+ * @property {number} [remindersFailed] int32
+ */
+
+/**
+ * @typedef {Object} CancelReservationRequest
+ * @property {(string|null)} [reason]
+ */
+
+/**
  * @typedef {Object} ChangeMaintenanceStatusRequest
  * @property {MaintenanceOrderStatus} [status]
  * @property {(string|null)} [scheduledAt] date-time
  * @property {(number|null)} [cost] double
  * @property {(string|null)} [workNote]
+ */
+
+/**
+ * @typedef {Object} ChangePasswordRequest
+ * @property {(string|null)} [currentPassword]
+ * @property {(string|null)} [newPassword]
  */
 
 /**
@@ -74,6 +124,27 @@
 /**
  * @typedef {Object} ChangeTicketStatusRequest
  * @property {SupportTicketStatus} [status]
+ */
+
+/**
+ * @typedef {Object} CheckInChecklistDto
+ * @property {number} [reservationId] int32
+ * @property {(string|null)} [reservationCode]
+ * @property {(string|null)} [customerName]
+ * @property {(string|null)} [customerPhone]
+ * @property {(string|null)} [citizenId]
+ * @property {(string|null)} [unitCode]
+ * @property {(number|null)} [contractId] int32
+ * @property {(Array<CheckInItemDto>|null)} [items]
+ * @property {boolean} [readyForHandover]
+ */
+
+/**
+ * @typedef {Object} CheckInItemDto
+ * @property {(string|null)} [key]
+ * @property {(string|null)} [label]
+ * @property {boolean} [done]
+ * @property {(string|null)} [detail]
  */
 
 /** @typedef {"Good"|"MinorDamage"|"MajorDamage"} ConditionResult */
@@ -106,6 +177,12 @@
  */
 
 /** @typedef {"Draft"|"Active"|"PendingMoveOut"|"Closed"|"Overdue"|"Suspended"|"Terminated"} ContractStatus */
+
+/**
+ * @typedef {Object} CreateContractRequest
+ * @property {number} [reservationId] int32
+ * @property {number} [paymentDay] int32
+ */
 
 /**
  * @typedef {Object} CreateHandoverRequest
@@ -199,6 +276,17 @@
  */
 
 /**
+ * @typedef {Object} CreateStorageUnitRequest
+ * @property {number} [facilityId] int32
+ * @property {number} [floorId] int32
+ * @property {number} [unitTypeId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {(string|null)} [zone]
+ * @property {(number|null)} [currentPrice] double
+ * @property {(string|null)} [note]
+ */
+
+/**
  * @typedef {Object} CreateTicketRequest
  * @property {number} [categoryId] int32
  * @property {(string|null)} [subject]
@@ -209,14 +297,19 @@
  */
 
 /**
- * @typedef {Object} CreateUnitTypeRequest
- * @property {(string|null)} [code]
- * @property {(string|null)} [name]
- * @property {number} [areaM2] double
- * @property {number} [width] double
- * @property {number} [depth] double
- * @property {number} [height] double
- * @property {boolean} [isClimateControlled]
+ * @typedef {Object} DashboardDto
+ * @property {number} [totalUnits] int32
+ * @property {number} [availableUnits] int32
+ * @property {number} [reservedUnits] int32
+ * @property {number} [occupiedUnits] int32
+ * @property {number} [maintenanceUnits] int32
+ * @property {number} [occupancyRate] double
+ * @property {number} [activeContracts] int32
+ * @property {number} [upcomingMoveIns] int32
+ * @property {number} [openOverdueCases] int32
+ * @property {number} [outstandingAmount] double
+ * @property {number} [revenueThisMonth] double
+ * @property {number} [openTickets] int32
  */
 
 /**
@@ -228,6 +321,33 @@
  * @property {number} [refundAmount] double
  * @property {number} [shortfall] double
  * @property {MoveOutRequestStatus} [status]
+ */
+
+/**
+ * @typedef {Object} FacilityDetailDto
+ * @property {number} [facilityId] int32
+ * @property {(string|null)} [code]
+ * @property {(string|null)} [name]
+ * @property {(string|null)} [address]
+ * @property {(string|null)} [district]
+ * @property {(string|null)} [phone]
+ * @property {(string|null)} [openingHours]
+ * @property {FacilityStatus} [status]
+ * @property {(number|null)} [managerId] int32
+ * @property {(string|null)} [managerName]
+ * @property {number} [totalUnits] int32
+ * @property {number} [availableUnits] int32
+ * @property {(Array<FacilityFloorDto>|null)} [floors]
+ * @property {(Array<FacilityUnitTypeDto>|null)} [unitTypes]
+ */
+
+/**
+ * @typedef {Object} FacilityFloorDto
+ * @property {number} [floorId] int32
+ * @property {number} [facilityId] int32
+ * @property {number} [floorNumber] int32
+ * @property {(string|null)} [name]
+ * @property {number} [unitCount] int32
  */
 
 /**
@@ -252,6 +372,31 @@
  */
 
 /**
+ * @typedef {Object} FacilityRequest
+ * @property {(string|null)} [code]
+ * @property {(string|null)} [name]
+ * @property {(string|null)} [address]
+ * @property {(string|null)} [district]
+ * @property {(string|null)} [phone]
+ * @property {(string|null)} [openingHours]
+ * @property {(number|null)} [managerId] int32
+ */
+
+/** @typedef {"Active"|"Inactive"} FacilityStatus */
+
+/**
+ * @typedef {Object} FacilityUnitTypeDto
+ * @property {number} [unitTypeId] int32
+ * @property {(string|null)} [code]
+ * @property {(string|null)} [name]
+ * @property {number} [areaM2] double
+ * @property {boolean} [isClimateControlled]
+ * @property {number} [totalUnits] int32
+ * @property {number} [availableUnits] int32
+ * @property {(number|null)} [fromPrice] double
+ */
+
+/**
  * @typedef {Object} FeeTypeDto
  * @property {number} [feeTypeId] int32
  * @property {number} [pricingPolicyId] int32
@@ -259,6 +404,51 @@
  * @property {(string|null)} [name]
  * @property {number} [amount] double
  * @property {boolean} [isPercentage]
+ */
+
+/**
+ * @typedef {Object} FeeTypeRequest
+ * @property {(string|null)} [code]
+ * @property {(string|null)} [name]
+ * @property {number} [amount] double
+ * @property {boolean} [isPercentage]
+ */
+
+/**
+ * @typedef {Object} FloorRequest
+ * @property {number} [floorNumber] int32
+ * @property {(string|null)} [name]
+ */
+
+/**
+ * @typedef {Object} ForgotPasswordRequest
+ * @property {(string|null)} [email]
+ */
+
+/**
+ * @typedef {Object} GatewayCallbackRequest
+ * @property {(string|null)} [paymentCode]
+ * @property {PaymentStatus} [status]
+ * @property {number} [amount] double
+ * @property {(string|null)} [referenceNo]
+ * @property {(string|null)} [signature]
+ */
+
+/**
+ * @typedef {Object} HandoverDetailDto
+ * @property {number} [handoverId] int32
+ * @property {number} [reservationId] int32
+ * @property {(number|null)} [contractId] int32
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {number} [staffId] int32
+ * @property {(string|null)} [staffName]
+ * @property {string} [handoverTime] date-time
+ * @property {(string|null)} [lockSerial]
+ * @property {(string|null)} [cardNumber]
+ * @property {(string|null)} [conditionNote]
+ * @property {HandoverStatus} [status]
+ * @property {(Array<HandoverPhotoDto>|null)} [photos]
  */
 
 /**
@@ -276,7 +466,23 @@
  * @property {(string|null)} [accessCode]
  */
 
+/**
+ * @typedef {Object} HandoverPhotoDto
+ * @property {number} [handoverPhotoId] int32
+ * @property {number} [handoverId] int32
+ * @property {(string|null)} [fileName]
+ * @property {(string|null)} [contentType]
+ * @property {number} [sizeBytes] int32
+ * @property {string} [uploadedAt] date-time
+ */
+
 /** @typedef {"Scheduled"|"InProgress"|"Completed"|"Cancelled"} HandoverStatus */
+
+/**
+ * @typedef {Object} InvoiceAdjustmentRequest
+ * @property {(string|null)} [description]
+ * @property {number} [amount] double
+ */
 
 /**
  * @typedef {Object} InvoiceDto
@@ -369,12 +575,6 @@
 /** @typedef {"Open"|"Scheduled"|"InProgress"|"Done"|"Cancelled"} MaintenanceOrderStatus */
 
 /**
- * @typedef {Object} ManualPaymentRequest
- * @property {number} [amount] double
- * @property {(string|null)} [referenceNo]
- */
-
-/**
  * @typedef {Object} MoveOutRequestDto
  * @property {number} [moveOutRequestId] int32
  * @property {number} [contractId] int32
@@ -405,12 +605,97 @@
 /** @typedef {"Requested"|"Approved"|"Inspected"|"Completed"|"Cancelled"} MoveOutRequestStatus */
 
 /**
- * @typedef {Object} OnlinePaymentRequest
+ * @typedef {Object} NotificationSettingsDto
+ * @property {boolean} [emailReminders]
+ * @property {boolean} [smsReminders]
+ * @property {boolean} [marketingEmails]
+ */
+
+/**
+ * @typedef {Object} OccupancyRowDto
+ * @property {number} [facilityId] int32
+ * @property {(string|null)} [facilityName]
+ * @property {number} [unitTypeId] int32
+ * @property {(string|null)} [unitTypeCode]
+ * @property {number} [total] int32
+ * @property {number} [available] int32
+ * @property {number} [reserved] int32
+ * @property {number} [occupied] int32
+ * @property {number} [maintenance] int32
+ * @property {number} [occupancyRate] double
+ */
+
+/**
+ * @typedef {Object} OverdueCaseDto
+ * @property {number} [overdueCaseId] int32
+ * @property {number} [contractId] int32
+ * @property {(string|null)} [contractNumber]
+ * @property {number} [customerId] int32
+ * @property {(string|null)} [customerName]
+ * @property {(string|null)} [unitCode]
+ * @property {(number|null)} [invoiceId] int32
+ * @property {(string|null)} [invoiceNumber]
+ * @property {(number|null)} [outstanding] double
+ * @property {string} [overdueSince] date
+ * @property {number} [daysOverdue] int32
+ * @property {number} [lateFeeAmount] double
+ * @property {OverdueStage} [stage]
+ * @property {(string|null)} [accessSuspendedAt] date-time
+ * @property {(string|null)} [resolvedAt] date-time
+ */
+
+/**
+ * @typedef {Object} OverdueCaseDtoPagedResult
+ * @property {(Array<OverdueCaseDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/** @typedef {"Reminder"|"LateFee"|"Suspended"|"ClearOut"|"Resolved"} OverdueStage */
+
+/**
+ * @typedef {Object} PaymentHistoryDto
+ * @property {number} [paymentId] int32
+ * @property {(string|null)} [paymentCode]
+ * @property {number} [invoiceId] int32
+ * @property {(string|null)} [invoiceNumber]
+ * @property {number} [customerId] int32
+ * @property {PaymentMethod} [method]
  * @property {number} [amount] double
+ * @property {(string|null)} [paidAt] date-time
  * @property {(string|null)} [referenceNo]
+ * @property {PaymentStatus} [status]
+ * @property {(string|null)} [receivedByName]
+ */
+
+/**
+ * @typedef {Object} PaymentHistoryDtoPagedResult
+ * @property {(Array<PaymentHistoryDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/**
+ * @typedef {Object} PaymentIntentDto
+ * @property {number} [paymentId] int32
+ * @property {(string|null)} [paymentCode]
+ * @property {number} [invoiceId] int32
+ * @property {number} [amount] double
+ * @property {PaymentStatus} [status]
+ * @property {(string|null)} [checkoutUrl]
  */
 
 /** @typedef {"Cash"|"BankTransfer"|"Gateway"|"Card"} PaymentMethod */
+
+/**
+ * @typedef {Object} PaymentRequest
+ * @property {number} [amount] double
+ * @property {(string|null)} [referenceNo]
+ */
 
 /** @typedef {"Pending"|"Succeeded"|"Failed"|"Refunded"} PaymentStatus */
 
@@ -453,6 +738,20 @@
 /** @typedef {"Low"|"Normal"|"High"|"Urgent"} Priority */
 
 /**
+ * @typedef {Object} ProfileDto
+ * @property {number} [userId] int32
+ * @property {(string|null)} [fullName]
+ * @property {(string|null)} [email]
+ * @property {(string|null)} [phoneNumber]
+ * @property {(string|null)} [citizenId]
+ * @property {(string|null)} [dateOfBirth] date
+ * @property {(string|null)} [address]
+ * @property {(string|null)} [role]
+ * @property {(string|null)} [status]
+ * @property {string} [createdAt] date-time
+ */
+
+/**
  * @typedef {Object} QuoteFeeDto
  * @property {(string|null)} [code]
  * @property {(string|null)} [name]
@@ -460,6 +759,40 @@
  */
 
 /** @typedef {"BankTransfer"|"Cash"} RefundMethod */
+
+/**
+ * @typedef {Object} RefundRequest
+ * @property {(string|null)} [reason]
+ */
+
+/**
+ * @typedef {Object} RegisterRequest
+ * @property {(string|null)} [fullName]
+ * @property {(string|null)} [email]
+ * @property {(string|null)} [phoneNumber]
+ * @property {(string|null)} [password]
+ */
+
+/**
+ * @typedef {Object} RegisterResponse
+ * @property {number} [userId] int32
+ * @property {(string|null)} [email]
+ * @property {(string|null)} [status]
+ */
+
+/** @typedef {"Email"|"SMS"} ReminderChannel */
+
+/**
+ * @typedef {Object} ReminderDto
+ * @property {number} [reminderId] int32
+ * @property {number} [invoiceId] int32
+ * @property {ReminderChannel} [channel]
+ * @property {(string|null)} [template]
+ * @property {(string|null)} [sentAt] date-time
+ * @property {ReminderStatus} [status]
+ */
+
+/** @typedef {"Queued"|"Sent"|"Failed"} ReminderStatus */
 
 /**
  * @typedef {Object} RenewalDto
@@ -487,6 +820,18 @@
  */
 
 /**
+ * @typedef {Object} ResendVerificationRequest
+ * @property {(string|null)} [email]
+ */
+
+/**
+ * @typedef {Object} ReservationCancellationDto
+ * @property {ReservationDto} [reservation]
+ * @property {number} [depositPaid] double
+ * @property {boolean} [depositRefundable]
+ */
+
+/**
  * @typedef {Object} ReservationDto
  * @property {number} [reservationId] int32
  * @property {(string|null)} [reservationCode]
@@ -503,6 +848,9 @@
  * @property {ReservationStatus} [status]
  * @property {string} [createdAt] date-time
  * @property {(number|null)} [contractId] int32
+ * @property {(number|null)} [depositInvoiceId] int32
+ * @property {(number|null)} [depositAmount] double
+ * @property {InvoiceStatus} [depositStatus]
  */
 
 /**
@@ -517,6 +865,12 @@
 /** @typedef {"Pending"|"Confirmed"|"CheckedIn"|"Rejected"|"Cancelled"|"Expired"} ReservationStatus */
 
 /**
+ * @typedef {Object} ResetPasswordRequest
+ * @property {(string|null)} [token]
+ * @property {(string|null)} [newPassword]
+ */
+
+/**
  * @typedef {Object} ReturnInspectionDto
  * @property {number} [returnInspectionId] int32
  * @property {string} [inspectedAt] date-time
@@ -529,6 +883,33 @@
  */
 
 /** @typedef {"Draft"|"Completed"|"Disputed"} ReturnInspectionStatus */
+
+/**
+ * @typedef {Object} RevenueMethodDto
+ * @property {PaymentMethod} [method]
+ * @property {number} [collected] double
+ * @property {number} [payments] int32
+ */
+
+/**
+ * @typedef {Object} RevenueMonthDto
+ * @property {(string|null)} [month]
+ * @property {number} [collected] double
+ * @property {number} [refunded] double
+ * @property {number} [net] double
+ * @property {number} [payments] int32
+ */
+
+/**
+ * @typedef {Object} RevenueReportDto
+ * @property {string} [from] date
+ * @property {string} [to] date
+ * @property {number} [collected] double
+ * @property {number} [refunded] double
+ * @property {number} [net] double
+ * @property {(Array<RevenueMonthDto>|null)} [months]
+ * @property {(Array<RevenueMethodDto>|null)} [methods]
+ */
 
 /**
  * @typedef {Object} SetStaffFacilitiesRequest
@@ -626,6 +1007,7 @@
  * @property {(string|null)} [unitTypeCode]
  * @property {(string|null)} [unitTypeName]
  * @property {number} [areaM2] double
+ * @property {(string|null)} [note]
  */
 
 /**
@@ -723,6 +1105,37 @@
  */
 
 /**
+ * @typedef {Object} UnitBoardDto
+ * @property {number} [facilityId] int32
+ * @property {(string|null)} [facilityName]
+ * @property {(Object|null)} [statusCounts]
+ * @property {number} [occupancyRate] double
+ * @property {(Array<UnitBoardFloorDto>|null)} [floors]
+ */
+
+/**
+ * @typedef {Object} UnitBoardFloorDto
+ * @property {number} [floorId] int32
+ * @property {number} [floorNumber] int32
+ * @property {(string|null)} [name]
+ * @property {(Array<UnitBoardUnitDto>|null)} [units]
+ */
+
+/**
+ * @typedef {Object} UnitBoardUnitDto
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {(string|null)} [zone]
+ * @property {StorageUnitStatus} [status]
+ * @property {number} [unitTypeId] int32
+ * @property {(string|null)} [unitTypeName]
+ * @property {number} [currentPrice] double
+ * @property {(string|null)} [reservationCode]
+ * @property {(number|null)} [contractId] int32
+ * @property {(string|null)} [customerName]
+ */
+
+/**
  * @typedef {Object} UnitPriceDto
  * @property {number} [unitPriceId] int32
  * @property {number} [pricingPolicyId] int32
@@ -760,6 +1173,27 @@
  * @property {number} [depth] double
  * @property {number} [height] double
  * @property {boolean} [isClimateControlled]
+ * @property {(number|null)} [monthlyPrice] double
+ */
+
+/**
+ * @typedef {Object} UnitTypeRequest
+ * @property {(string|null)} [code]
+ * @property {(string|null)} [name]
+ * @property {number} [areaM2] double
+ * @property {number} [width] double
+ * @property {number} [depth] double
+ * @property {number} [height] double
+ * @property {boolean} [isClimateControlled]
+ */
+
+/**
+ * @typedef {Object} UpdateProfileRequest
+ * @property {(string|null)} [fullName]
+ * @property {(string|null)} [phoneNumber]
+ * @property {(string|null)} [citizenId]
+ * @property {(string|null)} [dateOfBirth] date
+ * @property {(string|null)} [address]
  */
 
 /**
@@ -779,14 +1213,13 @@
  */
 
 /**
- * @typedef {Object} UpdateUnitTypeRequest
- * @property {(string|null)} [code]
- * @property {(string|null)} [name]
- * @property {number} [areaM2] double
- * @property {number} [width] double
- * @property {number} [depth] double
- * @property {number} [height] double
- * @property {boolean} [isClimateControlled]
+ * @typedef {Object} UpdateStorageUnitRequest
+ * @property {number} [floorId] int32
+ * @property {number} [unitTypeId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {(string|null)} [zone]
+ * @property {(number|null)} [currentPrice] double
+ * @property {(string|null)} [note]
  */
 
 /**
@@ -797,6 +1230,11 @@
  * @property {number} [discount12Month] double
  */
 
-/** @typedef {"Pending"|"Active"|"Suspended"|"Inactive"} UserStatus */
+/** @typedef {"Pending"|"Active"|"Disabled"} UserStatus */
+
+/**
+ * @typedef {Object} VerifyEmailRequest
+ * @property {(string|null)} [token]
+ */
 
 export {}

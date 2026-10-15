@@ -2,6 +2,8 @@
 import { api } from '../axiosClient.js'
 
 /** @typedef {import('./schemas.js').CreatePricingPolicyRequest} CreatePricingPolicyRequest */
+/** @typedef {import('./schemas.js').FeeTypeDto} FeeTypeDto */
+/** @typedef {import('./schemas.js').FeeTypeRequest} FeeTypeRequest */
 /** @typedef {import('./schemas.js').PricingPolicyDto} PricingPolicyDto */
 /** @typedef {import('./schemas.js').PricingPolicyDtoPagedResult} PricingPolicyDtoPagedResult */
 /** @typedef {import('./schemas.js').UnitPriceDto} UnitPriceDto */
@@ -45,4 +47,27 @@ export const pricingPoliciesApi = {
    */
   unitPrices: (id, unitTypeId, body) =>
     api.put(`/api/pricing-policies/${id}/unit-prices/${unitTypeId}`, body).then((r) => r.data),
+  /**
+   * POST /api/pricing-policies/{id}/fee-types
+   * @param {number} id
+   * @param {FeeTypeRequest} body
+   * @returns {Promise<FeeTypeDto>}
+   */
+  feeTypes: (id, body) =>
+    api.post(`/api/pricing-policies/${id}/fee-types`, body).then((r) => r.data),
+  /**
+   * PUT /api/fee-types/{feeTypeId}
+   * @param {number} feeTypeId
+   * @param {FeeTypeRequest} body
+   * @returns {Promise<FeeTypeDto>}
+   */
+  update: (feeTypeId, body) =>
+    api.put(`/api/fee-types/${feeTypeId}`, body).then((r) => r.data),
+  /**
+   * DELETE /api/fee-types/{feeTypeId}
+   * @param {number} feeTypeId
+   * @returns {Promise<void>}
+   */
+  remove: (feeTypeId) =>
+    api.delete(`/api/fee-types/${feeTypeId}`).then((r) => r.data),
 }

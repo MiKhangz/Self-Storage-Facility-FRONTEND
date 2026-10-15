@@ -2,7 +2,10 @@
 import { api } from '../axiosClient.js'
 
 /** @typedef {import('./schemas.js').AssignUnitRequest} AssignUnitRequest */
+/** @typedef {import('./schemas.js').CancelReservationRequest} CancelReservationRequest */
+/** @typedef {import('./schemas.js').CheckInChecklistDto} CheckInChecklistDto */
 /** @typedef {import('./schemas.js').CreateReservationRequest} CreateReservationRequest */
+/** @typedef {import('./schemas.js').ReservationCancellationDto} ReservationCancellationDto */
 /** @typedef {import('./schemas.js').ReservationDto} ReservationDto */
 /** @typedef {import('./schemas.js').ReservationDtoPagedResult} ReservationDtoPagedResult */
 /** @typedef {import('./schemas.js').ReservationStatus} ReservationStatus */
@@ -17,7 +20,7 @@ export const reservationsApi = {
     api.post(`/api/reservations`, body).then((r) => r.data),
   /**
    * GET /api/reservations
-   * @param {{ status?: ReservationStatus, page?: number, pageSize?: number }} [params] query string
+   * @param {{ status?: ReservationStatus, search?: string, facilityId?: number, moveInFrom?: string, moveInTo?: string, page?: number, pageSize?: number }} [params] query string
    * @returns {Promise<ReservationDtoPagedResult>}
    */
   list: (params) =>
@@ -29,6 +32,28 @@ export const reservationsApi = {
    */
   getById: (id) =>
     api.get(`/api/reservations/${id}`).then((r) => r.data),
+  /**
+   * POST /api/reservations/{id}/cancel
+   * @param {number} id
+   * @param {CancelReservationRequest} body
+   * @returns {Promise<ReservationCancellationDto>}
+   */
+  cancel: (id, body) =>
+    api.post(`/api/reservations/${id}/cancel`, body).then((r) => r.data),
+  /**
+   * POST /api/reservations/{id}/no-show
+   * @param {number} id
+   * @returns {Promise<ReservationCancellationDto>}
+   */
+  noShow: (id) =>
+    api.post(`/api/reservations/${id}/no-show`, undefined).then((r) => r.data),
+  /**
+   * GET /api/reservations/{id}/check-in
+   * @param {number} id
+   * @returns {Promise<CheckInChecklistDto>}
+   */
+  checkIn: (id) =>
+    api.get(`/api/reservations/${id}/check-in`).then((r) => r.data),
   /**
    * POST /api/reservations/{id}/assign-unit
    * @param {number} id
