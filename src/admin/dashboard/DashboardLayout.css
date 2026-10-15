@@ -8,12 +8,13 @@
 
 /* SIDEBAR BACKGROUND AND WRAPPING CLASSES */
 .app-sidebar {
-    width: 260px;
-    background-color: #0b2545;
+    width: 244px;
+    min-width: 244px;
+    background-color: #112c45;
     color: #ffffff;
     display: flex;
     flex-direction: column;
-    padding: 24px 16px;
+    padding: 24px 12px 18px;
     overflow-y: auto;
 }
 .sidebar-brand {
@@ -27,17 +28,17 @@
 .brand-sub { font-size: 10px; color: #8da9c4; letter-spacing: 1px; }
 
 /* NAVIGATION NODE LINK ROW ELEMENT BLOCKS */
-.nav-section { margin-bottom: 24px; }
+.nav-section { margin-bottom: 18px; }
 .section-title { font-size: 11px; color: #647c94; font-weight: 700; letter-spacing: 0.5px; display: block; margin-bottom: 8px; }
 .app-sidebar ul { list-style: none; padding: 0; margin: 0; }
 .app-sidebar li {
     display: flex;
     align-items: center;
-    padding: 10px 12px;
+    padding: 8px 12px;
     border-radius: 6px;
     cursor: pointer;
     font-size: 14px;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
     color: #c4d7ed;
     transition: background-color 0.2s, color 0.2s;
 }
@@ -46,6 +47,8 @@
 .link-icon { margin-right: 12px; font-size: 16px; }
 .link-text { flex: 1; }
 .link-badge { background-color: #f59f00; color: #0b2545; font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; }
+.sidebar-icon-placeholder { width:18px; height:18px; margin-right:12px; display:inline-flex; align-items:center; justify-content:center; color:#a9bfd2; font-size:17px; line-height:1; }
+.active-link .sidebar-icon-placeholder { color:#fff; }
 
 /* RIGHT PANEL VIEWS AND NAVBAR DESIGNS */
 .main-content-window {

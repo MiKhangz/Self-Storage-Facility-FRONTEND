@@ -1,6 +1,6 @@
 
 
-function FacilityPage() {
+export default function FacilityPage() {
 
     return (
         <div className="controller">

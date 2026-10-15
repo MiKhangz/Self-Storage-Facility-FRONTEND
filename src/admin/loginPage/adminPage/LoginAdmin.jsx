@@ -1,15 +1,12 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import './LoginAdmin.css'
+import DashboardLayout from '../../dashboard/DashboardLayout.jsx'
+import { login, restoreSession, clearSession } from '../../auth.js'
 import Logo from '../../assets/logo.svg'
 import PeopleLogo from '../../assets/people.svg'
 import Business from '../../assets/business.svg'
 import Building from '../../assets/building.svg'
 import Key from '../../assets/key.svg'
-
-const DEMO_CREDENTIALS = {
-    email: 'admin@storeease.vn',
-    password: 'Password@123'
-}
 
 function LoginAdmin() {
 
@@ -17,27 +14,60 @@ function LoginAdmin() {
     const [password, setPassword] = useState('')
     const [keepSignedIn, setKeepSignedIn] = useState(false)
 
-    const [isLoggedIn, setIsLoggedIn] = useState(false)
+    const [session, setSession] = useState(null)
+    const [loading, setLoading] = useState(false)
+    const [checking, setChecking] = useState(true)
     const [errorMessage, setErrorMessage] = useState('')
 
-    const handleSubmit = (e) => {
-        e.preventDefault()
-        setErrorMessage('') 
+    useEffect(() => {
+        let active = true
+        restoreSession()
+            .then(value => { if (active) setSession(value) })
+            .catch(error => { if (active) setErrorMessage(error.message) })
+            .finally(() => { if (active) setChecking(false) })
+        return () => { active = false }
+    }, [])
 
-        // 3. Check credentials on submit
-        if (email === DEMO_CREDENTIALS.email && password === DEMO_CREDENTIALS.password) {
-            console.log('Login successful! Redirecting...')
-            setIsLoggedIn(true) // Switch view state
-        } else {
-            setErrorMessage('Invalid work email or password. Please try again.')
+    const handleSubmit = async (e) => {
+        e.preventDefault()
+        setErrorMessage('')
+        setLoading(true)
+        try {
+            setSession(await login(email, password, keepSignedIn))
+            setPassword('')
+        } catch (error) {
+            setErrorMessage(error.message)
+        } finally {
+            setLoading(false)
         }
     }
 
-    if (isLoggedIn) {
-        return 
+    const handleLogout = () => {
+        clearSession()
+        setSession(null)
+        setPassword('')
+        setErrorMessage('')
     }
 
-    
+    useEffect(() => {
+        if (!session) return
+        try {
+            const payload = JSON.parse(atob(session.token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
+            const remaining = payload.exp * 1000 - Date.now()
+            const timer = setTimeout(() => {
+                clearSession()
+                setSession(null)
+                setErrorMessage('Your session expired. Please sign in again.')
+            }, Math.max(0, remaining))
+            return () => clearTimeout(timer)
+        } catch {
+            clearSession()
+            setSession(null)
+        }
+    }, [session])
+
+    if (checking) return <p role="status">Checking your session...</p>
+    if (session) return <DashboardLayout onLogOut={handleLogout} user={session} />
     return (
         <div className="portal-container">
             {/* LEFT COLUMN: BRANDING & ROLE INFO */}
@@ -108,6 +138,7 @@ function LoginAdmin() {
                     <p className="form-subtitle">Use the work account created by your System Administrator.</p>
 
                     <form onSubmit={handleSubmit} className="login-form">
+                        {errorMessage && <p role="alert" style={{ color: '#b42318' }}>{errorMessage}</p>}
                         {/* Email Input Block */}
                         <div className="input-group">
                             <label htmlFor="email">Work email</label>
@@ -148,17 +179,17 @@ function LoginAdmin() {
                                 />
                                 <span className="checkmark"></span> Keep me signed in
                             </label>
-                            <a href="#forgot" className="forgot-link">Forgot password?</a>
+                            <span className="forgot-link">Contact your administrator for password help.</span>
                         </div>
 
                         {/* Submit Action */}
-                        <button type="submit" className="btn-signin">Sign in</button>
+                        <button type="submit" className="btn-signin" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
                     </form>
 
                     {/* Warning/Security Banner */}
                     <div className="security-banner">
                         <span className="shield-icon">🛡️</span>
-                        <p>After 5 failed attempts the account is locked for 15 minutes. All sign-ins are recorded in the login history.</p>
+                        <p>Sign in with your active staff account. Your session expires automatically; log out when using a shared computer.</p>
                     </div>
                 </main>
             </div>
@@ -167,3 +198,5 @@ function LoginAdmin() {
 }
 
 export default LoginAdmin
+
+

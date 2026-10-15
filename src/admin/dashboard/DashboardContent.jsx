@@ -1,10 +1,10 @@
 import './DashboardContent.css';
 
-export default function DashboardContent() {
+export default function DashboardContent({ user }) {
     return (
         <div className="dashboard-grid-view">
             <div className="dashboard-greeting-bar">
-                <h2>Good morning, Nam</h2>
+                <h2>Welcome, {user?.fullName || 'Administrator'}</h2>
                 <p>Monday 21/09/2026 · All facilities</p>
             </div>
 
@@ -64,3 +64,4 @@ export default function DashboardContent() {
         </div>
     );
 }
+
