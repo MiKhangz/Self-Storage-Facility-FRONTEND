@@ -7,25 +7,25 @@
 .se-detail-grid aside .se-panel + .se-panel, .se-detail-grid aside .se-due-card + .se-panel { margin-top: 20px; }
 .se-panel h2 { display: flex; align-items: center; gap: 10px; }
 
-.se-code-card { background: var(--se-navy); color: #fff; border-radius: 14px; padding: 24px; margin-bottom: 20px; }
+.se-code-card { background: var(--se-dark); color: #fff; border-radius: 14px; padding: 24px; margin-bottom: 20px; }
 .se-code-card h2 { margin: 0 0 18px; font-size: 18px; font-weight: 700; display: flex; align-items: center; gap: 10px; color: #fff; }
-.se-code-card h2 svg { color: var(--se-teal-light); }
+.se-code-card h2 svg { color: var(--se-primary-light); }
 .se-code-digits { display: flex; gap: 10px; margin-bottom: 16px; }
 .se-code-digits span {
-    width: 46px; height: 58px; border-radius: 8px; background: #1c3f5e; display: grid; place-items: center;
+    width: 46px; height: 58px; border-radius: 8px; background: var(--se-dark-raised); display: grid; place-items: center;
     font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums;
 }
 .se-code-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 .se-code-actions button {
     display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 12px; border-radius: 6px; border: 0;
-    background: #1c3f5e; color: #fff; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
+    background: var(--se-dark-raised); color: #fff; font-family: inherit; font-size: 13px; font-weight: 600; cursor: pointer;
 }
 .se-code-actions button:disabled { opacity: 0.6; cursor: default; }
-.se-code-note { margin: 14px 0 0; font-size: 12px; color: #b8c4d0; }
+.se-code-note { margin: 14px 0 0; font-size: 12px; color: var(--se-on-dark-muted); }
 .se-code-note.error { color: #fda29b; }
 
 .se-renew-preview { margin: 16px 0; padding: 14px 16px; border-radius: 10px; background: var(--se-bg-soft); font-size: 14px; }
-.se-renew-preview strong { color: var(--se-navy); }
+.se-renew-preview strong { color: var(--se-dark); }
 .se-panel .se-hint { margin: 0 0 14px; font-size: 13px; color: var(--se-muted); line-height: 1.5; }
 
 .se-due-card {
@@ -38,7 +38,7 @@
 
 .se-log { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; font-size: 13px; color: var(--se-muted); }
 .se-log li { display: flex; align-items: center; gap: 10px; }
-.se-log li::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--se-teal); flex-shrink: 0; }
+.se-log li::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--se-primary); flex-shrink: 0; }
 .se-log li.se-hint::before { display: none; }
 .se-log strong { color: var(--se-ink); }
 
@@ -47,9 +47,9 @@
 
 /* U15 move-out and U13 profile reuse this page's grid and cards */
 .se-detail-grid aside > * + * { margin-top: 20px; }
-.se-summary-unit { display: flex; gap: 14px; align-items: center; padding: 14px; border-radius: 10px; background: var(--se-teal-soft); margin-bottom: 20px; }
+.se-summary-unit { display: flex; gap: 14px; align-items: center; padding: 14px; border-radius: 10px; background: var(--se-primary-soft); margin-bottom: 20px; }
 .se-summary-unit > div { flex: 1; }
-.se-summary-unit strong { display: block; color: var(--se-navy); }
+.se-summary-unit strong { display: block; color: var(--se-dark); }
 .se-summary-unit small { color: var(--se-muted); font-size: 13px; }
 .se-unit-switch { height: 36px; border: 1px solid var(--se-line); border-radius: 8px; padding: 0 8px; font-family: inherit; background: #fff; }
 .se-detail-grid .se-form h2 { margin: 24px 0 12px !important; font-size: 16px !important; }
