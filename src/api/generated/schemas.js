@@ -700,6 +700,20 @@
 /** @typedef {"Pending"|"Succeeded"|"Failed"|"Refunded"} PaymentStatus */
 
 /**
+ * @typedef {Object} PolicyTermsDto
+ * @property {number} [pricingPolicyId] int32
+ * @property {number} [version] int32
+ * @property {number} [depositMonths] int32
+ * @property {number} [graceDays] int32
+ * @property {number} [noticeDays] int32
+ * @property {number} [lateFeePercentPerWeek] double
+ * @property {number} [suspendAfterDays] int32
+ * @property {number} [clearOutAfterDays] int32
+ * @property {number} [cancelFreeHours] int32
+ * @property {(Array<SizeDiscountDto>|null)} [discounts]
+ */
+
+/**
  * @typedef {Object} PostTicketMessageRequest
  * @property {(string|null)} [body]
  * @property {boolean} [isInternalNote]
@@ -940,6 +954,14 @@
  */
 
 /** @typedef {"Morning"|"Afternoon"|"Night"} ShiftType */
+
+/**
+ * @typedef {Object} SizeDiscountDto
+ * @property {number} [unitTypeId] int32
+ * @property {number} [discount3Month] double
+ * @property {number} [discount6Month] double
+ * @property {number} [discount12Month] double
+ */
 
 /**
  * @typedef {Object} StaffAccountDto

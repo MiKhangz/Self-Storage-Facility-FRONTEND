@@ -49,7 +49,9 @@ function Inspect({ request, onDone }) {
 }
 
 function Settle({ request, onDone }) {
-    const settle = useMutation({ mutationFn: () => moveOutRequestsApi.settleDeposit(request.moveOutRequestId), onSuccess: onDone });
+    // Refresh only when they close the result: refetching makes the request Completed, which would unmount this
+    // breakdown (refund and any shortfall the customer still owes) before anyone reads it.
+    const settle = useMutation({ mutationFn: () => moveOutRequestsApi.settleDeposit(request.moveOutRequestId) });
     const s = settle.data;
     return (
         <>
@@ -62,6 +64,7 @@ function Settle({ request, onDone }) {
                     {s.shortfall > 0 && <div><dt>Customer still owes</dt><dd className="sa-bad">{formatVnd(s.shortfall)}</dd></div>}
                 </dl>
             )}
+            {s && <button type="button" className="se-btn se-btn-primary se-btn-block" onClick={onDone}>Done</button>}
             {settle.isError && <div className="se-alert" role="alert">{errorMessage(settle.error)}</div>}
             {!s && <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={settle.isPending}
                 onClick={() => window.confirm('Settle the deposit? This closes the contract and frees the unit.') && settle.mutate()}>Settle deposit &amp; close</button>}

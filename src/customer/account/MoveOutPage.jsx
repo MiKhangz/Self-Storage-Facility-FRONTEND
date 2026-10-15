@@ -4,7 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { moveOutRequestsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
-import { formatDate, formatVnd, todayIso } from '../components/format.js';
+import { addDays, formatDate, formatVnd, todayIso } from '../components/format.js';
+import { useTerms } from '../components/terms.js';
 import { useMyContracts, useMyReservations } from './queries.js';
 import './UnitDetailPage.css';
 
@@ -36,6 +37,9 @@ export default function MoveOutPage() {
     const reservation = reservations.data?.items?.find((r) => r.reservationId === contract?.reservationId);
     const open = requests.data?.items?.find((m) => m.contractId === contract?.contractId && m.status !== 'Cancelled');
 
+    const terms = useTerms();
+    // The API refuses dates inside the notice period, so don't offer them.
+    const earliest = addDays(todayIso(), terms.data?.noticeDays ?? 0);
     const [form, setForm] = useState({ plannedMoveOutDate: '', reason: '', refundMethod: 'BankTransfer', refundAccount: '' });
     const [checked, setChecked] = useState(CHECKS.map(() => false));
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
@@ -97,9 +101,9 @@ export default function MoveOutPage() {
                             <div className="se-panel-grid">
                                 <label><span className="se-label">Planned move-out date</span>
                                     <div className="se-field"><Icon name="calendar" />
-                                        <input type="date" min={todayIso()} max={contract.endDate} value={form.plannedMoveOutDate} onChange={(e) => set({ plannedMoveOutDate: e.target.value })} required />
+                                        <input type="date" min={earliest} max={contract.endDate} value={form.plannedMoveOutDate} onChange={(e) => set({ plannedMoveOutDate: e.target.value })} required />
                                     </div>
-                                    <p className="se-hint">Notice is required; the earliest allowed date is checked when you submit.</p>
+                                    <p className="se-hint">{terms.data ? `${terms.data.noticeDays} days' notice: the earliest date is ${formatDate(earliest)}.` : 'Notice is required; the earliest allowed date is checked when you submit.'}</p>
                                 </label>
                                 <label><span className="se-label">Reason (optional)</span>
                                     <div className="se-input"><input maxLength={200} value={form.reason} onChange={(e) => set({ reason: e.target.value })} placeholder="e.g. Moving to a bigger unit" /></div>

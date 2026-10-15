@@ -6,11 +6,12 @@ import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import { addMonths, formatDate, formatVnd, todayIso } from '../components/format.js';
 import PayInvoiceButton from './PayInvoiceButton.jsx';
+import { discountLabel, useTerms } from '../components/terms.js';
 import { OPEN_INVOICE, invoiceBadge, periodUsed, useMyInvoices, useMyReservations } from './queries.js';
 import './MyStoragePage.css';
 import './UnitDetailPage.css';
 
-const RENEW_OPTIONS = [{ months: 1 }, { months: 3, note: '−5%' }, { months: 6, note: '−10%' }, { months: 12, note: '−10%' }];
+const RENEW_OPTIONS = [1, 3, 6, 12];
 const formatTime = (iso) => new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
 function AccessCodeCard({ contract }) {
@@ -61,7 +62,8 @@ function AccessCodeCard({ contract }) {
     );
 }
 
-function RenewCard({ contract }) {
+function RenewCard({ contract, unitTypeId }) {
+    const terms = useTerms().data;
     const queryClient = useQueryClient();
     const [months, setMonths] = useState(6);
     const renewals = useQuery({ queryKey: ['renewals', contract.contractId], queryFn: () => renewalsApi.list({ contractId: contract.contractId, page: 1, pageSize: 10 }) });
@@ -69,7 +71,7 @@ function RenewCard({ contract }) {
         mutationFn: () => renewalsApi.create({ contractId: contract.contractId, extendMonths: months }),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['renewals', contract.contractId] }),
     });
-    const pending = renewals.data?.items?.find((r) => r.status === 'Pending');
+    const pending = renewals.data?.items?.find((r) => r.status === 'Requested');
 
     return (
         <section className="se-panel">
@@ -82,12 +84,15 @@ function RenewCard({ contract }) {
             ) : (
                 <>
                     <div className="se-chips" role="radiogroup" aria-label="Renewal length">
-                        {RENEW_OPTIONS.map((o) => (
-                            <button key={o.months} type="button" role="radio" aria-checked={months === o.months}
-                                className={`se-chip${months === o.months ? ' active' : ''}`} onClick={() => setMonths(o.months)}>
-                                {months === o.months && <Icon name="check" size={14} />}+{o.months} {o.months === 1 ? 'month' : 'months'} {o.note && <small>{o.note}</small>}
-                            </button>
-                        ))}
+                        {RENEW_OPTIONS.map((m) => {
+                            const note = discountLabel(terms, m, unitTypeId);
+                            return (
+                                <button key={m} type="button" role="radio" aria-checked={months === m}
+                                    className={`se-chip${months === m ? ' active' : ''}`} onClick={() => setMonths(m)}>
+                                    {months === m && <Icon name="check" size={14} />}+{m} {m === 1 ? 'month' : 'months'} {note && <small>{note}</small>}
+                                </button>
+                            );
+                        })}
                     </div>
                     <div className="se-renew-preview">New end date: <strong>{formatDate(addMonths(contract.endDate, months))}</strong></div>
                     {renew.isError && <div className="se-alert" role="alert">{errorMessage(renew.error)}</div>}
@@ -125,6 +130,8 @@ export default function UnitDetailPage() {
     const due = mine.filter((i) => OPEN_INVOICE.includes(i.status)).sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
     const myLogs = (logs.data?.items ?? []).filter((l) => l.contractId === contractId).slice(0, 6);
     const live = ['Active', 'Overdue', 'Suspended'].includes(c.status);
+    // The API renews and moves out only Active contracts; an overdue one must be paid up first.
+    const active = c.status === 'Active';
     const used = periodUsed(c.startDate, c.endDate, todayIso());
 
     return (
@@ -137,7 +144,7 @@ export default function UnitDetailPage() {
                 </div>
                 <div className="se-title-actions">
                     <Link to={`/support/new?contractId=${contractId}`} className="se-btn se-btn-ghost"><Icon name="shield" size={16} /> Report a problem</Link>
-                    {live && <Link to={`/move-out?contractId=${contractId}`} className="se-btn se-btn-danger">Request move-out</Link>}
+                    {active && <Link to={`/move-out?contractId=${contractId}`} className="se-btn se-btn-danger">Request move-out</Link>}
                 </div>
             </div>
 
@@ -153,7 +160,8 @@ export default function UnitDetailPage() {
             <div className="se-detail-grid">
                 <div>
                     <AccessCodeCard contract={c} />
-                    {live && <RenewCard contract={c} />}
+                    {active && <RenewCard contract={c} unitTypeId={r?.unitTypeId} />}
+                    {live && !active && <div className="se-alert info">Pay the overdue rent to renew this rental or request a move-out.</div>}
                     <section className="se-panel">
                         <h2>Payment history</h2>
                         <div className="se-table-wrap">

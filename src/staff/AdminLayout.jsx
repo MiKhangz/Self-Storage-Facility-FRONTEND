@@ -21,7 +21,7 @@ const NAV = [
             { to: '/admin/move-outs', icon: 'arrowLeft', label: 'Returns & Move-out', roles: [FS, FM, BOM], badge: 'moveOuts' },
             { to: '/admin/staff', icon: 'clock', label: 'Staff & Shifts', roles: [FM, ADMIN] },
             { to: '/admin/contracts', icon: 'file', label: 'Customers & Contracts', roles: OPS },
-            { to: '/admin/payments', icon: 'card', label: 'Payments', roles: [FS, FM, BOM] },
+            { to: '/admin/payments', icon: 'card', label: 'Payments', roles: [FS, FM] },
             { to: '/admin/tickets', icon: 'chat', label: 'Support Tickets', roles: OPS, badge: 'tickets' },
         ],
     },

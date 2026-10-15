@@ -3,12 +3,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { unitTypesApi } from '../../api/generated';
 import Icon from '../components/Icon.jsx';
+import { discountLabel, useTerms } from '../components/terms.js';
 import { availability, formatDate, formatVnd, rentalEndDate, todayIso } from '../components/format.js';
 import { useFacilities } from '../sizes/SizesPage.jsx';
 import BookingStepper from './BookingStepper.jsx';
 import BookingSummary from './BookingSummary.jsx';
 
-const PERIODS = [{ months: 1 }, { months: 3, note: '−5%' }, { months: 6, note: '−10%' }, { months: 12, note: '−10%' }];
+const PERIODS = [1, 3, 6, 12];
 
 /** U06: what, where and when. Values travel in the URL so they survive the login redirect. */
 export default function ChooseUnitPage() {
@@ -29,6 +30,7 @@ export default function ChooseUnitPage() {
     const types = [...(unitTypes.data ?? [])].sort((a, b) => a.areaM2 - b.areaM2);
     const unitTypeId = Number(form.unitTypeId) || types[0]?.unitTypeId;
     const type = types.find((t) => t.unitTypeId === unitTypeId);
+    const terms = useTerms().data;
     const ready = !!(facilityId && unitTypeId && form.moveInDate);
 
     const stockQuery = { facilityId, moveInDate: form.moveInDate };
@@ -92,10 +94,10 @@ export default function ChooseUnitPage() {
                         </div>
                         <span className="se-label">Rental period</span>
                         <div className="se-chips" role="radiogroup" aria-label="Rental period">
-                            {PERIODS.map(({ months, note }) => (
+                            {PERIODS.map((months) => (
                                 <button key={months} type="button" role="radio" aria-checked={form.rentalMonths === months}
                                     className={`se-chip${form.rentalMonths === months ? ' active' : ''}`} onClick={() => set({ rentalMonths: months })}>
-                                    {form.rentalMonths === months && <Icon name="check" size={14} />}{months} {months === 1 ? 'month' : 'months'} {note && <small>{note}</small>}
+                                    {form.rentalMonths === months && <Icon name="check" size={14} />}{months} {months === 1 ? 'month' : 'months'} {discountLabel(terms, months, unitTypeId) && <small>{discountLabel(terms, months, unitTypeId)}</small>}
                                 </button>
                             ))}
                         </div>

@@ -3,6 +3,8 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { invoicesApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
+import { useAuth } from '../../features/auth/AuthContext';
+import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Filters, PageHeader, SearchFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
@@ -18,6 +20,8 @@ export default function RecordPaymentPage() {
     const [selected, setSelected] = useState(Number(params.get('invoiceId')) || null);
     const [amount, setAmount] = useState('');
     const [reference, setReference] = useState('');
+    // Counter payments are taken by facility staff and managers (the API refuses everyone else).
+    const canRecord = [Roles.FacilityStaff, Roles.FacilityManager].includes(useAuth().session?.role);
     const invoices = useInvoices();
     const contracts = useContracts();
     const contractOf = Object.fromEntries((contracts.data ?? []).map((c) => [c.contractId, c]));
@@ -63,7 +67,7 @@ export default function RecordPaymentPage() {
                         </table>
                     </div>
                 </div>
-                {invoice && (
+                {invoice && canRecord && (
                     <form className="se-panel sa-side-panel" onSubmit={(e) => { e.preventDefault(); if (valid) pay.mutate(); }}>
                         <div className="sa-card-title"><h2>{invoice.invoiceNumber} <Status value={invoice.status} /></h2>
                             <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label="Close"><Icon name="arrowLeft" size={16} /></button></div>

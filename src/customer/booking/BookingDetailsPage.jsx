@@ -8,11 +8,14 @@ import Icon from '../components/Icon.jsx';
 import { useFacilities } from '../sizes/SizesPage.jsx';
 import BookingStepper from './BookingStepper.jsx';
 import BookingSummary from './BookingSummary.jsx';
+import { lateFeeText, useTerms } from '../components/terms.js';
 
-const AGREEMENT = [
-    'Deposit is refunded within 7 days after the unit is returned in good condition.',
-    'Rent is due monthly. Late fee: 5% per week; access suspended after 15 days overdue.',
-    'Cancel free of charge up to 48 hours before move-in. After that, the deposit is non-refundable.',
+/** The rules the customer agrees to, worded from the terms the backend enforces. */
+const agreement = (t) => [
+    `The deposit (${t.depositMonths} ${t.depositMonths === 1 ? 'month' : 'months'} of rent) is refunded after the unit is returned in good condition, less any charges.`,
+    `Rent is due monthly. ${lateFeeText(t)}`,
+    `Cancel within ${t.cancelFreeHours} hours of booking for a full deposit refund; after that the deposit is non-refundable.`,
+    `Moving out needs ${t.noticeDays} days' notice.`,
     'Hazardous, perishable and illegal items are prohibited.',
 ];
 
@@ -23,6 +26,7 @@ export default function BookingDetailsPage() {
     const queryClient = useQueryClient();
     const { session } = useAuth();
     const [agreed, setAgreed] = useState(false);
+    const terms = useTerms();
 
     const facilityId = Number(params.get('facilityId'));
     const unitTypeId = Number(params.get('unitTypeId'));
@@ -79,7 +83,8 @@ export default function BookingDetailsPage() {
 
                             <section className="se-panel">
                                 <h2>Rental agreement</h2>
-                                <ul className="se-rules-box">{AGREEMENT.map((r) => <li key={r}>{r}</li>)}</ul>
+                                {terms.isError && <div className="se-alert" role="alert">The rental terms could not be loaded, so booking is unavailable right now.</div>}
+                                {terms.data && <ul className="se-rules-box">{agreement(terms.data).map((r) => <li key={r}>{r}</li>)}</ul>}
                                 <label className="se-check">
                                     <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
                                     <span>I have read and agree to the rental agreement and prohibited items policy.</span>
@@ -90,7 +95,7 @@ export default function BookingDetailsPage() {
                         <BookingSummary facility={facility} type={type} moveInDate={moveInDate} rentalMonths={rentalMonths} quote={quote}>
                             {reserve.isError && <div className="se-alert" role="alert">{errorMessage(reserve.error)}</div>}
                             <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta"
-                                disabled={!agreed || !quote.data || reserve.isPending} onClick={() => reserve.mutate()}>
+                                disabled={!agreed || !terms.data || !quote.data || reserve.isPending} onClick={() => reserve.mutate()}>
                                 {reserve.isPending ? 'Reserving…' : <>Reserve this unit <Icon name="arrow" size={16} /></>}
                             </button>
                         </BookingSummary>

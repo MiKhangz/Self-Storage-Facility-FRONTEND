@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
+import { useAuth } from '../../features/auth/AuthContext';
+import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, rentalEndDate } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
@@ -78,6 +80,8 @@ export default function ReservationsPage() {
     const all = reservations.data ?? [];
     const shown = all.filter((r) => r.status === tab);
     const current = all.find((r) => r.reservationId === selected);
+    // The API lets facility staff and managers assign units; admins only view the queue.
+    const canAssign = [Roles.FacilityStaff, Roles.FacilityManager].includes(useAuth().session?.role);
 
     return (
         <>
@@ -104,14 +108,14 @@ export default function ReservationsPage() {
                                     <td>{r.facilityName}</td>
                                     <td>{formatDate(r.moveInDate)}</td>
                                     <td>{r.rentalMonths} mo</td>
-                                    <td>{r.status === 'Pending' && <button type="button" className="se-btn se-btn-outline se-btn-sm">Assign</button>}</td>
+                                    <td>{r.status === 'Pending' && canAssign && <button type="button" className="se-btn se-btn-outline se-btn-sm">Assign</button>}</td>
                                 </tr>
                             ))}
                             <TableState query={reservations} rows={shown} cols={7} empty="No reservations in this list." />
                         </tbody>
                     </table>
                 </div>
-                {current && <AssignPanel key={current.reservationId} reservation={current} onClose={() => setSelected(null)} />}
+                {current && canAssign && <AssignPanel key={current.reservationId} reservation={current} onClose={() => setSelected(null)} />}
             </div>
         </>
     );

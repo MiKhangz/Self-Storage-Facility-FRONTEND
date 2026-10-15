@@ -4,6 +4,7 @@ import { api } from '../axiosClient.js'
 /** @typedef {import('./schemas.js').CreatePricingPolicyRequest} CreatePricingPolicyRequest */
 /** @typedef {import('./schemas.js').FeeTypeDto} FeeTypeDto */
 /** @typedef {import('./schemas.js').FeeTypeRequest} FeeTypeRequest */
+/** @typedef {import('./schemas.js').PolicyTermsDto} PolicyTermsDto */
 /** @typedef {import('./schemas.js').PricingPolicyDto} PricingPolicyDto */
 /** @typedef {import('./schemas.js').PricingPolicyDtoPagedResult} PricingPolicyDtoPagedResult */
 /** @typedef {import('./schemas.js').UnitPriceDto} UnitPriceDto */
@@ -24,6 +25,12 @@ export const pricingPoliciesApi = {
    */
   create: (body) =>
     api.post(`/api/pricing-policies`, body).then((r) => r.data),
+  /**
+   * GET /api/pricing-policies/current-terms
+   * @returns {Promise<PolicyTermsDto>}
+   */
+  currentTerms: () =>
+    api.get(`/api/pricing-policies/current-terms`).then((r) => r.data),
   /**
    * GET /api/pricing-policies/{id}
    * @param {number} id

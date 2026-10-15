@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useQueryClient } from '@tanstack/react-query'
 import { setAccessToken, setUnauthorizedHandler } from '../../api/axiosClient'
 import { authApi } from '../../api/generated'
 import type { Role } from './roles'
@@ -17,11 +18,15 @@ const AuthContext = createContext<AuthContextValue | null>(null)
 // putting it in localStorage, which the assignment forbids.
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
+  const queryClient = useQueryClient()
 
+  // Cached API data belongs to whoever fetched it: without clearing, the next person to sign in on this browser
+  // briefly sees the previous user's contracts and invoices.
   const logout = useCallback(() => {
     setAccessToken(null)
     setSession(null)
-  }, [])
+    queryClient.clear()
+  }, [queryClient])
 
   const login = useCallback(async (email: string, password: string) => {
     const response = await authApi.login({ email, password })
@@ -35,10 +40,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: response.role as Role,
     }
     // Set before the state update so requests fired by the next render already carry the token.
+    queryClient.clear()
     setAccessToken(next.token)
     setSession(next)
     return next
-  }, [])
+  }, [queryClient])
 
   useEffect(() => {
     setUnauthorizedHandler(logout)

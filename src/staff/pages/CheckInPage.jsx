@@ -10,7 +10,7 @@ import { useContracts, useInvoices, useReservations, useUnits } from '../queries
 /** The physical checks the Figma lists before keys change hands; staff tick each one. */
 const CHECKS = [
     { key: 'identity', title: 'Verify identity', text: 'Citizen ID (CCCD) matches the renter name' },
-    { key: 'payment', title: 'Verify payment', text: 'Deposit and first month are paid' },
+    { key: 'payment', title: 'Verify payment', text: 'The deposit is paid (handover is refused until it is)' },
     { key: 'inspect', title: 'Inspect unit with customer', text: 'Agree the condition before handing over' },
 ];
 

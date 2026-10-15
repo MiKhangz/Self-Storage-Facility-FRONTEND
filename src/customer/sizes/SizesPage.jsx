@@ -5,6 +5,7 @@ import { facilitiesApi, unitTypesApi } from '../../api/generated';
 import Icon from '../components/Icon.jsx';
 import PageHead from '../components/PageHead.jsx';
 import { availability, formatVnd, todayIso } from '../components/format.js';
+import { discountFor, lateFeeText, useTerms } from '../components/terms.js';
 import './SizesPage.css';
 
 const TABS = ['Self-storage', 'Shelf storage', 'Climate-controlled'];
@@ -12,12 +13,17 @@ const TABS = ['Self-storage', 'Shelf storage', 'Climate-controlled'];
 const TIERS = [1, 3, 6];
 const PERIODS = [1, 3, 6, 12];
 
-const FEES = [
-    { icon: 'shield', title: 'Deposit', text: 'Equal to 1 month of rent. Refunded within 7 days after the unit is returned in good condition.' },
-    { icon: 'lock', title: 'Lock & access card', text: '150,000 ₫ one-time. Bring your own disc lock or buy one at check-in.' },
-    { icon: 'clock', title: 'Late payment fee', text: '5% of monthly rent per week overdue. Access is suspended after 15 days.' },
-    { icon: 'card', title: 'Discounts', text: '−5% for 3 months, −10% for 6+ months. Students get an extra −5% with ID.' },
-];
+/** The four policy cards, worded from the terms the backend enforces. */
+function feeCards(t) {
+    const months = (n) => `${n} ${n === 1 ? 'month' : 'months'}`;
+    const tiers = [3, 6, 12].map((m) => [m, discountFor(t, m)]).filter(([, p]) => p > 0);
+    return [
+        { icon: 'shield', title: 'Deposit', text: `Equal to ${months(t.depositMonths)} of rent. Refunded after the unit is returned in good condition, less any charges.` },
+        { icon: 'calendar', title: 'Moving out', text: `Tell us ${t.noticeDays} days before you move out. Staff inspect the unit with you.` },
+        { icon: 'clock', title: 'Late payment fee', text: lateFeeText(t) },
+        { icon: 'card', title: 'Discounts', text: tiers.length ? tiers.map(([m, p]) => `−${p}% for ${months(m)}+`).join(', ') + '.' : 'No long-stay discount right now.' },
+    ];
+}
 
 const tierFor = (months) => (months >= 6 ? 6 : months >= 3 ? 3 : 1);
 
@@ -77,6 +83,7 @@ export default function SizesPage() {
     const rows = useTypeRows(types, activeFacility);
     const maxArea = Math.max(...types.map((t) => t.areaM2), 1);
     const highlight = tierFor(months);
+    const terms = useTerms();
     const bookLink = (t) => `/booking?facilityId=${activeFacility}&unitTypeId=${t.unitTypeId}&rentalMonths=${months}`;
 
     return (
@@ -170,7 +177,7 @@ export default function SizesPage() {
 
                     <h2 className="se-sizes-sub">Fees &amp; policies</h2>
                     <div className="se-fees">
-                        {FEES.map((f) => (
+                        {terms.data && feeCards(terms.data).map((f) => (
                             <article key={f.title} className="se-card se-fee">
                                 <span className="se-icon-tile sm"><Icon name={f.icon} size={16} /></span>
                                 <h3>{f.title}</h3>
