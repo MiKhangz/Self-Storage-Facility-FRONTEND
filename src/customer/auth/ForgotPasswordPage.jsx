@@ -1,14 +1,13 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { authApi } from '../../api/generated';
+import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import { PasswordInput } from './AuthShell.jsx';
 import './ForgotPasswordPage.css';
 
-// ponytail: the backend has no password-reset endpoints yet. Replace these two with authApi calls once
-// POST /api/auth/forgot-password and POST /api/auth/reset-password exist; the screens already handle success.
-const NOT_READY = 'Password reset is not available online yet. Please contact support at 028 7300 1234.';
-const requestReset = async () => { throw new Error(NOT_READY); };
-const saveNewPassword = async () => { throw new Error(NOT_READY); };
+const requestReset = (email) => authApi.forgotPassword({ email });
+const saveNewPassword = (token, newPassword) => authApi.resetPassword({ token, newPassword });
 
 function maskEmail(email) {
     const [name, domain] = email.split('@');
@@ -28,7 +27,7 @@ function RequestStep({ onSent }) {
             await requestReset(email);
             onSent(email);
         } catch (err) {
-            setError(err.message);
+            setError(errorMessage(err));
         } finally {
             setBusy(false);
         }
@@ -86,7 +85,7 @@ function NewPasswordStep({ token }) {
             await saveNewPassword(token, password);
             setDone(true);
         } catch (err) {
-            setError(err.message);
+            setError(errorMessage(err));
         }
     };
 

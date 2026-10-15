@@ -74,8 +74,7 @@ export default function BookingDetailsPage() {
 
                             <section className="se-panel">
                                 <h2>Payment</h2>
-                                {/* ponytail: no deposit invoice exists for a reservation yet; add a method picker + invoicesApi.paymentsOnline once the backend issues one. */}
-                                <div className="se-alert info">Online payment is not available yet. Reserving now holds a unit of this size for you; payment is arranged with our staff.</div>
+                                <div className="se-alert info">Reserving issues a deposit invoice. Pay it online on the next screen or later under Payments; check-in needs the deposit paid.</div>
                             </section>
 
                             <section className="se-panel">

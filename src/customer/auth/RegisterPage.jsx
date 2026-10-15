@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useMutation } from '@tanstack/react-query';
+import { authApi } from '../../api/generated';
+import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
-import { todayIso } from '../components/format.js';
 import AuthShell, { PasswordInput } from './AuthShell.jsx';
 
 const BENEFITS = [
@@ -10,7 +12,7 @@ const BENEFITS = [
     { icon: 'building', title: 'Manage multiple units', text: 'Rent and track several units under one account.' },
 ];
 
-const EMPTY = { fullName: '', phoneNumber: '', email: '', citizenId: '', dateOfBirth: '', password: '', confirm: '', agreed: false };
+const EMPTY = { fullName: '', phoneNumber: '', email: '', password: '', confirm: '', agreed: false };
 
 /** Field errors shown under each input; empty object means the form can be sent. */
 export function validateRegister(f) {
@@ -18,7 +20,6 @@ export function validateRegister(f) {
     if (!f.fullName.trim()) errors.fullName = 'Enter your full name';
     if (!/^\S+@\S+\.\S+$/.test(f.email)) errors.email = 'Enter a valid email address';
     if (!/^0\d{9}$/.test(f.phoneNumber.replace(/\s/g, ''))) errors.phoneNumber = 'Enter a 10-digit phone number starting with 0';
-    if (!/^\d{12}$/.test(f.citizenId)) errors.citizenId = 'Citizen ID must be 12 digits';
     if (f.password.length < 8 || !/\d/.test(f.password)) errors.password = 'At least 8 characters, 1 number';
     if (f.confirm !== f.password) errors.confirm = 'Passwords do not match';
     if (!f.agreed) errors.agreed = 'Please accept the terms to continue';
@@ -28,7 +29,9 @@ export function validateRegister(f) {
 export default function RegisterPage() {
     const [form, setForm] = useState(EMPTY);
     const [touched, setTouched] = useState(false);
-    const [notice, setNotice] = useState('');
+    const register = useMutation({
+        mutationFn: () => authApi.register({ fullName: form.fullName.trim(), email: form.email.trim(), phoneNumber: form.phoneNumber.replace(/\s/g, ''), password: form.password }),
+    });
     const set = (key) => (e) => setForm({ ...form, [key]: e.target.type === 'checkbox' ? e.target.checked : e.target.value });
     const errors = validateRegister(form);
     const show = (key) => touched && errors[key];
@@ -37,8 +40,7 @@ export default function RegisterPage() {
         e.preventDefault();
         setTouched(true);
         if (Object.keys(errors).length) return;
-        // ponytail: the backend has no POST /api/auth/register yet; wire authApi.register here once it exists.
-        setNotice('Your details look good, but online registration is not open yet. Please ask staff to create your account.');
+        register.mutate();
     };
 
     return (
@@ -62,15 +64,6 @@ export default function RegisterPage() {
                     {show('email') && <p className="se-hint error">{errors.email}</p>}
                 </label>
                 <div className="se-form-row">
-                    <label><span>Citizen ID (CCCD) *</span>
-                        <div className={`se-input${show('citizenId') ? ' invalid' : ''}`}><input inputMode="numeric" maxLength={12} value={form.citizenId} onChange={set('citizenId')} placeholder="0792xxxxxxxx" required /></div>
-                        <p className={`se-hint${show('citizenId') ? ' error' : ''}`}>{show('citizenId') ? errors.citizenId : 'Required to sign the rental contract'}</p>
-                    </label>
-                    <label><span>Date of birth</span>
-                        <div className="se-input"><Icon name="calendar" size={16} /><input type="date" value={form.dateOfBirth} onChange={set('dateOfBirth')} max={todayIso()} /></div>
-                    </label>
-                </div>
-                <div className="se-form-row">
                     <label><span>Password *</span>
                         <PasswordInput value={form.password} onChange={set('password')} invalid={show('password')} autoComplete="new-password" />
                         <p className={`se-hint${show('password') ? ' error' : ''}`}>At least 8 characters, 1 number</p>
@@ -85,8 +78,17 @@ export default function RegisterPage() {
                     <span>I agree to the <Link to="/terms">Terms of Rental</Link> and <Link to="/prohibited-items">Prohibited Items policy</Link></span>
                 </label>
                 {show('agreed') && <p className="se-hint error">{errors.agreed}</p>}
-                {notice && <div className="se-alert info" role="status">{notice}</div>}
-                <button type="submit" className="se-btn se-btn-primary">Create account</button>
+                {register.isError && <div className="se-alert" role="alert">{errorMessage(register.error)}</div>}
+                {register.isSuccess && (
+                    <div className="se-alert info" role="status">
+                        {register.data.status === 'Active'
+                            ? <>Account created. <Link to="/login">Log in now</Link>.</>
+                            : <>Account created. Open the link we emailed to {register.data.email} to activate it, then log in.</>}
+                    </div>
+                )}
+                <button type="submit" className="se-btn se-btn-primary" disabled={register.isPending || register.isSuccess}>
+                    {register.isPending ? 'Creating account…' : 'Create account'}
+                </button>
             </form>
             <p className="se-auth-switch">Already have an account?<Link to="/login">Log in</Link></p>
         </AuthShell>

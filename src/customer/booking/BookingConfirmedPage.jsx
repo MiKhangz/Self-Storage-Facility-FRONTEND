@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
-import { formatDate, rentalEndDate } from '../components/format.js';
+import { formatDate, formatVnd, rentalEndDate } from '../components/format.js';
+import PayInvoiceButton from '../account/PayInvoiceButton.jsx';
 import BookingStepper from './BookingStepper.jsx';
 
 const STATUS_LABEL = { Pending: 'Awaiting unit assignment', Confirmed: 'Awaiting check-in', CheckedIn: 'Checked in' };
@@ -37,7 +38,12 @@ export default function BookingConfirmedPage() {
                                     <dt>Facility</dt><dd>{r.facilityName}</dd>
                                     <dt>Rental period</dt><dd>{formatDate(r.moveInDate)} → {formatDate(rentalEndDate(r.moveInDate, r.rentalMonths))} ({r.rentalMonths} {r.rentalMonths === 1 ? 'month' : 'months'})</dd>
                                     <dt>Check-in</dt><dd>{formatDate(r.moveInDate)}</dd>
+                                    {r.depositInvoiceId && <><dt>Deposit</dt><dd>{formatVnd(r.depositAmount)} · {r.depositStatus === 'Paid' ? 'Paid' : 'Due before check-in'}</dd></>}
                                 </dl>
+                                {r.depositInvoiceId && r.depositStatus !== 'Paid' && (
+                                    <PayInvoiceButton invoice={{ invoiceId: r.depositInvoiceId, outstandingAmount: r.depositAmount, invoiceNumber: `DEP${r.reservationCode}` }}
+                                        className="se-btn se-btn-primary se-btn-block">Pay deposit now</PayInvoiceButton>
+                                )}
                             </div>
 
                             <div className="se-bring">

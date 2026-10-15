@@ -1,5 +1,5 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { invoicesApi } from '../../api/generated';
+import { invoicesApi, paymentsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import { formatVnd } from '../components/format.js';
 
@@ -7,9 +7,13 @@ import { formatVnd } from '../components/format.js';
 export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-primary se-btn-sm', children = 'Pay' }) {
     const queryClient = useQueryClient();
     const pay = useMutation({
-        // ponytail: no real gateway yet; the reference stands in for one until VNPay/MoMo is wired in.
-        mutationFn: () => invoicesApi.paymentsOnline(invoice.invoiceId, { amount: invoice.outstandingAmount, referenceNo: `WEB-${Date.now()}` }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['invoices'] }),
+        // ponytail: the backend's development-only simulate-success stands in for the gateway. Once VNPay/MoMo
+        // is live, send the customer to intent.checkoutUrl instead and let the gateway callback credit the invoice.
+        mutationFn: async () => {
+            const intent = await invoicesApi.paymentsOnline(invoice.invoiceId, { amount: invoice.outstandingAmount, referenceNo: null });
+            return paymentsApi.simulateSuccess(intent.paymentCode);
+        },
+        onSuccess: () => ['invoices', 'reservations'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] })),
         onError: (err) => window.alert(errorMessage(err)),
     });
 
