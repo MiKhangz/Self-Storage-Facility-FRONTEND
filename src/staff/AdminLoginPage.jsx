@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../features/auth/AuthContext';
 import { ADMIN_PORTAL_ROLES } from '../features/auth/roles';
 import { errorMessage } from '../api/axiosClient';
@@ -77,6 +77,7 @@ export default function AdminLoginPage() {
                     {error && <div className="se-alert" role="alert">{error}</div>}
                     <button type="submit" className="se-btn se-btn-primary se-btn-block se-btn-lg" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
                     <div className="se-auth-note"><Icon name="shield" size={15} /><span>All sign-ins are recorded. Forgot your password? Ask your System Administrator.</span></div>
+                    <Link to="/" className="se-back"><Icon name="arrowLeft" size={16} /> Renting storage? Go to the customer site</Link>
                 </form>
             </main>
         </div>

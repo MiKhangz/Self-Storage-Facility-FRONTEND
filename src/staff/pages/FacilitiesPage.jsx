@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useAuth } from '../../features/auth/AuthContext';
+import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { PageHeader, SearchFilter, SelectFilter, Filters, Stat, TableState, matches } from '../components/ui.jsx';
 import { useFacilities, useUnits } from '../queries.js';
@@ -9,7 +11,9 @@ import { occupancy } from './DashboardPage.jsx';
 export default function FacilitiesPage() {
     const [search, setSearch] = useState('');
     const [district, setDistrict] = useState('');
-    const facilities = useFacilities();
+    // Only admins may create a facility, and only they can see (and so reactivate) inactive ones.
+    const isAdmin = useAuth().session?.role === Roles.SystemAdministrator;
+    const facilities = useFacilities(isAdmin ? { includeInactive: true } : undefined);
     const units = useUnits();
     const all = facilities.data ?? [];
     const allUnits = units.data ?? [];
@@ -19,7 +23,7 @@ export default function FacilitiesPage() {
     return (
         <>
             <PageHeader title="Facilities" subtitle={`${all.length} facilities · ${allUnits.length} storage units`}>
-                <Link to="/admin/facilities/new" className="se-btn se-btn-primary"><Icon name="building" size={16} /> Add facility</Link>
+                {isAdmin && <Link to="/admin/facilities/new" className="se-btn se-btn-primary"><Icon name="building" size={16} /> Add facility</Link>}
             </PageHeader>
             <div className="sa-stats">
                 <Stat icon="building" label="Facilities" value={all.length} />

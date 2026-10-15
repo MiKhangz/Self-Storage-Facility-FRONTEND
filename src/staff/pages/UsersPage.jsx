@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { staffApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
+import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
@@ -10,7 +11,7 @@ import { Filters, PageHeader, SearchFilter, SelectFilter, Status, TableState, ma
 import { PERMISSIONS, ROLE_INFO } from '../permissions.js';
 import { humanize, useFacilities, useStaff } from '../queries.js';
 
-const STATUSES = ['Active', 'Suspended', 'Inactive', 'Pending'];
+const STATUSES = ['Active', 'Disabled'];
 
 export function PermissionMatrix({ highlight }) {
     return (
@@ -37,6 +38,8 @@ export function PermissionMatrix({ highlight }) {
 function EditUser({ user, onClose }) {
     const queryClient = useQueryClient();
     const facilities = useFacilities();
+    // The API refuses to let an admin lock or demote themselves (nobody could undo it), so don't offer it.
+    const self = useAuth().session?.userId === user.userId;
     const [form, setForm] = useState({ fullName: user.fullName ?? '', phoneNumber: user.phoneNumber ?? '', role: user.role, status: user.status });
     const [facilityIds, setFacilityIds] = useState((user.facilities ?? []).map((f) => f.facilityId));
     const save = useMutation({
@@ -55,9 +58,10 @@ function EditUser({ user, onClose }) {
             <label><span className="se-label">Full name</span><div className="se-input"><input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div></label>
             <label><span className="se-label">Phone</span><div className="se-input"><input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} /></div></label>
             <label><span className="se-label">Role</span>
-                <div className="se-field"><select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}>{ROLE_INFO.map((r) => <option key={r.role} value={r.role}>{r.title}</option>)}</select></div></label>
+                <div className="se-field"><select value={form.role} disabled={self} onChange={(e) => setForm({ ...form, role: e.target.value })}>{ROLE_INFO.map((r) => <option key={r.role} value={r.role}>{r.title}</option>)}</select></div></label>
             <label><span className="se-label">Status</span>
-                <div className="se-field"><select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select></div></label>
+                <div className="se-field"><select value={form.status} disabled={self} onChange={(e) => setForm({ ...form, status: e.target.value })}>{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
+                <p className="se-hint">{self ? 'You cannot change your own role or status.' : 'Disabled accounts cannot sign in or be assigned work.'}</p></label>
             <span className="se-label">Assigned facilities</span>
             <div className="sa-checklist">
                 {(facilities.data ?? []).map((f) => (

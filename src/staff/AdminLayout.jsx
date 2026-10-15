@@ -79,6 +79,10 @@ export default function AdminLayout() {
                         );
                     })}
                 </nav>
+                {/* A new tab keeps this admin session open; the customer site starts signed out there. */}
+                <a href="/" target="_blank" rel="noopener noreferrer" className="sa-logout">
+                    <Icon name="home" size={16} /> Customer site
+                </a>
                 <button type="button" className="sa-logout" onClick={() => { logout(); navigate('/admin/login', { replace: true }); }}>
                     <Icon name="arrowLeft" size={16} /> Log out
                 </button>

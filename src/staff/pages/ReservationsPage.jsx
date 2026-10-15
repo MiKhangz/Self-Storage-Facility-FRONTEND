@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
-import { formatDate, formatVnd, rentalEndDate } from '../../customer/components/format.js';
+import { formatDate, rentalEndDate } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Status, TableState } from '../components/ui.jsx';
 import { useReservations, useUnits } from '../queries.js';
@@ -54,7 +54,7 @@ function AssignPanel({ reservation, onClose }) {
                         {candidates.map((u, i) => (
                             <label key={u.storageUnitId} className={`sa-unit-option${chosen === u.storageUnitId ? ' active' : ''}`}>
                                 <input type="radio" name="unit" aria-label={`Unit ${u.unitCode}`} checked={chosen === u.storageUnitId} onChange={() => setUnitId(u.storageUnitId)} />
-                                <span><strong>{u.unitCode}</strong><small>{u.floorName}{u.zone ? ` · ${u.zone}` : ''} · {formatVnd(u.currentPrice)}</small></span>
+                                <span><strong>{u.unitCode}</strong><small>{u.floorName}{u.zone ? ` · ${u.zone}` : ''}</small></span>
                                 {i === 0 && <span className="se-badge">First free</span>}
                             </label>
                         ))}

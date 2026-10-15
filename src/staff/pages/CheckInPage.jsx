@@ -21,8 +21,13 @@ function HandoverWizard({ reservation, contract, onDone }) {
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const handover = useMutation({
         mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, ...form }),
-        onSuccess: () => ['reservations', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
     });
+    // Refresh only after staff move on: refetching drops this reservation from the queue, which would unmount
+    // the one-time access code before anyone reads it.
+    const next = () => {
+        ['reservations', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+        onDone();
+    };
 
     if (handover.data) {
         return (
@@ -31,7 +36,7 @@ function HandoverWizard({ reservation, contract, onDone }) {
                 <h2>Handover complete — unit {handover.data.unitCode} is now occupied</h2>
                 <p className="sa-muted">Give the customer this access code. It is shown once only.</p>
                 <div className="se-code-digits dark">{(handover.data.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
-                <button type="button" className="se-btn se-btn-primary" onClick={onDone}>Next check-in</button>
+                <button type="button" className="se-btn se-btn-primary" onClick={next}>Next check-in</button>
             </div>
         );
     }
@@ -74,6 +79,30 @@ function HandoverWizard({ reservation, contract, onDone }) {
     );
 }
 
+/** Drafts the contract a handover needs, at the active policy's rent. */
+function DraftContract({ reservation }) {
+    const queryClient = useQueryClient();
+    const [paymentDay, setPaymentDay] = useState(Math.min(Number(reservation.moveInDate.slice(8, 10)), 28));
+    const draft = useMutation({
+        mutationFn: () => contractsApi.create({ reservationId: reservation.reservationId, paymentDay }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
+    });
+    return (
+        <>
+            <p>This reservation has no contract yet. Draft one; the customer then signs it from My Storage.</p>
+            <label><span className="se-label">Rent due on day of month (1–28)</span>
+                <div className="se-input"><input type="number" min={1} max={28} value={paymentDay} onChange={(e) => setPaymentDay(Number(e.target.value))} /></div>
+            </label>
+            {draft.isError && <div className="se-alert" role="alert">{errorMessage(draft.error)}</div>}
+            <div className="sa-form-actions">
+                <button type="button" className="se-btn se-btn-primary" disabled={draft.isPending || !(paymentDay >= 1 && paymentDay <= 28)} onClick={() => draft.mutate()}>
+                    {draft.isPending ? 'Drafting…' : 'Draft contract'}
+                </button>
+            </div>
+        </>
+    );
+}
+
 function HandoverDesk() {
     const today = todayIso();
     const reservations = useReservations({ status: 'Confirmed' });
@@ -103,8 +132,7 @@ function HandoverDesk() {
                     <div className="se-panel">
                         <h2>{current.customerName} → Unit {current.unitCode}</h2>
                         <p className="sa-muted">{current.reservationCode} · {formatDate(current.moveInDate)} → {formatDate(rentalEndDate(current.moveInDate, current.rentalMonths))}</p>
-                        {/* ponytail: the backend cannot draft a contract from a reservation yet (POST /api/contracts); handover needs one. */}
-                        <NotWired>This reservation has no draft contract yet, and the backend has no endpoint to draft one. Handover is enabled automatically once a draft contract exists.</NotWired>
+                        <DraftContract key={current.reservationId} reservation={current} />
                     </div>
                 )}
             </div>

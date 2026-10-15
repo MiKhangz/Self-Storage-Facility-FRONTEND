@@ -1,11 +1,69 @@
 import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { facilitiesApi, storageUnitsApi } from '../../api/generated';
+import { errorMessage } from '../../api/axiosClient';
+import { Roles } from '../../features/auth/roles';
+import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
-import { Filters, NotWired, PageHeader, SearchFilter, SelectFilter, Status, TableState, matches } from '../components/ui.jsx';
-import { humanize, useContracts, useFacilities, useUnits } from '../queries.js';
+import { Filters, PageHeader, SearchFilter, SelectFilter, Status, TableState, matches } from '../components/ui.jsx';
+import { humanize, useContracts, useFacilities, useSizePrices, useUnitTypes, useUnits } from '../queries.js';
 
 const STATUSES = ['Available', 'Reserved', 'Occupied', 'Maintenance', 'Retired'];
 const LIVE = ['Draft', 'Active', 'PendingMoveOut', 'Overdue', 'Suspended'];
+
+/** Edit a unit (managers and admins). Floor and size can change only while it is Available, as the API requires. */
+function UnitEditor({ unit }) {
+    const queryClient = useQueryClient();
+    const floors = useQuery({ queryKey: ['facilities', unit.facilityId, 'floors'], queryFn: () => facilitiesApi.getFloors(unit.facilityId) });
+    const types = useUnitTypes().data ?? [];
+    const [form, setForm] = useState({
+        floorId: String(unit.floorId), unitTypeId: String(unit.unitTypeId), unitCode: unit.unitCode,
+        zone: unit.zone ?? '', note: unit.note ?? '',
+    });
+    const done = { onSuccess: () => ['storage-units', 'facilities'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })) };
+    const save = useMutation({
+        mutationFn: () => storageUnitsApi.update(unit.storageUnitId, {
+            floorId: Number(form.floorId), unitTypeId: Number(form.unitTypeId), unitCode: form.unitCode.trim(),
+            zone: form.zone.trim() || null, note: form.note.trim() || null,
+        }),
+        ...done,
+    });
+    const retire = useMutation({ mutationFn: () => (unit.status === 'Retired' ? storageUnitsApi.restore : storageUnitsApi.retire)(unit.storageUnitId), ...done });
+    const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
+    const movable = unit.status === 'Available';
+    return (
+        <form className="se-form" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
+            <h3>Edit unit</h3>
+            <label><span className="se-label">Floor</span><div className="se-input">
+                <select value={form.floorId} onChange={set('floorId')} disabled={!movable}>
+                    {(floors.data ?? [{ floorId: unit.floorId, name: unit.floorName }]).map((f) => (
+                        <option key={f.floorId} value={f.floorId}>{f.floorNumber != null ? `Floor ${f.floorNumber}` : ''}{f.name ? `${f.floorNumber != null ? ' · ' : ''}${f.name}` : ''}</option>
+                    ))}
+                </select></div></label>
+            <label><span className="se-label">Size</span><div className="se-input">
+                <select value={form.unitTypeId} onChange={set('unitTypeId')} disabled={!movable}>
+                    {(types.length ? types : [{ unitTypeId: unit.unitTypeId, code: unit.unitTypeCode, areaM2: unit.areaM2 }]).map((t) => (
+                        <option key={t.unitTypeId} value={t.unitTypeId}>{t.code} · {t.areaM2} m²</option>
+                    ))}
+                </select></div></label>
+            {!movable && <p className="se-hint">Floor and size can change only while the unit is Available.</p>}
+            <label><span className="se-label">Unit code</span><div className="se-input"><input value={form.unitCode} onChange={set('unitCode')} required maxLength={20} pattern="[A-Za-z0-9\-]+" title="Letters, digits and dashes" /></div></label>
+            <label><span className="se-label">Zone</span><div className="se-input"><input value={form.zone} onChange={set('zone')} maxLength={10} /></div></label>
+            <label><span className="se-label">Note</span><div className="se-input"><input value={form.note} onChange={set('note')} maxLength={200} /></div></label>
+            {[save, retire].map((m, i) => m.isError && <div key={i} className="se-alert" role="alert">{errorMessage(m.error)}</div>)}
+            {save.isSuccess && <div className="se-alert info" role="status">Unit saved.</div>}
+            <div className="sa-form-actions">
+                {['Available', 'Retired'].includes(unit.status) && (
+                    <button type="button" className="se-btn se-btn-ghost" disabled={retire.isPending} onClick={() => retire.mutate()}>
+                        {unit.status === 'Retired' ? 'Return to service' : 'Retire unit'}
+                    </button>
+                )}
+                <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save unit'}</button>
+            </div>
+        </form>
+    );
+}
 
 /** A04: unit board — every unit, its status and who rents it. */
 export default function UnitsPage() {
@@ -17,6 +75,8 @@ export default function UnitsPage() {
     const facilities = useFacilities();
     const units = useUnits(facilityId ? { facilityId: Number(facilityId) } : undefined);
     const contracts = useContracts();
+    const sizePrice = useSizePrices();
+    const canEdit = [Roles.FacilityManager, Roles.SystemAdministrator].includes(useAuth().session?.role);
 
     const all = units.data ?? [];
     const contractOf = Object.fromEntries((contracts.data ?? []).filter((c) => LIVE.includes(c.status)).map((c) => [c.storageUnitId, c]));
@@ -55,7 +115,7 @@ export default function UnitsPage() {
                                         <td className="strong">{u.unitCode}</td>
                                         <td>{u.unitTypeCode} · {u.areaM2} m²</td>
                                         <td>{u.floorName}{u.zone ? ` · ${u.zone}` : ''}</td>
-                                        <td className="price">{formatVnd(u.currentPrice)}</td>
+                                        <td className="price">{formatVnd(sizePrice[u.unitTypeId])}</td>
                                         <td><Status value={u.status} /></td>
                                         <td>{c?.customerName ?? '—'}</td>
                                         <td>{c ? formatDate(c.endDate) : '—'}</td>
@@ -73,13 +133,12 @@ export default function UnitsPage() {
                         <dl className="se-kv">
                             <div><dt>Size</dt><dd>{unit.unitTypeName} · {unit.areaM2} m²</dd></div>
                             <div><dt>Floor / zone</dt><dd>{unit.floorName}{unit.zone ? ` · ${unit.zone}` : ''}</dd></div>
-                            <div><dt>Monthly price</dt><dd>{formatVnd(unit.currentPrice)}</dd></div>
+                            <div><dt>Monthly price</dt><dd>{formatVnd(sizePrice[unit.unitTypeId])}<small className="sa-muted"> · set per size in Pricing &amp; Policies</small></dd></div>
                             <div><dt>Customer</dt><dd>{contract?.customerName ?? '—'}</dd></div>
                             <div><dt>Contract</dt><dd>{contract ? `${contract.contractNumber} · ${humanize(contract.status)}` : '—'}</dd></div>
                             {contract && <div><dt>Period</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)}</dd></div>}
                         </dl>
-                        {/* ponytail: no unit create/update endpoint yet; add the edit form once PUT /api/storage-units/{id} exists. */}
-                        <NotWired>Editing units and adding new ones needs a storage-unit update endpoint on the backend.</NotWired>
+                        {canEdit && <UnitEditor key={unit.storageUnitId} unit={unit} />}
                     </aside>
                 )}
             </div>
