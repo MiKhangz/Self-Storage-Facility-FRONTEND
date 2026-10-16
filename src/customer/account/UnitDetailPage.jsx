@@ -7,11 +7,12 @@ import Icon from '../components/Icon.jsx';
 import { addMonths, formatDate, formatVnd, todayIso } from '../components/format.js';
 import PayInvoiceButton from './PayInvoiceButton.jsx';
 import { discountLabel, useTerms } from '../components/terms.js';
-import { OPEN_INVOICE, invoiceBadge, periodUsed, useMyInvoices, useMyReservations } from './queries.js';
+import { CONTRACT_BADGE, OPEN_INVOICE, invoiceBadge, periodUsed, useMyInvoices, useMyReservations } from './queries.js';
 import './MyStoragePage.css';
 import './UnitDetailPage.css';
 
 const RENEW_OPTIONS = [1, 3, 6, 12];
+const ACCESS_RESULT = { Granted: 'Mở cổng thành công', Denied: 'Bị từ chối', Expired: 'Mã đã hết hạn' };
 const formatTime = (iso) => new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
 function AccessCodeCard({ contract }) {
@@ -36,8 +37,8 @@ function AccessCodeCard({ contract }) {
     if (contract.status !== 'Active') {
         return (
             <section className="se-code-card">
-                <h2><Icon name="key" size={18} /> Your personal access code</h2>
-                <p className="se-code-note">Your code is issued when staff complete your check-in.</p>
+                <h2><Icon name="key" size={18} /> Mã ra vào cá nhân</h2>
+                <p className="se-code-note">Mã được cấp khi nhân viên hoàn tất bàn giao kho cho bạn.</p>
             </section>
         );
     }
@@ -45,18 +46,18 @@ function AccessCodeCard({ contract }) {
     const digits = code ? code.split('') : Array(6).fill('•');
     return (
         <section className="se-code-card">
-            <h2><Icon name="key" size={18} /> Your personal access code</h2>
-            <div className="se-code-digits" aria-label={code && shown ? `Access code ${code}` : 'Access code hidden'}>
+            <h2><Icon name="key" size={18} /> Mã ra vào cá nhân</h2>
+            <div className="se-code-digits" aria-label={code && shown ? `Mã ra vào ${code}` : 'Mã ra vào đang ẩn'}>
                 {digits.map((d, i) => <span key={i}>{code && shown ? d : '•'}</span>)}
             </div>
             <div className="se-code-actions">
-                {code && <button type="button" onClick={() => setShown(!shown)}><Icon name={shown ? 'eyeOff' : 'eye'} size={14} /> {shown ? 'Hide code' : 'Show code'}</button>}
-                <button type="button" onClick={() => issue.mutate()} disabled={issue.isPending}><Icon name="key" size={14} /> {issue.isPending ? 'Issuing…' : 'Get a new code'}</button>
+                {code && <button type="button" onClick={() => setShown(!shown)}><Icon name={shown ? 'eyeOff' : 'eye'} size={14} /> {shown ? 'Ẩn mã' : 'Hiện mã'}</button>}
+                <button type="button" onClick={() => issue.mutate()} disabled={issue.isPending}><Icon name="key" size={14} /> {issue.isPending ? 'Đang cấp mã…' : 'Cấp mã mới'}</button>
             </div>
             {issue.isError && <p className="se-code-note error">{errorMessage(issue.error)}</p>}
             <p className="se-code-note">
-                {code ? 'Write this code down now — it will not be shown again. ' : ''}
-                {summary.data?.isActive ? `Current code valid until ${formatDate(summary.data.expiresAt)}.` : 'No active code — get a new one to open the gate.'} Never share this code.
+                {code ? 'Hãy ghi lại mã này ngay, mã sẽ không hiển thị lại. ' : ''}
+                {summary.data?.isActive ? `Mã hiện tại có hiệu lực đến ${formatDate(summary.data.expiresAt)}.` : 'Chưa có mã đang dùng. Hãy cấp mã mới để mở cổng.'} Không chia sẻ mã cho người khác.
             </p>
         </section>
     );
@@ -75,29 +76,29 @@ function RenewCard({ contract, unitTypeId }) {
 
     return (
         <section className="se-panel">
-            <h2><Icon name="calendar" size={18} /> Renew rental</h2>
-            <p className="se-hint">Current period ends {formatDate(contract.endDate)}. Renew to keep your unit; a manager approves the new end date and rent.</p>
+            <h2><Icon name="calendar" size={18} /> Gia hạn thuê</h2>
+            <p className="se-hint">Thời hạn hiện tại kết thúc ngày {formatDate(contract.endDate)}. Gia hạn để giữ kho; quản lý sẽ duyệt ngày kết thúc và giá thuê mới.</p>
             {pending ? (
                 <div className="se-alert info">
-                    Renewal of +{pending.extendMonths} months requested — new end date {formatDate(pending.newEndDate)}, {formatVnd(pending.newMonthlyRent)} / month. Waiting for approval.
+                    Đã gửi yêu cầu gia hạn thêm {pending.extendMonths} tháng: ngày kết thúc mới {formatDate(pending.newEndDate)}, {formatVnd(pending.newMonthlyRent)} / tháng. Đang chờ duyệt.
                 </div>
             ) : (
                 <>
-                    <div className="se-chips" role="radiogroup" aria-label="Renewal length">
+                    <div className="se-chips" role="radiogroup" aria-label="Thời gian gia hạn">
                         {RENEW_OPTIONS.map((m) => {
                             const note = discountLabel(terms, m, unitTypeId);
                             return (
                                 <button key={m} type="button" role="radio" aria-checked={months === m}
                                     className={`se-chip${months === m ? ' active' : ''}`} onClick={() => setMonths(m)}>
-                                    {months === m && <Icon name="check" size={14} />}+{m} {m === 1 ? 'month' : 'months'} {note && <small>{note}</small>}
+                                    {months === m && <Icon name="check" size={14} />}+{m} tháng {note && <small>{note}</small>}
                                 </button>
                             );
                         })}
                     </div>
-                    <div className="se-renew-preview">New end date: <strong>{formatDate(addMonths(contract.endDate, months))}</strong></div>
+                    <div className="se-renew-preview">Ngày kết thúc mới: <strong>{formatDate(addMonths(contract.endDate, months))}</strong></div>
                     {renew.isError && <div className="se-alert" role="alert">{errorMessage(renew.error)}</div>}
                     <button type="button" className="se-btn se-btn-primary se-btn-block" onClick={() => renew.mutate()} disabled={renew.isPending}>
-                        {renew.isPending ? 'Sending…' : 'Request renewal'}
+                        {renew.isPending ? 'Đang gửi…' : 'Gửi yêu cầu gia hạn'}
                     </button>
                 </>
             )}
@@ -121,7 +122,7 @@ export default function UnitDetailPage() {
         },
     });
 
-    if (contract.isLoading) return <p className="se-empty">Loading unit…</p>;
+    if (contract.isLoading) return <p className="se-empty">Đang tải thông tin kho…</p>;
     if (contract.isError) return <div className="se-alert" role="alert">{errorMessage(contract.error)}</div>;
 
     const c = contract.data;
@@ -136,23 +137,23 @@ export default function UnitDetailPage() {
 
     return (
         <>
-            <Link to="/my-storage" className="se-back"><Icon name="arrowLeft" size={16} /> Back to My units</Link>
+            <Link to="/my-storage" className="se-back"><Icon name="arrowLeft" size={16} /> Quay lại Kho của tôi</Link>
             <div className="se-account-title">
                 <div>
-                    <h1>Unit {c.unitCode} <span className={`se-badge ${c.status === 'Active' ? '' : 'low'}`}>{c.status}</span></h1>
+                    <h1>Kho {c.unitCode} <span className={`se-badge ${CONTRACT_BADGE[c.status]?.[0] ?? 'low'}`}>{CONTRACT_BADGE[c.status]?.[1] ?? c.status}</span></h1>
                     <p>{[r?.unitTypeName, r?.facilityName].filter(Boolean).join(' · ')}</p>
                 </div>
                 <div className="se-title-actions">
-                    <Link to={`/support/new?contractId=${contractId}`} className="se-btn se-btn-ghost"><Icon name="shield" size={16} /> Report a problem</Link>
-                    {active && <Link to={`/move-out?contractId=${contractId}`} className="se-btn se-btn-danger">Request move-out</Link>}
+                    <Link to={`/support/new?contractId=${contractId}`} className="se-btn se-btn-ghost"><Icon name="shield" size={16} /> Báo sự cố</Link>
+                    {active && <Link to={`/move-out?contractId=${contractId}`} className="se-btn se-btn-danger">Yêu cầu trả kho</Link>}
                 </div>
             </div>
 
             {c.status === 'Draft' && !c.signedAt && (
                 <div className="se-due">
                     <Icon name="file" size={20} />
-                    <div><strong>Please sign your rental contract</strong><small>Your unit is handed over and activated after you sign.</small></div>
-                    <button type="button" className="se-btn se-btn-amber se-btn-sm" onClick={() => sign.mutate()} disabled={sign.isPending}>{sign.isPending ? 'Signing…' : 'Sign contract'}</button>
+                    <div><strong>Vui lòng ký hợp đồng thuê kho</strong><small>Sau khi bạn ký, nhân viên sẽ bàn giao và kích hoạt kho.</small></div>
+                    <button type="button" className="se-btn se-btn-amber se-btn-sm" onClick={() => sign.mutate()} disabled={sign.isPending}>{sign.isPending ? 'Đang ký…' : 'Ký hợp đồng'}</button>
                 </div>
             )}
             {sign.isError && <div className="se-alert" role="alert">{errorMessage(sign.error)}</div>}
@@ -161,12 +162,12 @@ export default function UnitDetailPage() {
                 <div>
                     <AccessCodeCard contract={c} />
                     {active && <RenewCard contract={c} unitTypeId={r?.unitTypeId} />}
-                    {live && !active && <div className="se-alert info">Pay the overdue rent to renew this rental or request a move-out.</div>}
+                    {live && !active && <div className="se-alert info">Hãy thanh toán tiền thuê quá hạn để có thể gia hạn hoặc yêu cầu trả kho.</div>}
                     <section className="se-panel">
-                        <h2>Payment history</h2>
+                        <h2>Lịch sử thanh toán</h2>
                         <div className="se-table-wrap">
                             <table className="se-table">
-                                <thead><tr><th>Date</th><th>Description</th><th>Amount</th><th>Status</th></tr></thead>
+                                <thead><tr><th>Ngày lập</th><th>Nội dung</th><th>Số tiền</th><th>Trạng thái</th></tr></thead>
                                 <tbody>
                                     {mine.map((inv) => {
                                         const [tone, label] = invoiceBadge(inv);
@@ -179,7 +180,7 @@ export default function UnitDetailPage() {
                                             </tr>
                                         );
                                     })}
-                                    {!mine.length && <tr><td colSpan={4} className="se-empty">No invoices for this unit yet.</td></tr>}
+                                    {!mine.length && <tr><td colSpan={4} className="se-empty">Kho này chưa có hóa đơn nào.</td></tr>}
                                 </tbody>
                             </table>
                         </div>
@@ -189,32 +190,32 @@ export default function UnitDetailPage() {
                 <aside>
                     {due && (
                         <div className="se-due-card">
-                            <strong>{formatVnd(due.outstandingAmount)} due {formatDate(due.dueDate)}</strong>
+                            <strong>{formatVnd(due.outstandingAmount)} · hạn {formatDate(due.dueDate)}</strong>
                             <small>{due.items?.[0]?.description ?? due.invoiceNumber}</small>
-                            <PayInvoiceButton invoice={due} className="se-btn se-btn-amber se-btn-block se-btn-sm">Pay now</PayInvoiceButton>
+                            <PayInvoiceButton invoice={due} className="se-btn se-btn-amber se-btn-block se-btn-sm">Thanh toán ngay</PayInvoiceButton>
                         </div>
                     )}
                     <section className="se-panel">
-                        <h2>Contract</h2>
+                        <h2>Hợp đồng</h2>
                         <dl className="se-kv">
-                            <div><dt>Contract no.</dt><dd>{c.contractNumber}</dd></div>
-                            <div><dt>Start date</dt><dd>{formatDate(c.startDate)}</dd></div>
-                            <div><dt>End date</dt><dd>{formatDate(c.endDate)}</dd></div>
-                            <div><dt>Monthly rent</dt><dd>{formatVnd(c.monthlyRent)}</dd></div>
-                            <div><dt>Deposit held</dt><dd>{formatVnd(c.depositAmount)}</dd></div>
-                            <div><dt>Payment day</dt><dd>Day {c.paymentDay} monthly</dd></div>
-                            <div><dt>Signed</dt><dd>{c.signedAt ? formatDate(c.signedAt) : 'Not yet'}</dd></div>
+                            <div><dt>Số hợp đồng</dt><dd>{c.contractNumber}</dd></div>
+                            <div><dt>Ngày bắt đầu</dt><dd>{formatDate(c.startDate)}</dd></div>
+                            <div><dt>Ngày kết thúc</dt><dd>{formatDate(c.endDate)}</dd></div>
+                            <div><dt>Tiền thuê mỗi tháng</dt><dd>{formatVnd(c.monthlyRent)}</dd></div>
+                            <div><dt>Tiền cọc đang giữ</dt><dd>{formatVnd(c.depositAmount)}</dd></div>
+                            <div><dt>Ngày thanh toán</dt><dd>Ngày {c.paymentDay} hằng tháng</dd></div>
+                            <div><dt>Ngày ký</dt><dd>{c.signedAt ? formatDate(c.signedAt) : 'Chưa ký'}</dd></div>
                         </dl>
                         {live && <>
-                            <p className="se-hint">{used}% of rental period used</p>
+                            <p className="se-hint">Đã dùng {used}% thời hạn thuê</p>
                             <div className="se-progress flat"><span style={{ width: `${used}%` }} /></div>
                         </>}
                     </section>
                     <section className="se-panel">
-                        <h2>Access log</h2>
+                        <h2>Lịch sử ra vào</h2>
                         <ul className="se-log">
-                            {myLogs.map((l) => <li key={l.accessLogId}><strong>{formatTime(l.accessTime)}</strong> {l.result}</li>)}
-                            {!myLogs.length && <li className="se-hint">No gate activity yet.</li>}
+                            {myLogs.map((l) => <li key={l.accessLogId}><strong>{formatTime(l.accessTime)}</strong> {ACCESS_RESULT[l.result] ?? l.result}</li>)}
+                            {!myLogs.length && <li className="se-hint">Chưa có lượt ra vào nào.</li>}
                         </ul>
                     </section>
                 </aside>

@@ -10,18 +10,21 @@ import { useMyContracts, useMyReservations } from './queries.js';
 import './UnitDetailPage.css';
 
 const CHECKS = [
-    'The unit will be completely empty and swept',
-    'I will remove my own disc lock and bring the access card',
-    'I understand cleaning or repair costs are deducted from the deposit',
-    'I will be there in person, or send someone with written authorisation',
+    'Tôi sẽ dọn trống và quét sạch kho',
+    'Tôi sẽ tháo ổ khóa riêng và mang theo thẻ ra vào',
+    'Tôi hiểu phí vệ sinh hoặc sửa chữa (nếu có) sẽ trừ vào tiền cọc',
+    'Tôi sẽ có mặt khi kiểm tra kho, hoặc cử người có giấy ủy quyền',
 ];
 const NEXT_STEPS = [
-    'We confirm your request and the inspection time.',
-    'You empty the unit and remove your lock before the appointment.',
-    'Staff inspect the unit with you and take back the lock and card.',
-    'The deposit, minus any charges, is refunded within 7 days.',
+    'Nhân viên xác nhận yêu cầu và hẹn giờ kiểm tra kho.',
+    'Bạn dọn trống kho và tháo ổ khóa trước giờ hẹn.',
+    'Nhân viên cùng bạn kiểm tra kho và thu lại ổ khóa, thẻ ra vào.',
+    'Tiền cọc, sau khi trừ các khoản phí (nếu có), được hoàn theo cách bạn chọn.',
 ];
-const MOVE_OUT_BADGE = { Requested: 'low', Approved: 'low', Inspected: 'low', Completed: '', Cancelled: 'none' };
+const MOVE_OUT_BADGE = {
+    Requested: ['low', 'Đã gửi yêu cầu'], Approved: ['low', 'Đã hẹn kiểm tra'], Inspected: ['low', 'Đã kiểm tra kho'],
+    Completed: ['', 'Đã hoàn tất'], Cancelled: ['none', 'Đã hủy'],
+};
 
 /** U15: ask to end a rental — date, checklist and where to refund the deposit. */
 export default function MoveOutPage() {
@@ -57,21 +60,21 @@ export default function MoveOutPage() {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['move-outs'] }),
     });
 
-    if (contracts.isLoading) return <p className="se-empty">Loading…</p>;
+    if (contracts.isLoading) return <p className="se-empty">Đang tải…</p>;
     if (!contract) {
         return (
             <>
-                <div className="se-account-title"><div><h1>Request move-out</h1></div></div>
-                <div className="se-card se-empty">You have no active rental to move out of. <Link to="/my-storage" className="se-link">Back to My units</Link></div>
+                <div className="se-account-title"><div><h1>Yêu cầu trả kho</h1></div></div>
+                <div className="se-card se-empty">Bạn không có kho nào đang thuê để trả. <Link to="/my-storage" className="se-link">Quay lại Kho của tôi</Link></div>
             </>
         );
     }
 
     return (
         <>
-            <Link to={`/my-storage/units/${contract.contractId}`} className="se-back"><Icon name="arrowLeft" size={16} /> Back to unit {contract.unitCode}</Link>
+            <Link to={`/my-storage/units/${contract.contractId}`} className="se-back"><Icon name="arrowLeft" size={16} /> Quay lại kho {contract.unitCode}</Link>
             <div className="se-account-title">
-                <div><h1>Request move-out</h1><p>Tell us when you will empty the unit; staff then book an inspection with you.</p></div>
+                <div><h1>Yêu cầu trả kho</h1><p>Cho chúng tôi biết ngày bạn dọn trống kho, nhân viên sẽ hẹn lịch kiểm tra cùng bạn.</p></div>
             </div>
 
             <div className="se-detail-grid">
@@ -79,11 +82,11 @@ export default function MoveOutPage() {
                     <div className="se-summary-unit">
                         <span className="se-brand-mark"><Icon name="box" size={18} /></span>
                         <div>
-                            <strong>Unit {contract.unitCode}{reservation ? ` · ${reservation.unitTypeName}` : ''}</strong>
-                            <small>{reservation?.facilityName} · contract {contract.contractNumber} ends {formatDate(contract.endDate)}</small>
+                            <strong>Kho {contract.unitCode}{reservation ? ` · ${reservation.unitTypeName}` : ''}</strong>
+                            <small>{reservation?.facilityName} · hợp đồng {contract.contractNumber} hết hạn {formatDate(contract.endDate)}</small>
                         </div>
                         {active.length > 1 && (
-                            <select className="se-unit-switch" value={contract.contractId} onChange={(e) => setPicked(e.target.value)} aria-label="Change unit">
+                            <select className="se-unit-switch" value={contract.contractId} onChange={(e) => setPicked(e.target.value)} aria-label="Chọn kho khác">
                                 {active.map((c) => <option key={c.contractId} value={c.contractId}>{c.unitCode}</option>)}
                             </select>
                         )}
@@ -91,26 +94,26 @@ export default function MoveOutPage() {
 
                     {open ? (
                         <div className="se-alert info">
-                            Move-out already requested for {formatDate(open.plannedMoveOutDate)} — status{' '}
-                            <span className={`se-badge ${MOVE_OUT_BADGE[open.status] ?? ''}`}>{open.status}</span>
-                            {open.inspectionSlot ? ` · inspection ${formatDate(open.inspectionSlot)}` : ''}
+                            Bạn đã yêu cầu trả kho ngày {formatDate(open.plannedMoveOutDate)}. Trạng thái:{' '}
+                            <span className={`se-badge ${MOVE_OUT_BADGE[open.status]?.[0] ?? ''}`}>{MOVE_OUT_BADGE[open.status]?.[1] ?? open.status}</span>
+                            {open.inspectionSlot ? ` · lịch kiểm tra ${formatDate(open.inspectionSlot)}` : ''}
                         </div>
                     ) : (
                         <form className="se-form" onSubmit={(e) => { e.preventDefault(); if (ready) submit.mutate(); }}>
-                            <h2>1. When will you move out?</h2>
+                            <h2>1. Khi nào bạn trả kho?</h2>
                             <div className="se-panel-grid">
-                                <label><span className="se-label">Planned move-out date</span>
+                                <label><span className="se-label">Ngày dự kiến trả kho</span>
                                     <div className="se-field"><Icon name="calendar" />
                                         <input type="date" min={earliest} max={contract.endDate} value={form.plannedMoveOutDate} onChange={(e) => set({ plannedMoveOutDate: e.target.value })} required />
                                     </div>
-                                    <p className="se-hint">{terms.data ? `${terms.data.noticeDays} days' notice: the earliest date is ${formatDate(earliest)}.` : 'Notice is required; the earliest allowed date is checked when you submit.'}</p>
+                                    <p className="se-hint">{terms.data ? `Cần báo trước ${terms.data.noticeDays} ngày: sớm nhất là ngày ${formatDate(earliest)}.` : 'Cần báo trước khi trả kho; ngày sớm nhất được kiểm tra khi bạn gửi yêu cầu.'}</p>
                                 </label>
-                                <label><span className="se-label">Reason (optional)</span>
-                                    <div className="se-input"><input maxLength={200} value={form.reason} onChange={(e) => set({ reason: e.target.value })} placeholder="e.g. Moving to a bigger unit" /></div>
+                                <label><span className="se-label">Lý do (không bắt buộc)</span>
+                                    <div className="se-input"><input maxLength={200} value={form.reason} onChange={(e) => set({ reason: e.target.value })} placeholder="Ví dụ: chuyển sang kho lớn hơn" /></div>
                                 </label>
                             </div>
 
-                            <h2>2. Confirm before the inspection</h2>
+                            <h2>2. Xác nhận trước khi kiểm tra kho</h2>
                             <div className="se-checklist">
                                 {CHECKS.map((label, i) => (
                                     <label key={label} className="se-check">
@@ -120,18 +123,18 @@ export default function MoveOutPage() {
                                 ))}
                             </div>
 
-                            <h2>3. Where should we refund the deposit?</h2>
+                            <h2>3. Hoàn tiền cọc vào đâu?</h2>
                             <div className="se-panel-grid">
-                                <label><span className="se-label">Refund method</span>
+                                <label><span className="se-label">Cách nhận tiền cọc</span>
                                     <div className="se-field"><Icon name="card" />
                                         <select value={form.refundMethod} onChange={(e) => set({ refundMethod: e.target.value })}>
-                                            <option value="BankTransfer">Bank transfer</option>
-                                            <option value="Cash">Cash at the facility</option>
+                                            <option value="BankTransfer">Chuyển khoản ngân hàng</option>
+                                            <option value="Cash">Nhận tiền mặt tại cơ sở</option>
                                         </select>
                                     </div>
                                 </label>
                                 {needsAccount && (
-                                    <label><span className="se-label">Bank and account number</span>
+                                    <label><span className="se-label">Ngân hàng và số tài khoản</span>
                                         <div className="se-input"><input maxLength={50} value={form.refundAccount} onChange={(e) => set({ refundAccount: e.target.value })} placeholder="Vietcombank 0071 000 123 456" required /></div>
                                     </label>
                                 )}
@@ -139,9 +142,9 @@ export default function MoveOutPage() {
 
                             {submit.isError && <div className="se-alert" role="alert">{errorMessage(submit.error)}</div>}
                             <div className="se-form-actions">
-                                <Link to={`/my-storage/units/${contract.contractId}`} className="se-btn se-btn-ghost">Cancel</Link>
+                                <Link to={`/my-storage/units/${contract.contractId}`} className="se-btn se-btn-ghost">Hủy</Link>
                                 <button type="submit" className="se-btn se-btn-primary" disabled={!ready || submit.isPending}>
-                                    {submit.isPending ? 'Sending…' : <>Submit move-out request <Icon name="arrow" size={16} /></>}
+                                    {submit.isPending ? 'Đang gửi…' : <>Gửi yêu cầu trả kho <Icon name="arrow" size={16} /></>}
                                 </button>
                             </div>
                         </form>
@@ -150,20 +153,20 @@ export default function MoveOutPage() {
 
                 <aside>
                     <section className="se-panel">
-                        <h2>Deposit</h2>
+                        <h2>Tiền cọc</h2>
                         <dl className="se-kv">
-                            <div><dt>Deposit held</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
-                            <div><dt>Cleaning / damage</dt><dd>assessed on the day</dd></div>
+                            <div><dt>Tiền cọc đang giữ</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
+                            <div><dt>Phí vệ sinh, hư hỏng</dt><dd>xác định khi kiểm tra kho</dd></div>
                         </dl>
-                        <p className="se-hint">The final refund is confirmed after the inspection and paid within 7 days.</p>
+                        <p className="se-hint">Số tiền hoàn lại cuối cùng được xác nhận sau khi kiểm tra kho.</p>
                     </section>
                     <section className="se-panel">
-                        <h2>What happens next</h2>
+                        <h2>Các bước tiếp theo</h2>
                         <ol className="se-next-steps">{NEXT_STEPS.map((s) => <li key={s}>{s}</li>)}</ol>
                     </section>
                     <div className="se-due-card">
-                        <strong>Moving out early</strong>
-                        <small>Your contract runs to {formatDate(contract.endDate)}. Moving out earlier is allowed, but the remaining months are not refunded.</small>
+                        <strong>Trả kho trước hạn</strong>
+                        <small>Hợp đồng của bạn có hiệu lực đến ngày {formatDate(contract.endDate)}. Bạn vẫn có thể trả kho sớm hơn; hãy hỏi nhân viên về tiền thuê của những tháng còn lại.</small>
                     </div>
                 </aside>
             </div>

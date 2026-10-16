@@ -50,22 +50,10 @@
 .se-search label > span { display: block; font-size: 13px; font-weight: 600; color: var(--se-ink); margin-bottom: 6px; }
 
 /* Services */
-.se-services { display: grid; grid-template-columns: repeat(6, 1fr); gap: 20px; }
+.se-services { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
 .se-service { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
 .se-service h3 { font-size: 16px; margin-top: 8px; }
 .se-service p { flex: 1; }
-
-/* Compare */
-.se-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start; }
-.se-plan { padding: 32px; display: flex; flex-direction: column; gap: 16px; }
-.se-plan.featured { border: 2px solid var(--se-primary); box-shadow: 0 10px 30px rgba(204, 75, 9, 0.12); }
-.se-plan-top { display: flex; justify-content: space-between; align-items: center; }
-.se-plan h3 { font-size: 24px; }
-.se-plan p { font-size: 15px; }
-.se-plan-price { font-size: 22px; font-weight: 700; color: var(--se-primary); }
-.se-checks { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 12px; font-size: 15px; }
-.se-checks li { display: flex; align-items: center; gap: 12px; }
-.se-checks svg { color: var(--se-primary); }
 
 /* Sizes */
 .se-sizes { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
@@ -126,9 +114,8 @@
 .se-cta-actions .se-btn { height: 52px; padding: 0 28px; }
 
 @media (max-width: 1100px) {
-    .se-hero-grid, .se-compare, .se-locations { grid-template-columns: 1fr; }
+    .se-hero-grid, .se-locations { grid-template-columns: 1fr; }
     .se-hero-art { justify-self: stretch; max-width: none; }
-    .se-services { grid-template-columns: repeat(3, 1fr); }
     .se-sizes, .se-steps { grid-template-columns: repeat(2, 1fr); }
     .se-search { grid-template-columns: 1fr 1fr; }
     .se-search button { grid-column: 1 / -1; }
@@ -144,5 +131,5 @@
     .se-art-unit { height: 90px; }
     .se-services, .se-sizes, .se-steps, .se-search { grid-template-columns: 1fr; }
     .se-cta-row { flex-direction: column; align-items: flex-start; }
-    .se-plan { padding: 24px; }
 }
+.se-size-body .se-size-noprice { font-size: 13px; color: var(--se-muted); }

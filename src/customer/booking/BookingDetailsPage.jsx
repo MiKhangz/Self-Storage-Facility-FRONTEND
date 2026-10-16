@@ -12,11 +12,11 @@ import { lateFeeText, useTerms } from '../components/terms.js';
 
 /** The rules the customer agrees to, worded from the terms the backend enforces. */
 const agreement = (t) => [
-    `The deposit (${t.depositMonths} ${t.depositMonths === 1 ? 'month' : 'months'} of rent) is refunded after the unit is returned in good condition, less any charges.`,
-    `Rent is due monthly. ${lateFeeText(t)}`,
-    `Cancel within ${t.cancelFreeHours} hours of booking for a full deposit refund; after that the deposit is non-refundable.`,
-    `Moving out needs ${t.noticeDays} days' notice.`,
-    'Hazardous, perishable and illegal items are prohibited.',
+    `Tiền cọc (bằng ${t.depositMonths} tháng tiền thuê) được hoàn lại sau khi trả kho trong tình trạng tốt, trừ các khoản phí phát sinh.`,
+    `Tiền thuê thanh toán hằng tháng. ${lateFeeText(t)}`,
+    `Hủy trong vòng ${t.cancelFreeHours} giờ sau khi đặt kho được hoàn đủ tiền cọc; sau thời gian này tiền cọc không được hoàn lại.`,
+    `Muốn trả kho cần báo trước ${t.noticeDays} ngày.`,
+    'Không cất hàng dễ cháy nổ, hàng dễ hư hỏng và hàng cấm theo quy định pháp luật.',
 ];
 
 /** U07: review the quote, accept the agreement and create the reservation. */
@@ -54,7 +54,7 @@ export default function BookingDetailsPage() {
     if (!valid) {
         return (
             <div className="se-booking"><div className="se-container se-panel se-empty">
-                This booking link is incomplete. <Link to="/booking" className="se-link">Start a new booking</Link>
+                Liên kết đặt kho này chưa đầy đủ. <Link to="/booking" className="se-link">Đặt kho lại từ đầu</Link>
             </div></div>
         );
     }
@@ -66,28 +66,28 @@ export default function BookingDetailsPage() {
             <BookingStepper current={2} />
             <div className="se-booking">
                 <div className="se-container">
-                    <Link to={back} className="se-back"><Icon name="arrowLeft" size={16} /> Back to unit selection</Link>
+                    <Link to={back} className="se-back"><Icon name="arrowLeft" size={16} /> Quay lại chọn kho</Link>
                     <div className="se-booking-grid">
                         <div>
                             <section className="se-panel">
-                                <h2>Renter information</h2>
-                                <span className="se-label">Full name</span>
+                                <h2>Thông tin người thuê</h2>
+                                <span className="se-label">Họ và tên</span>
                                 <div className="se-field" aria-readonly="true">{session?.fullName || '—'}</div>
-                                <p className="se-hint">Your phone, email and Citizen ID come from your account and are checked at check-in.</p>
+                                <p className="se-hint">Số điện thoại, email và CCCD lấy từ tài khoản của bạn và được kiểm tra khi nhận kho.</p>
                             </section>
 
                             <section className="se-panel">
-                                <h2>Payment</h2>
-                                <div className="se-alert info">Reserving issues a deposit invoice. Pay it online on the next screen or later under Payments; check-in needs the deposit paid.</div>
+                                <h2>Thanh toán</h2>
+                                <div className="se-alert info">Khi đặt kho, hệ thống tạo hóa đơn tiền cọc. Bạn có thể thanh toán trực tuyến ngay ở bước sau hoặc trong mục Thanh toán; cần đóng cọc trước khi nhận kho.</div>
                             </section>
 
                             <section className="se-panel">
-                                <h2>Rental agreement</h2>
-                                {terms.isError && <div className="se-alert" role="alert">The rental terms could not be loaded, so booking is unavailable right now.</div>}
+                                <h2>Quy định thuê kho</h2>
+                                {terms.isError && <div className="se-alert" role="alert">Không tải được quy định thuê kho nên hiện chưa thể đặt kho. Vui lòng tải lại trang.</div>}
                                 {terms.data && <ul className="se-rules-box">{agreement(terms.data).map((r) => <li key={r}>{r}</li>)}</ul>}
                                 <label className="se-check">
                                     <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
-                                    <span>I have read and agree to the rental agreement and prohibited items policy.</span>
+                                    <span>Tôi đã đọc và đồng ý với quy định thuê kho, bao gồm danh sách hàng cấm.</span>
                                 </label>
                             </section>
                         </div>
@@ -96,7 +96,7 @@ export default function BookingDetailsPage() {
                             {reserve.isError && <div className="se-alert" role="alert">{errorMessage(reserve.error)}</div>}
                             <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta"
                                 disabled={!agreed || !terms.data || !quote.data || reserve.isPending} onClick={() => reserve.mutate()}>
-                                {reserve.isPending ? 'Reserving…' : <>Reserve this unit <Icon name="arrow" size={16} /></>}
+                                {reserve.isPending ? 'Đang đặt kho…' : <>Xác nhận đặt kho <Icon name="arrow" size={16} /></>}
                             </button>
                         </BookingSummary>
                     </div>

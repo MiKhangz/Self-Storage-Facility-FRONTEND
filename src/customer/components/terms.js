@@ -19,4 +19,4 @@ export function discountLabel(terms, months, unitTypeId) {
 
 /** One sentence for the late-fee rule, shared by the sizes page and the rental agreement. */
 export const lateFeeText = (t) =>
-    `Late fee: ${t.lateFeePercentPerWeek}% of the rent per full week overdue, after ${t.graceDays} days' grace. Access is suspended after ${t.suspendAfterDays} days overdue.`;
+    `Phí trễ hạn: ${t.lateFeePercentPerWeek}% tiền thuê cho mỗi tuần trễ trọn vẹn, sau ${t.graceDays} ngày ân hạn. Quyền ra vào bị tạm khóa khi trễ hạn quá ${t.suspendAfterDays} ngày.`;

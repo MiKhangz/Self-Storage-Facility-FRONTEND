@@ -8,7 +8,7 @@ export default function AuthShell({ title, benefits, wide, children }) {
         <div className="se-auth-bg">
             <div className={`se-auth-card${wide ? ' wide' : ''}`}>
                 <aside className="se-auth-side">
-                    <span className="se-auth-tag">Member benefits</span>
+                    <span className="se-auth-tag">Quyền lợi thành viên</span>
                     <h2>{title}</h2>
                     <ul>
                         {benefits.map((b) => (
@@ -31,7 +31,7 @@ export function PasswordInput({ value, onChange, invalid, autoComplete }) {
         <div className={`se-input${invalid ? ' invalid' : ''}`}>
             <Icon name="lock" size={16} />
             <input type={shown ? 'text' : 'password'} value={value} onChange={onChange} autoComplete={autoComplete} required />
-            <button type="button" className="se-input-eye" onClick={() => setShown(!shown)} aria-label={shown ? 'Hide password' : 'Show password'}>
+            <button type="button" className="se-input-eye" onClick={() => setShown(!shown)} aria-label={shown ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}>
                 <Icon name={shown ? 'eyeOff' : 'eye'} size={16} />
             </button>
         </div>

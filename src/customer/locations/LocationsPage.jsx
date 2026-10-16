@@ -11,6 +11,9 @@ import './LocationsPage.css';
 // ponytail: the map is a drawing, not real geography; swap for a map library once facilities carry coordinates.
 const PINS = [[71, 21], [80, 34], [40, 39], [62, 43], [24, 54], [74, 54], [49, 60], [57, 71]];
 
+/** Lower-case and strip Vietnamese diacritics, so "go vap" finds "Gò Vấp". */
+export const fold = (s = '') => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/đ/gi, 'd').toLowerCase();
+
 export default function LocationsPage() {
     const [search, setSearch] = useState('');
     const [unitTypeId, setUnitTypeId] = useState('');
@@ -29,34 +32,34 @@ export default function LocationsPage() {
         })),
     });
 
-    const term = search.trim().toLowerCase();
+    const term = fold(search.trim());
     const shown = all
         .map((f, i) => ({ ...f, free: unitTypeId ? stock[i].data?.availableUnits : f.availableUnits, pin: PINS[i % PINS.length] }))
-        .filter((f) => !term || [f.name, f.address, f.district].some((v) => v?.toLowerCase().includes(term)));
+        .filter((f) => !term || [f.name, f.address, f.district].some((v) => fold(v ?? '').includes(term)));
     const focus = shown.find((f) => f.facilityId === active) ?? shown[0];
 
     return (
         <>
-            <PageHead crumb="Locations" title={all.length === 1 ? 'Our storage location' : `Our ${all.length || 8} storage locations`}>
-                All facilities have CCTV, fire alarms, 24/7 personal-code access and on-site staff from 8:00–20:00.
+            <PageHead crumb="Cơ sở" title={all.length ? `${all.length} cơ sở của StorEase` : 'Các cơ sở của StorEase'}>
+                Mỗi kho có khóa riêng và mã ra vào cá nhân. Giờ mở cửa và số điện thoại của từng cơ sở ở bên dưới.
             </PageHead>
 
             <section className="se-container se-locations-page">
                 <div>
                     <div className="se-loc-filters">
                         <div className="se-field se-loc-search"><Icon name="search" />
-                            <input type="search" placeholder="Search by district or address" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Search by district or address" />
+                            <input type="search" placeholder="Tìm theo tên, quận hoặc địa chỉ" value={search} onChange={(e) => setSearch(e.target.value)} aria-label="Tìm theo tên, quận hoặc địa chỉ" />
                         </div>
                         <div className="se-field"><Icon name="box" />
-                            <select value={unitTypeId} onChange={(e) => setUnitTypeId(e.target.value)} aria-label="Filter by unit size">
-                                <option value="">All sizes</option>
-                                {unitTypes.data?.map((u) => <option key={u.unitTypeId} value={u.unitTypeId}>{u.code} units</option>)}
+                            <select value={unitTypeId} onChange={(e) => setUnitTypeId(e.target.value)} aria-label="Lọc theo kích thước">
+                                <option value="">Mọi kích thước</option>
+                                {unitTypes.data?.map((u) => <option key={u.unitTypeId} value={u.unitTypeId}>Kho {u.code} · {u.areaM2.toLocaleString('vi-VN')} m²</option>)}
                             </select>
                         </div>
                     </div>
 
-                    {facilities.isError && <div className="se-card se-empty">Locations could not be loaded. Please try again later.</div>}
-                    {facilities.isLoading && <div className="se-card se-empty">Loading locations…</div>}
+                    {facilities.isError && <div className="se-card se-empty">Không tải được danh sách cơ sở. Vui lòng tải lại trang sau ít phút.</div>}
+                    {facilities.isLoading && <div className="se-card se-empty">Đang tải danh sách cơ sở…</div>}
 
                     <div className="se-loc-list">
                         {shown.map((f) => {
@@ -67,14 +70,15 @@ export default function LocationsPage() {
                                     <div className="se-loc-body">
                                         <div className="se-loc-title"><h3>{f.name}</h3>{badge && <span className={`se-badge ${badge.tone}`}>{badge.label}</span>}</div>
                                         <p className="se-loc-addr"><Icon name="pin" size={14} /> {f.address}{f.district ? `, ${f.district}` : ''}</p>
-                                        <p className="se-loc-meta">{f.openingHours ? `Open ${f.openingHours}` : 'Open daily'}{f.phone ? ` · ${f.phone}` : ''}</p>
+                                        <p className="se-loc-meta">{f.openingHours ? `Mở cửa ${f.openingHours}` : 'Chưa cập nhật giờ mở cửa'}{f.phone ? ` · ${f.phone}` : ''}</p>
                                     </div>
-                                    <Link to={`/booking?facilityId=${f.facilityId}${unitTypeId ? `&unitTypeId=${unitTypeId}` : ''}`} className="se-btn se-btn-primary se-btn-sm">View units</Link>
+                                    <Link to={`/booking?facilityId=${f.facilityId}${unitTypeId ? `&unitTypeId=${unitTypeId}` : ''}`} className="se-btn se-btn-primary se-btn-sm">Xem kho trống</Link>
                                 </article>
                             );
                         })}
                     </div>
-                    {!!all.length && <p className="se-loc-count">Showing {shown.length} of {all.length} locations</p>}
+                    {!!all.length && !shown.length && <div className="se-card se-empty">Không có cơ sở nào khớp với “{search.trim()}”. Thử tên quận khác.</div>}
+                    {!!all.length && <p className="se-loc-count">Hiển thị {shown.length} trên {all.length} cơ sở</p>}
                 </div>
 
                 <div className="se-loc-map" aria-hidden="true">
@@ -86,7 +90,7 @@ export default function LocationsPage() {
                     {focus && (
                         <div className={`se-map-tip${focus.pin[1] < 30 ? ' below' : ''}`} style={{ left: `${focus.pin[0]}%`, top: `${focus.pin[1]}%` }}>
                             <strong>{focus.name}</strong>
-                            <small>{focus.free ?? 0} units available</small>
+                            <small>{focus.free ?? 0} kho trống</small>
                         </div>
                     )}
                 </div>

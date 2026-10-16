@@ -25,7 +25,14 @@ export function periodUsed(startIso, endIso, todayIso) {
     return Math.min(100, Math.max(0, Math.round(((day(todayIso) - day(startIso)) / total) * 100)));
 }
 
-const INVOICE_BADGE = { Paid: ['', 'Paid'], Overdue: ['none', 'Overdue'], WrittenOff: ['none', 'Written off'] };
+const INVOICE_BADGE = { Paid: ['', 'Đã thanh toán'], Overdue: ['none', 'Quá hạn'], WrittenOff: ['none', 'Đã xóa nợ'] };
 
 /** [tone, label] for an invoice status badge; an open invoice shows its due date. */
-export const invoiceBadge = (inv) => INVOICE_BADGE[inv.status] ?? ['low', `Due ${formatDate(inv.dueDate)}`];
+export const invoiceBadge = (inv) => INVOICE_BADGE[inv.status] ?? ['low', `Hạn ${formatDate(inv.dueDate)}`];
+
+/** [tone, label] per contract status, in the customer's words. */
+export const CONTRACT_BADGE = {
+    Draft: ['low', 'Chờ bàn giao'], Active: ['', 'Đang thuê'], PendingMoveOut: ['low', 'Đang trả kho'],
+    Overdue: ['none', 'Quá hạn thanh toán'], Suspended: ['none', 'Tạm khóa ra vào'],
+    Closed: ['muted', 'Đã kết thúc'], Terminated: ['muted', 'Đã chấm dứt'],
+};

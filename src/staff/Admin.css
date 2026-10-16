@@ -54,7 +54,6 @@
     height: 40px; padding: 0 10px; border: 1px solid var(--se-line); border-radius: 8px; background: #fff;
     font-family: inherit; font-size: 14px; color: var(--se-ink);
 }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 .sa-grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; align-items: start; margin-bottom: 20px; }
 .sa-card-title { display: flex; justify-content: space-between; align-items: center; margin: 0 0 14px; }

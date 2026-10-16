@@ -7,9 +7,9 @@ import Icon from '../components/Icon.jsx';
 import AuthShell, { PasswordInput } from './AuthShell.jsx';
 
 const BENEFITS = [
-    { icon: 'key', title: 'Personal access code', text: 'Open your unit 24/7 with a code that only you know.' },
-    { icon: 'card', title: 'Pay & renew in seconds', text: 'Card, e-wallet or bank transfer — with automatic reminders.' },
-    { icon: 'chat', title: 'Fast support', text: 'Report lock, access or payment issues and track the response.' },
+    { icon: 'key', title: 'Mã ra vào cá nhân', text: 'Mở cổng và kho của bạn bằng mã chỉ riêng bạn biết.' },
+    { icon: 'card', title: 'Thanh toán và gia hạn nhanh', text: 'Xem hóa đơn, thanh toán trực tuyến và gia hạn ngay trong tài khoản.' },
+    { icon: 'chat', title: 'Hỗ trợ kịp thời', text: 'Báo sự cố về khóa, mã ra vào hay thanh toán và theo dõi phản hồi.' },
 ];
 
 export default function LoginPage() {
@@ -29,7 +29,7 @@ export default function LoginPage() {
             const session = await login(email, password);
             if (session.role !== Roles.StorageCustomer) {
                 logout();
-                setError('This is a staff account. Please sign in at the Admin Portal.');
+                setError('Đây là tài khoản nhân viên. Vui lòng đăng nhập ở Cổng quản trị.');
                 return;
             }
             navigate(location.state?.from ?? '/my-storage', { replace: true });
@@ -41,9 +41,9 @@ export default function LoginPage() {
     };
 
     return (
-        <AuthShell title="Your storage, managed online." benefits={BENEFITS}>
-            <h1>Welcome back</h1>
-            <p className="se-auth-lead">Log in to manage your storage units, payments and requests.</p>
+        <AuthShell title="Quản lý kho của bạn trực tuyến." benefits={BENEFITS}>
+            <h1>Chào mừng bạn trở lại</h1>
+            <p className="se-auth-lead">Đăng nhập để quản lý kho, hóa đơn và yêu cầu hỗ trợ.</p>
             <form className="se-form" onSubmit={submit}>
                 <label>
                     <span>Email</span>
@@ -52,18 +52,18 @@ export default function LoginPage() {
                     </div>
                 </label>
                 <label>
-                    <span>Password</span>
+                    <span>Mật khẩu</span>
                     <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
                 </label>
                 <div className="se-form-split">
                     <span />
-                    <Link to="/forgot-password">Forgot password?</Link>
+                    <Link to="/forgot-password">Quên mật khẩu?</Link>
                 </div>
                 {error && <div className="se-alert" role="alert">{error}</div>}
-                <button type="submit" className="se-btn se-btn-primary" disabled={submitting}>{submitting ? 'Logging in…' : 'Log in'}</button>
+                <button type="submit" className="se-btn se-btn-primary" disabled={submitting}>{submitting ? 'Đang đăng nhập…' : 'Đăng nhập'}</button>
             </form>
-            <p className="se-auth-switch">Don&apos;t have an account?<Link to="/register">Register now</Link></p>
-            <div className="se-auth-note"><Icon name="shield" size={15} /><span>Staff &amp; admin accounts sign in at the <Link to="/admin/login">Admin Portal</Link>.</span></div>
+            <p className="se-auth-switch">Chưa có tài khoản?<Link to="/register">Đăng ký ngay</Link></p>
+            <div className="se-auth-note"><Icon name="shield" size={15} /><span>Tài khoản nhân viên và quản trị đăng nhập tại <Link to="/admin/login">Cổng quản trị</Link>.</span></div>
         </AuthShell>
     );
 }

@@ -8,9 +8,9 @@ export const todayIso = () => new Date().toLocaleDateString('en-CA', { timeZone:
 /** Badge class and label for a count of free units. */
 export function availability(count) {
     if (count == null) return null;
-    if (count === 0) return { tone: 'none', label: 'Fully booked' };
-    if (count <= 3) return { tone: 'low', label: `Only ${count} left` };
-    return { tone: '', label: `${count} available` };
+    if (count === 0) return { tone: 'none', label: 'Đã hết kho' };
+    if (count <= 3) return { tone: 'low', label: `Chỉ còn ${count} kho` };
+    return { tone: '', label: `Còn ${count} kho` };
 }
 
 /** Date + N months, clamping 31 Jan + 1 month to 28/29 Feb like .NET DateOnly.AddMonths. */

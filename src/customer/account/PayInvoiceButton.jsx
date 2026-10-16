@@ -4,7 +4,7 @@ import { errorMessage } from '../../api/axiosClient';
 import { formatVnd } from '../components/format.js';
 
 /** Pays an invoice's outstanding amount through the backend's online-gateway endpoint. */
-export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-primary se-btn-sm', children = 'Pay' }) {
+export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-primary se-btn-sm', children = 'Thanh toán' }) {
     const queryClient = useQueryClient();
     const pay = useMutation({
         // ponytail: the backend's development-only simulate-success stands in for the gateway. Once VNPay/MoMo
@@ -18,12 +18,12 @@ export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-p
     });
 
     const confirmAndPay = () => {
-        if (window.confirm(`Pay ${formatVnd(invoice.outstandingAmount)} for invoice ${invoice.invoiceNumber}?`)) pay.mutate();
+        if (window.confirm(`Thanh toán ${formatVnd(invoice.outstandingAmount)} cho hóa đơn ${invoice.invoiceNumber}?`)) pay.mutate();
     };
 
     return (
         <button type="button" className={className} onClick={confirmAndPay} disabled={pay.isPending}>
-            {pay.isPending ? 'Paying…' : children}
+            {pay.isPending ? 'Đang thanh toán…' : children}
         </button>
     );
 }

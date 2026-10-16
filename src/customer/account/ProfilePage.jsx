@@ -7,18 +7,21 @@ import { PasswordInput } from '../auth/AuthShell.jsx';
 import { todayIso } from '../components/format.js';
 import { initials } from '../layout/CustomerLayout.jsx';
 import { LIVE_CONTRACT, useMyContracts } from './queries.js';
+import { PASSWORD_RULE } from '../auth/RegisterPage.jsx';
+
+const ACCOUNT_STATUS = { Active: 'Đang hoạt động', Pending: 'Chờ kích hoạt', Suspended: 'Tạm khóa', Inactive: 'Ngừng hoạt động' };
 
 const FIELDS = [
-    ['fullName', 'Full name', { autoComplete: 'name', required: true }],
-    ['phoneNumber', 'Phone number', { type: 'tel', autoComplete: 'tel' }],
-    ['citizenId', 'Citizen ID (CCCD)', { inputMode: 'numeric', maxLength: 12 }],
-    ['dateOfBirth', 'Date of birth', { type: 'date', max: todayIso() }],
-    ['address', 'Address', { autoComplete: 'street-address' }],
+    ['fullName', 'Họ và tên', { autoComplete: 'name', required: true }],
+    ['phoneNumber', 'Số điện thoại', { type: 'tel', autoComplete: 'tel' }],
+    ['citizenId', 'Căn cước công dân (CCCD)', { inputMode: 'numeric', maxLength: 12 }],
+    ['dateOfBirth', 'Ngày sinh', { type: 'date', max: todayIso() }],
+    ['address', 'Địa chỉ', { autoComplete: 'street-address' }],
 ];
 const NOTIFICATIONS = [
-    ['emailReminders', 'Email reminders before rent is due'],
-    ['smsReminders', 'SMS reminders'],
-    ['marketingEmails', 'News and offers by email'],
+    ['emailReminders', 'Nhắc qua email trước hạn đóng tiền thuê'],
+    ['smsReminders', 'Nhắc qua tin nhắn SMS'],
+    ['marketingEmails', 'Nhận tin tức và ưu đãi qua email'],
 ];
 
 /** Mutation status line shared by the three forms. */
@@ -42,8 +45,8 @@ function DetailsForm({ profile }) {
             ))}
             <span className="se-label">Email</span>
             <div className="se-field" aria-readonly="true">{profile.email}</div>
-            <Status m={save} ok="Your details are saved." />
-            <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save changes'}</button>
+            <Status m={save} ok="Đã lưu thông tin của bạn." />
+            <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Đang lưu…' : 'Lưu thay đổi'}</button>
         </form>
     );
 }
@@ -53,15 +56,15 @@ function PasswordForm() {
     const change = useMutation({ mutationFn: () => profileApi.mePassword(form), onSuccess: () => setForm({ currentPassword: '', newPassword: '' }) });
     return (
         <form className="se-form" onSubmit={(e) => { e.preventDefault(); change.mutate(); }}>
-            <label><span>Current password</span>
+            <label><span>Mật khẩu hiện tại</span>
                 <PasswordInput value={form.currentPassword} onChange={(e) => setForm({ ...form, currentPassword: e.target.value })} autoComplete="current-password" />
             </label>
-            <label><span>New password</span>
+            <label><span>Mật khẩu mới</span>
                 <PasswordInput value={form.newPassword} onChange={(e) => setForm({ ...form, newPassword: e.target.value })} autoComplete="new-password" />
-                <p className="se-hint">At least 8 characters, with a letter and a number</p>
+                <p className="se-hint">{PASSWORD_RULE}</p>
             </label>
-            <Status m={change} ok="Password changed." />
-            <button type="submit" className="se-btn se-btn-primary" disabled={change.isPending || !form.currentPassword || !form.newPassword}>Change password</button>
+            <Status m={change} ok="Đã đổi mật khẩu." />
+            <button type="submit" className="se-btn se-btn-primary" disabled={change.isPending || !form.currentPassword || !form.newPassword}>{change.isPending ? 'Đang đổi…' : 'Đổi mật khẩu'}</button>
         </form>
     );
 }
@@ -83,7 +86,7 @@ function NotificationForm() {
                     <span>{label}</span>
                 </label>
             ))}
-            <Status m={save} ok="Notification settings saved." />
+            <Status m={save} ok="Đã lưu cài đặt thông báo." />
         </div>
     );
 }
@@ -99,21 +102,21 @@ export default function ProfilePage() {
     return (
         <>
             <div className="se-account-title">
-                <div><h1>Profile &amp; settings</h1><p>Your personal details and account.</p></div>
+                <div><h1>Hồ sơ và cài đặt</h1><p>Thông tin cá nhân và tài khoản của bạn.</p></div>
             </div>
             <div className="se-detail-grid">
                 <div>
                     <section className="se-panel">
-                        <h2>Personal information</h2>
+                        <h2>Thông tin cá nhân</h2>
                         {me.isError && <div className="se-alert" role="alert">{errorMessage(me.error)}</div>}
                         {me.data && <DetailsForm profile={me.data} />}
                     </section>
                     <section className="se-panel">
-                        <h2>Change password</h2>
+                        <h2>Đổi mật khẩu</h2>
                         <PasswordForm />
                     </section>
                     <section className="se-panel">
-                        <h2>Notifications</h2>
+                        <h2>Thông báo</h2>
                         <NotificationForm />
                     </section>
                 </div>
@@ -121,14 +124,14 @@ export default function ProfilePage() {
                     <section className="se-panel" style={{ textAlign: 'center' }}>
                         <span className="se-avatar se-avatar-xl">{initials(name)}</span>
                         <h2 style={{ justifyContent: 'center', margin: '12px 0 4px' }}>{name}</h2>
-                        <p className="se-hint">Customer no. {session?.userId}</p>
+                        <p className="se-hint">Mã khách hàng {session?.userId}</p>
                     </section>
                     <section className="se-panel">
-                        <h2>Account</h2>
+                        <h2>Tài khoản</h2>
                         <dl className="se-kv">
-                            <div><dt>Role</dt><dd>Storage customer</dd></div>
-                            <div><dt>Active units</dt><dd>{activeUnits}</dd></div>
-                            <div><dt>Status</dt><dd><span className="se-badge">{me.data?.status ?? 'Active'}</span></dd></div>
+                            <div><dt>Vai trò</dt><dd>Khách thuê kho</dd></div>
+                            <div><dt>Kho đang thuê</dt><dd>{activeUnits}</dd></div>
+                            <div><dt>Trạng thái</dt><dd><span className="se-badge">{ACCOUNT_STATUS[me.data?.status] ?? me.data?.status ?? 'Đang hoạt động'}</span></dd></div>
                         </dl>
                     </section>
                 </aside>
