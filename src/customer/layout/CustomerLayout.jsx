@@ -1,4 +1,5 @@
-import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../components/Icon.jsx';
 import './CustomerLayout.css';
@@ -36,6 +37,15 @@ export const initials = (name = '') => {
 export default function CustomerLayout() {
     const { session, logout } = useAuth();
     const navigate = useNavigate();
+    const location = useLocation();
+    const [menuOpen, setMenuOpen] = useState(false);
+    useEffect(() => setMenuOpen(false), [location.pathname, location.hash]);
+    useEffect(() => {
+        if (!menuOpen) return undefined;
+        const onKey = (e) => e.key === 'Escape' && setMenuOpen(false);
+        window.addEventListener('keydown', onKey);
+        return () => window.removeEventListener('keydown', onKey);
+    }, [menuOpen]);
     const signOut = () => {
         logout();
         navigate('/', { replace: true });
@@ -46,11 +56,15 @@ export default function CustomerLayout() {
             <header className="se-header">
                 <div className="se-container se-header-row">
                     <Brand />
-                    <nav className="se-nav">
+                    <nav id="se-nav" className={`se-nav${menuOpen ? ' open' : ''}`} aria-label="Điều hướng chính">
                         {/* Hash links share the "/" path, so NavLink would mark them all active. */}
                         {NAV.map((item) => item.to.includes('#')
                             ? <Link key={item.label} to={item.to}>{item.label}</Link>
                             : <NavLink key={item.label} to={item.to}>{item.label}</NavLink>)}
+                        {/* On phones the header only fits one action; the other moves into the menu. */}
+                        {session
+                            ? <button type="button" className="se-nav-extra" onClick={signOut}>Đăng xuất</button>
+                            : <Link to="/login" className="se-nav-extra">Đăng nhập</Link>}
                     </nav>
                     <div className="se-header-actions">
                         {session ? (
@@ -58,14 +72,18 @@ export default function CustomerLayout() {
                                 <Link to="/my-storage" className="se-account">
                                     <span className="se-avatar">{initials(session.fullName)}</span> Kho của tôi
                                 </Link>
-                                <button type="button" className="se-btn se-btn-ghost" onClick={signOut}>Đăng xuất</button>
+                                <button type="button" className="se-btn se-btn-ghost se-header-secondary" onClick={signOut}>Đăng xuất</button>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="se-btn se-btn-ghost">Đăng nhập</Link>
+                                <Link to="/login" className="se-btn se-btn-ghost se-header-secondary">Đăng nhập</Link>
                                 <Link to="/booking" className="se-btn se-btn-primary">Đặt kho ngay</Link>
                             </>
                         )}
+                        <button type="button" className="se-menu-btn" aria-expanded={menuOpen} aria-controls="se-nav"
+                            aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'} onClick={() => setMenuOpen((o) => !o)}>
+                            <Icon name={menuOpen ? 'close' : 'menu'} size={22} />
+                        </button>
                     </div>
                 </div>
             </header>

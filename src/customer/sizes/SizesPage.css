@@ -27,5 +27,5 @@
 @media (max-width: 640px) {
     .se-sizes-filters, .se-sizes-filters label, .se-sizes-filters .se-field { width: 100% !important; }
     .se-tabs { width: 100%; overflow-x: auto; }
-    .se-fees { grid-template-columns: 1fr; }
+    .se-fees { grid-template-columns: minmax(0, 1fr); }
 }

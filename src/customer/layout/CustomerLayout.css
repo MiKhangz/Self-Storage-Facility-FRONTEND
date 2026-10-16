@@ -116,7 +116,7 @@
 .se-alert.info { background: var(--se-primary-soft); color: var(--se-primary-dark); }
 
 /* Data tables (U04, U09, U14) */
-.se-table-wrap { overflow-x: auto; }
+.se-table-wrap { overflow-x: auto; position: relative; } /* positioned so .sr-only headers stay inside the scroll box */
 .se-table { width: 100%; border-collapse: collapse; font-size: 14px; }
 .se-table th {
     text-align: left; padding: 14px 18px; background: var(--se-bg-soft); white-space: nowrap;
@@ -233,14 +233,71 @@
     display: flex; justify-content: space-between; gap: 16px; font-size: 13px; color: var(--se-faint);
 }
 
-@media (max-width: 640px) { .se-panel-grid { grid-template-columns: 1fr; } }
+@media (max-width: 640px) {
+    .se-panel-grid { grid-template-columns: minmax(0, 1fr); }
+    .se-panel { padding: 18px 16px; }
+}
+/* Mobile menu: the nav becomes a panel under the header below 1100px */
+.se-menu-btn, .se-nav-extra { display: none; }
+.se-menu-btn {
+    width: 44px; height: 44px; border: 1px solid var(--se-line); border-radius: 8px; background: #fff;
+    color: var(--se-dark); cursor: pointer; place-items: center;
+}
 @media (max-width: 1100px) {
-    .se-nav { display: none; }
+    .se-header-row { position: relative; }
+    .se-menu-btn { display: grid; }
+    .se-nav {
+        display: none; position: absolute; top: 100%; left: 0; right: 0; margin: 0;
+        flex-direction: column; gap: 0; padding: 8px 16px 16px; background: #fff;
+        border-bottom: 1px solid var(--se-line); box-shadow: 0 12px 24px rgba(17, 24, 39, 0.08);
+    }
+    .se-nav.open { display: flex; }
+    .se-nav a, .se-nav-extra {
+        display: flex; align-items: center; min-height: 48px; border-bottom: 1px solid var(--se-line);
+        font-size: 16px;
+    }
+    .se-nav > :last-child { border-bottom: 0; }
     .se-header-actions { margin-left: auto; }
     .se-footer-grid { grid-template-columns: 1fr 1fr; }
 }
 @media (max-width: 560px) {
+    .se-header-row { height: 64px; gap: 12px; }
+    .se-header-secondary { display: none; }
+    .se-nav-extra {
+        display: flex; width: 100%; border: 0; background: none; padding: 0; cursor: pointer;
+        font-family: inherit; font-weight: 500; color: var(--se-dark); text-align: left;
+    }
     .se-header-actions .se-btn { padding: 0 14px; }
-    .se-footer-grid { grid-template-columns: 1fr; }
+    .se-account { padding-right: 6px; font-size: 0; gap: 0; }
+    .se-footer-grid { grid-template-columns: minmax(0, 1fr); }
     .se-footer-bottom { flex-direction: column; }
+    .se-footer { padding-bottom: max(32px, env(safe-area-inset-bottom)); }
+}
+/* Smallest phones: keep the logo mark, drop the wordmark so CTA and menu fit */
+@media (max-width: 380px) {
+    .se-header .se-brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+
+/* Touch screens: 44px targets and 16px inputs (smaller inputs make iOS zoom on focus) */
+@media (pointer: coarse) {
+    .se-btn-sm { height: 44px; }
+    .se-chip { height: 44px; }
+    .se-tabs button { min-height: 44px; }
+    .se-input-eye { padding: 10px; margin-right: -10px; }
+    .se-field select, .se-field input, .se-input input, .se-textarea { font-size: 16px; }
+}
+
+/* Phones: wide tables become one stacked block per row; each cell shows its column name */
+@media (max-width: 640px) {
+    .se-table.se-stack, .se-stack tbody, .se-stack tr, .se-stack td { display: block; }
+    .se-stack thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .se-stack tr { padding: 14px 16px; border-top: 1px solid var(--se-line); }
+    .se-stack tbody tr:first-child { border-top: 0; }
+    .se-stack td { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 0; border: 0; white-space: normal; text-align: right; }
+    .se-stack td[data-label]::before { content: attr(data-label); color: var(--se-muted); font-weight: 400; text-align: left; }
+    .se-stack td.se-stack-title { font-size: 16px; padding-bottom: 6px; }
+    .se-stack td.se-stack-action { padding-top: 10px; }
+    .se-stack td.se-stack-action:empty { display: none; }
+    .se-stack td.se-stack-action .se-btn { width: 100%; }
+    .se-stack td.se-empty { display: block; text-align: center; }
 }

@@ -14,7 +14,7 @@ export default function BookingStepper({ current }) {
                     return (
                         <li key={label} className={state} aria-current={state === 'current' ? 'step' : undefined}>
                             <span className="se-step-num">{state === 'done' ? <Icon name="check" size={14} /> : step}</span>
-                            {label}
+                            <span className="se-step-label">{label}</span>
                         </li>
                     );
                 })}

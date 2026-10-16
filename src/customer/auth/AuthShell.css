@@ -44,12 +44,12 @@
 .se-auth-note a { color: var(--se-primary) !important; font-weight: 600; }
 
 @media (max-width: 1100px) {
-    .se-auth-card, .se-auth-card.wide { grid-template-columns: 1fr; margin: 0 16px; }
+    .se-auth-card, .se-auth-card.wide { grid-template-columns: minmax(0, 1fr); margin: 0 16px; }
     .se-auth-side { padding: 40px 32px; }
 }
 @media (max-width: 640px) {
     .se-auth-bg { padding: 24px 0; }
     .se-auth-main { padding: 32px 20px; }
     .se-auth-side { display: none; }
-    .se-form-row { grid-template-columns: 1fr; }
+    .se-form-row { grid-template-columns: minmax(0, 1fr); }
 }

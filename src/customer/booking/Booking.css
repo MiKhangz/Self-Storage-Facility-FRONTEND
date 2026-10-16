@@ -54,14 +54,18 @@
 .se-bring ul { margin: 0; padding-left: 18px; }
 .se-confirm-actions { display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; }
 
-@media (max-width: 1100px) {
-    .se-booking-grid { grid-template-columns: 1fr; }
+/* Tablets keep the summary beside the form, narrower */
+@media (max-width: 1100px) { .se-booking-grid { grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; } }
+@media (max-width: 820px) {
+    .se-booking-grid { grid-template-columns: minmax(0, 1fr); }
     .se-summary { position: static; }
 }
 @media (max-width: 640px) {
+    .se-stepper ol { gap: 10px; }
     .se-stepper li + li::before { width: 16px; }
-    .se-stepper li { font-size: 13px; }
-    .se-panel-grid { grid-template-columns: 1fr; }
-    .se-ticket dl { grid-template-columns: 1fr; gap: 2px; }
+    .se-stepper li { font-size: 14px; gap: 8px; }
+    .se-stepper li:not(.current) .se-step-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+    .se-panel-grid { grid-template-columns: minmax(0, 1fr); }
+    .se-ticket dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
     .se-ticket dd { margin-bottom: 8px; }
 }

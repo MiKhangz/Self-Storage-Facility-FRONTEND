@@ -64,20 +64,20 @@ export default function PaymentsPage() {
             </div>
 
             <div className="se-card se-table-wrap">
-                <table className="se-table">
+                <table className="se-table se-stack">
                     <thead><tr><th>Hóa đơn</th><th>Ngày lập</th><th>Kho</th><th>Nội dung</th><th>Số tiền</th><th>Trạng thái</th><th><span className="sr-only">Thao tác</span></th></tr></thead>
                     <tbody>
                         {shown.map((inv) => {
                             const [tone, label] = invoiceBadge(inv);
                             return (
                                 <tr key={inv.invoiceId}>
-                                    <td className="strong">{inv.invoiceNumber}</td>
-                                    <td>{formatDate(inv.issueDate)}</td>
-                                    <td>{unitOf[inv.contractId] ?? '—'}</td>
-                                    <td>{inv.items?.map((it) => it.description).join(', ') || '—'}</td>
-                                    <td className="price">{formatVnd(inv.totalAmount)}</td>
-                                    <td><span className={`se-badge ${tone}`}>{label}</span></td>
-                                    <td>{OPEN_INVOICE.includes(inv.status) && <PayInvoiceButton invoice={inv} />}</td>
+                                    <td className="strong se-stack-title">{inv.invoiceNumber}</td>
+                                    <td data-label="Ngày lập">{formatDate(inv.issueDate)}</td>
+                                    <td data-label="Kho">{unitOf[inv.contractId] ?? '—'}</td>
+                                    <td data-label="Nội dung">{inv.items?.map((it) => it.description).join(', ') || '—'}</td>
+                                    <td data-label="Số tiền" className="price">{formatVnd(inv.totalAmount)}</td>
+                                    <td data-label="Trạng thái"><span className={`se-badge ${tone}`}>{label}</span></td>
+                                    <td className="se-stack-action">{OPEN_INVOICE.includes(inv.status) && <PayInvoiceButton invoice={inv} />}</td>
                                 </tr>
                             );
                         })}

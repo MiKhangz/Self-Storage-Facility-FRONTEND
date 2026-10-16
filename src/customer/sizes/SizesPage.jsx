@@ -68,6 +68,8 @@ function SizeArt({ area, max }) {
     );
 }
 
+const PRICE_LABELS = ['Giá 1–2 tháng', 'Giá 3–5 tháng', 'Giá từ 6 tháng'];
+
 export default function SizesPage() {
     const [tab, setTab] = useState('all');
     const [facilityId, setFacilityId] = useState('');
@@ -135,7 +137,7 @@ export default function SizesPage() {
                             <p className="se-hint">Hình người cao 1,7 m để so sánh kích thước.</p>
 
                             <div className="se-card se-table-wrap">
-                                <table className="se-table">
+                                <table className="se-table se-stack">
                                     <thead>
                                         <tr>
                                             <th>Cỡ</th><th>Diện tích</th><th>Kích thước (R×S×C)</th><th>Loại kho</th>
@@ -150,13 +152,13 @@ export default function SizesPage() {
                                             const badge = availability(t.free);
                                             return (
                                                 <tr key={t.unitTypeId} className={selected === t.unitTypeId ? 'active' : ''} onClick={() => setSelected(t.unitTypeId)}>
-                                                    <td className="strong">{t.code}</td>
-                                                    <td>{t.areaM2.toLocaleString('vi-VN')} m²</td>
-                                                    <td className="muted">{[t.width, t.depth, t.height].map((n) => n.toLocaleString('vi-VN')).join(' × ')} m</td>
-                                                    <td>{t.name}</td>
-                                                    {t.prices.map((p, i) => <td key={i} className={`price${TIERS[i] === highlight ? ' hl' : ''}`}>{formatVnd(p)}</td>)}
-                                                    <td>{badge && <span className={`se-badge ${badge.tone}`}>{badge.label}</span>}</td>
-                                                    <td>
+                                                    <td className="strong se-stack-title">{t.code}</td>
+                                                    <td data-label="Diện tích">{t.areaM2.toLocaleString('vi-VN')} m²</td>
+                                                    <td className="muted" data-label="Kích thước">{[t.width, t.depth, t.height].map((n) => n.toLocaleString('vi-VN')).join(' × ')} m</td>
+                                                    <td data-label="Loại kho">{t.name}</td>
+                                                    {t.prices.map((p, i) => <td key={i} data-label={PRICE_LABELS[i]} className={`price${TIERS[i] === highlight ? ' hl' : ''}`}>{formatVnd(p)}</td>)}
+                                                    <td data-label="Tình trạng">{badge && <span className={`se-badge ${badge.tone}`}>{badge.label}</span>}</td>
+                                                    <td className="se-stack-action">
                                                         {t.free === 0
                                                             ? <Link to="/support/new" className="se-btn se-btn-ghost se-btn-sm">Hỏi khi có kho trống</Link>
                                                             : <Link to={bookLink(t)} className="se-btn se-btn-primary se-btn-sm">Đặt kho</Link>}

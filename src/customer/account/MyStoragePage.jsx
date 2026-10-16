@@ -133,19 +133,19 @@ export default function MyStoragePage() {
 
             <h2>Hóa đơn gần đây</h2>
             <div className="se-card se-table-wrap">
-                <table className="se-table">
+                <table className="se-table se-stack">
                     <thead><tr><th>Ngày lập</th><th>Hóa đơn</th><th>Kho</th><th>Nội dung</th><th>Số tiền</th><th>Trạng thái</th></tr></thead>
                     <tbody>
                         {allInvoices.slice(0, 5).map((inv) => {
                             const [tone, label] = invoiceBadge(inv);
                             return (
                                 <tr key={inv.invoiceId}>
-                                    <td>{formatDate(inv.issueDate)}</td>
-                                    <td>{inv.invoiceNumber}</td>
-                                    <td>{unitOf[inv.contractId] ?? '—'}</td>
-                                    <td>{inv.items?.[0]?.description ?? '—'}</td>
-                                    <td className="price">{formatVnd(inv.totalAmount)}</td>
-                                    <td><span className={`se-badge ${tone}`}>{label}</span></td>
+                                    <td data-label="Ngày lập">{formatDate(inv.issueDate)}</td>
+                                    <td data-label="Hóa đơn">{inv.invoiceNumber}</td>
+                                    <td data-label="Kho">{unitOf[inv.contractId] ?? '—'}</td>
+                                    <td data-label="Nội dung">{inv.items?.[0]?.description ?? '—'}</td>
+                                    <td data-label="Số tiền" className="price">{formatVnd(inv.totalAmount)}</td>
+                                    <td data-label="Trạng thái"><span className={`se-badge ${tone}`}>{label}</span></td>
                                 </tr>
                             );
                         })}

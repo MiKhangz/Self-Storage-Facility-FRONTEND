@@ -28,4 +28,11 @@
 .se-bubble p { margin: 0; font-size: 14px; line-height: 1.55; white-space: pre-wrap; }
 .se-reply { display: grid; gap: 10px; justify-items: end; border-top: 1px solid var(--se-line); padding-top: 16px; }
 
-@media (max-width: 1100px) { .se-support-grid { grid-template-columns: 1fr; } }
+@media (max-width: 1100px) { .se-support-grid { grid-template-columns: minmax(0, 1fr) 260px; } }
+@media (max-width: 820px) { .se-support-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (max-width: 640px) {
+    .se-form-actions { flex-direction: column-reverse; }
+    .se-form-actions .se-btn { width: 100%; }
+    .se-bubble { max-width: 100%; }
+    .se-account-title { flex-wrap: wrap; }
+}

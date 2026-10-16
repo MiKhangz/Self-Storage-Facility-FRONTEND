@@ -29,6 +29,6 @@
 .se-unit-actions .se-btn { flex: 1; }
 
 @media (max-width: 640px) {
-    .se-stats, .se-units { grid-template-columns: 1fr; }
+    .se-stats, .se-units { grid-template-columns: minmax(0, 1fr); }
     .se-due { flex-wrap: wrap; }
 }

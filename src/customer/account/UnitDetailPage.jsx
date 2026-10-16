@@ -166,17 +166,17 @@ export default function UnitDetailPage() {
                     <section className="se-panel">
                         <h2>Lịch sử thanh toán</h2>
                         <div className="se-table-wrap">
-                            <table className="se-table">
+                            <table className="se-table se-stack">
                                 <thead><tr><th>Ngày lập</th><th>Nội dung</th><th>Số tiền</th><th>Trạng thái</th></tr></thead>
                                 <tbody>
                                     {mine.map((inv) => {
                                         const [tone, label] = invoiceBadge(inv);
                                         return (
                                             <tr key={inv.invoiceId}>
-                                                <td>{formatDate(inv.issueDate)}</td>
-                                                <td>{inv.items?.[0]?.description ?? inv.invoiceNumber}</td>
-                                                <td className="price">{formatVnd(inv.totalAmount)}</td>
-                                                <td><span className={`se-badge ${tone}`}>{label}</span></td>
+                                                <td data-label="Ngày lập">{formatDate(inv.issueDate)}</td>
+                                                <td data-label="Nội dung">{inv.items?.[0]?.description ?? inv.invoiceNumber}</td>
+                                                <td data-label="Số tiền" className="price">{formatVnd(inv.totalAmount)}</td>
+                                                <td data-label="Trạng thái"><span className={`se-badge ${tone}`}>{label}</span></td>
                                             </tr>
                                         );
                                     })}
