@@ -8,7 +8,6 @@ export default function AuthShell({ title, benefits, wide, children }) {
         <div className="se-auth-bg">
             <div className={`se-auth-card${wide ? ' wide' : ''}`}>
                 <aside className="se-auth-side">
-                    <span className="se-auth-tag">Quyền lợi thành viên</span>
                     <h2>{title}</h2>
                     <ul>
                         {benefits.map((b) => (

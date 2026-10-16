@@ -42,7 +42,7 @@ export default function PaymentsPage() {
                         <strong>{formatVnd(next.outstandingAmount)} {next.status === 'Overdue' ? 'đã quá hạn từ' : 'đến hạn ngày'} {formatDate(next.dueDate)}</strong>
                         <small>Hóa đơn {next.invoiceNumber}{unitOf[next.contractId] ? ` · kho ${unitOf[next.contractId]}` : ''}</small>
                     </div>
-                    <PayInvoiceButton invoice={next} className="se-btn se-btn-amber se-btn-sm">Thanh toán ngay</PayInvoiceButton>
+                    <PayInvoiceButton invoice={next} className="se-btn se-btn-primary se-btn-sm">Thanh toán ngay</PayInvoiceButton>
                 </div>
             )}
 

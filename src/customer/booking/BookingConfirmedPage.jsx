@@ -55,7 +55,7 @@ export default function BookingConfirmedPage() {
                                 </ul>
                             </div>
                             <div className="se-confirm-actions">
-                                <Link to="/my-storage" className="se-btn se-btn-primary">Đến Kho của tôi</Link>
+                                <Link to="/my-storage" className={`se-btn ${r.depositInvoiceId && r.depositStatus !== 'Paid' ? 'se-btn-outline' : 'se-btn-primary'}`}>Đến Kho của tôi</Link>
                                 <Link to="/" className="se-btn se-btn-ghost">Về trang chủ</Link>
                             </div>
                         </>

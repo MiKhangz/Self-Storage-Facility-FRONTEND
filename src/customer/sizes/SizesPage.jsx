@@ -161,7 +161,7 @@ export default function SizesPage() {
                                                     <td className="se-stack-action">
                                                         {t.free === 0
                                                             ? <Link to="/support/new" className="se-btn se-btn-ghost se-btn-sm">Hỏi khi có kho trống</Link>
-                                                            : <Link to={bookLink(t)} className="se-btn se-btn-primary se-btn-sm">Đặt kho</Link>}
+                                                            : <Link to={bookLink(t)} className="se-btn se-btn-outline se-btn-sm">Đặt kho</Link>}
                                                     </td>
                                                 </tr>
                                             );

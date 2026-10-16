@@ -77,7 +77,7 @@ export default function CustomerLayout() {
                         ) : (
                             <>
                                 <Link to="/login" className="se-btn se-btn-ghost se-header-secondary">Đăng nhập</Link>
-                                <Link to="/booking" className="se-btn se-btn-primary">Đặt kho ngay</Link>
+                                <Link to="/booking" className="se-btn se-btn-outline">Đặt kho ngay</Link>
                             </>
                         )}
                         <button type="button" className="se-menu-btn" aria-expanded={menuOpen} aria-controls="se-nav"

@@ -49,11 +49,6 @@ typography:
     fontSize: "12px"
     fontWeight: 600
     letterSpacing: "0.5px"
-  eyebrow:
-    fontFamily: "Be Vietnam Pro, system-ui, sans-serif"
-    fontSize: "13px"
-    fontWeight: 700
-    letterSpacing: "1px"
 rounded:
   xs: "4px"
   sm: "8px"
@@ -146,14 +141,14 @@ The system is light-first and flat at rest. Cards are separated by a hairline bo
 A warm, two-colour system: storage orange as the signal, charcoal as the structure, and warm stone greys as the surfaces in between.
 
 ### Primary
-- **Storage Orange** (`primary`): the roll-up door. Only on the main action on a screen, the active item in the admin sidebar, eyebrow labels, links and the highlighted column of a price table. White text on it passes WCAG AA (4.6:1); keep that ratio if the value ever changes.
+- **Storage Orange** (`primary`): the roll-up door. Only on the main action on a screen, the active item in the admin sidebar, links and the highlighted column of a price table. White text on it passes WCAG AA (4.6:1); keep that ratio if the value ever changes.
 - **Rust** (`primary-dark`): the pressed and hover state of Storage Orange, and the text colour on Orange Mist backgrounds (alerts, pills).
 - **Apricot** (`primary-light`): orange as it reads on charcoal, such as the "Ease" in the logo and icons in the dark login panel. Never on white; it fails contrast there.
 - **Orange Mist** (`primary-soft`): the faint orange wash behind the hero, page heads, icon tiles, selected table rows and info alerts.
 - **Peach** (`primary-tint`): a slightly stronger orange tint for tinted fills that must read as orange, not as white.
 
 ### Secondary
-- **Signal Cyan** (`signal-cyan`): counters only, such as the badges on admin sidebar items and the cyan button. Always paired with charcoal text, never white.
+- **Signal Cyan** (`signal-cyan`): counters only, such as the badges on admin sidebar items. Never a button fill. Always paired with charcoal text, never white.
 
 ### Neutral
 - **Charcoal** (`charcoal`): headings, the admin sidebar, the login brand panel and the dark CTA band. The structural colour.
@@ -170,7 +165,7 @@ A warm, two-colour system: storage orange as the signal, charcoal as the structu
 - **Green / Amber / Red** (`ok-*`, `warn-*`, `danger-*`): availability and status badges. Green means available, paid or active. Amber means low, pending or due. Red means booked out, overdue or an error. Each badge also carries a text label, so status never depends on colour alone.
 
 ### Named Rules
-**The One Door Rule.** Storage Orange marks the single thing to do next. A screen has one orange-filled button. Everything else uses outline, ghost or link buttons.
+**The One Door Rule.** Storage Orange marks the single thing to do next. A screen has one orange-filled button. Everything else uses outline, ghost or link buttons. The header's "Đặt kho ngay" is an outline button because it repeats on every screen; actions repeated per row or card (book this size, view this unit) are outline too.
 
 **The Apricot-Stays-Dark Rule.** Apricot is for charcoal backgrounds only. On white, use Storage Orange or Rust.
 
@@ -187,7 +182,6 @@ A warm, two-colour system: storage orange as the signal, charcoal as the structu
 - **Title** (700, 17–22px): card titles, panel headings, unit codes and prices in summaries.
 - **Body** (400, 14–15px, line-height 1.6): paragraphs, table cells and form text. Lead paragraphs go up to 17–18px.
 - **Label** (600, 11–13px): table headers (11px, uppercase, 0.5px tracking), field labels (13px) and badges (12px).
-- **Eyebrow** (700, 13px, 1px tracking, Storage Orange): the uppercase kicker above a section heading.
 
 ### Named Rules
 **The One Family Rule.** Every role is Be Vietnam Pro. Hierarchy comes from weight and size, never from a second typeface.
@@ -251,7 +245,7 @@ The form language is soft and friendly, never sharp:
 - **Error:** a red border with a 12px red hint line underneath. Disabled and read-only fields take a Paper fill.
 
 ### Navigation
-- **Customer header:** white, sticky and 78px tall, with a Hairline bottom border. Nav links are 15px medium Charcoal and turn Storage Orange on hover or when active. Under 1100px the links hide and only the account and booking buttons remain.
+- **Customer header:** white, sticky and 78px tall, with a Hairline bottom border. Nav links are 15px medium Charcoal and turn Storage Orange on hover or when active. Under 1100px the links move into a drop-down opened by a 44px menu button; under 560px the log-in or log-out action moves into that menu too.
 - **Admin sidebar:** Charcoal, 240px wide, with uppercase 11px group titles. Items are 14px with an outline icon. The active item takes a Storage Orange fill with white text, and queue counters are Signal Cyan pills.
 
 ### Status Badge (signature)

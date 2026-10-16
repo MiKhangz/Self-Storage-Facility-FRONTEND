@@ -25,10 +25,9 @@ const MAP_PINS = [[17, 28], [35, 44], [25, 65], [42, 73], [57, 33], [68, 62], [7
 const OCCUPIED = ['A-103', 'B-102', 'B-103'];
 const formatArea = (n) => n.toLocaleString('vi-VN');
 
-function SectionHead({ eyebrow, title, text, center }) {
+function SectionHead({ title, text, center }) {
     return (
         <div className={`se-section-head${center ? ' center' : ''}`}>
-            <span className="se-eyebrow">{eyebrow}</span>
             <h2>{title}</h2>
             <p>{text}</p>
         </div>
@@ -82,7 +81,7 @@ function QuickSearch() {
                     </select>
                 </div>
             </label>
-            <button type="submit" className="se-btn se-btn-primary se-btn-lg"><Icon name="search" /> Tìm kho trống</button>
+            <button type="submit" className="se-btn se-btn-outline se-btn-lg"><Icon name="search" /> Tìm kho trống</button>
         </form>
     );
 }
@@ -121,10 +120,9 @@ export default function HomePage() {
             <section className="se-hero">
                 <div className="se-container se-hero-grid">
                     <div>
-                        <span className="se-hero-tag">Kho tự quản tại TP. Hồ Chí Minh</span>
                         <h1>Thêm chỗ chứa đồ cho gia đình và công việc của bạn</h1>
                         <p className="se-hero-lead">
-                            Kho riêng có khóa{areaRange ? `, diện tích từ ${areaRange}` : ''}. Thuê theo tháng, ra vào bằng mã cá nhân và quản lý mọi thứ trực tuyến.
+                            Kho tự quản có khóa riêng tại TP. Hồ Chí Minh{areaRange ? `, diện tích từ ${areaRange}` : ''}. Thuê theo tháng, ra vào bằng mã cá nhân và quản lý mọi thứ trực tuyến.
                         </p>
                         <div className="se-hero-actions">
                             <Link to="/booking" className="se-btn se-btn-primary se-btn-lg">Đặt kho ngay <Icon name="arrow" size={16} /></Link>
@@ -158,7 +156,7 @@ export default function HomePage() {
 
             <section id="services" className="se-section">
                 <div className="se-container">
-                    <SectionHead eyebrow="DỊCH VỤ" title="Bạn cần cất gì?" text="Từ vài thùng đồ đến cả kho hàng: chọn kích thước vừa với nhu cầu của bạn." />
+                    <SectionHead title="Bạn cần cất gì?" text="Từ vài thùng đồ đến cả kho hàng: chọn kích thước vừa với nhu cầu của bạn." />
                     <div className="se-services">
                         {SERVICES.map((s) => (
                             <article key={s.title} className="se-card se-service">
@@ -174,7 +172,7 @@ export default function HomePage() {
 
             <section className="se-section soft">
                 <div className="se-container">
-                    <SectionHead eyebrow="KÍCH THƯỚC" title="Các cỡ kho"
+                    <SectionHead title="Các cỡ kho"
                         text={locations[0] ? `Giá thuê 1 tháng tại ${locations[0].name}.` : 'So sánh các cỡ kho bên dưới.'} />
                     <div className="se-sizes">
                         {sizes.map((s) => (
@@ -206,7 +204,7 @@ export default function HomePage() {
 
             <section id="how-it-works" className="se-section">
                 <div className="se-container">
-                    <SectionHead center eyebrow="QUY TRÌNH" title="Cách thuê kho" text="Thuê kho trong 4 bước, ngay trên trang web." />
+                    <SectionHead center title="Cách thuê kho" text="Thuê kho trong 4 bước, ngay trên trang web." />
                     <div className="se-steps">
                         {STEPS.map((s) => (
                             <article key={s.title} className="se-card se-step">
@@ -221,7 +219,7 @@ export default function HomePage() {
 
             <section className="se-section soft">
                 <div className="se-container">
-                    <SectionHead eyebrow="ĐỊA ĐIỂM" title={locations.length ? `${locations.length} cơ sở tại TP. Hồ Chí Minh` : 'Các cơ sở của StorEase'}
+                    <SectionHead title={locations.length ? `${locations.length} cơ sở tại TP. Hồ Chí Minh` : 'Các cơ sở của StorEase'}
                         text="Tìm cơ sở gần nhà hoặc gần nơi làm việc của bạn." />
                     <div className="se-locations">
                         <div className="se-map" aria-hidden="true">
@@ -257,8 +255,8 @@ export default function HomePage() {
                         <p>Cho chúng tôi biết bạn muốn cất những gì, nhân viên sẽ gợi ý cỡ kho phù hợp.</p>
                     </div>
                     <div className="se-cta-actions">
-                        <Link to="/support/new" className="se-btn se-btn-amber">Gửi yêu cầu tư vấn</Link>
-                        <Link to="/register" className="se-btn se-btn-white">Tạo tài khoản</Link>
+                        <Link to="/support/new" className="se-btn se-btn-white">Gửi yêu cầu tư vấn</Link>
+                        <Link to="/register" className="se-btn se-btn-on-dark">Tạo tài khoản</Link>
                     </div>
                 </div>
             </section>

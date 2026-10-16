@@ -4,7 +4,7 @@ import { errorMessage } from '../../api/axiosClient';
 import { formatVnd } from '../components/format.js';
 
 /** Pays an invoice's outstanding amount through the backend's online-gateway endpoint. */
-export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-primary se-btn-sm', children = 'Thanh toán' }) {
+export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-outline se-btn-sm', children = 'Thanh toán' }) {
     const queryClient = useQueryClient();
     const pay = useMutation({
         // ponytail: the backend's development-only simulate-success stands in for the gateway. Once VNPay/MoMo

@@ -6,12 +6,7 @@
 .se-auth-card.wide { grid-template-columns: 500px 1fr; }
 
 .se-auth-side { background: var(--se-dark); color: #fff; padding: 64px 56px; }
-.se-auth-tag {
-    display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px;
-    background: var(--se-primary-soft); color: var(--se-primary-dark); font-size: 12px; font-weight: 600;
-}
-.se-auth-tag::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--se-primary-dark); }
-.se-auth-side h2 { margin: 28px 0 32px; font-size: 36px; font-weight: 800; line-height: 1.2; }
+.se-auth-side h2 { margin: 0 0 32px; font-size: 36px; font-weight: 800; line-height: 1.2; }
 .se-auth-side ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 28px; }
 .se-auth-side li { display: flex; gap: 14px; }
 .se-auth-side strong { font-size: 16px; }

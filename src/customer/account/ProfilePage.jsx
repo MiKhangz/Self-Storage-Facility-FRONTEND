@@ -64,7 +64,7 @@ function PasswordForm() {
                 <p className="se-hint">{PASSWORD_RULE}</p>
             </label>
             <Status m={change} ok="Đã đổi mật khẩu." />
-            <button type="submit" className="se-btn se-btn-primary" disabled={change.isPending || !form.currentPassword || !form.newPassword}>{change.isPending ? 'Đang đổi…' : 'Đổi mật khẩu'}</button>
+            <button type="submit" className="se-btn se-btn-outline" disabled={change.isPending || !form.currentPassword || !form.newPassword}>{change.isPending ? 'Đang đổi…' : 'Đổi mật khẩu'}</button>
         </form>
     );
 }

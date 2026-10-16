@@ -56,7 +56,7 @@ export default function MyStoragePage() {
         <>
             <div className="se-account-title">
                 <div><h1>Xin chào, {firstName}</h1><p>Mọi thông tin về các kho bạn đang thuê.</p></div>
-                <Link to="/booking" className="se-btn se-btn-primary"><Icon name="box" size={16} /> Thuê thêm kho</Link>
+                <Link to="/booking" className={`se-btn ${next ? 'se-btn-outline' : 'se-btn-primary'}`}><Icon name="box" size={16} /> Thuê thêm kho</Link>
             </div>
 
             {failed && <div className="se-alert" role="alert">Một số thông tin chưa tải được. Vui lòng tải lại trang.</div>}
@@ -68,7 +68,7 @@ export default function MyStoragePage() {
                         <strong>{next.status === 'Overdue' ? 'Quá hạn: ' : 'Sắp đến hạn: '}hóa đơn {next.invoiceNumber} · {formatDate(next.dueDate)}</strong>
                         <small>{next.status === 'Overdue' ? `Thanh toán ${formatVnd(next.outstandingAmount)} sớm để tránh bị tính thêm phí trễ hạn.` : `Thanh toán ${formatVnd(next.outstandingAmount)} trước hạn để không bị tính phí trễ hạn.`}</small>
                     </div>
-                    <Link to="/payments" className="se-btn se-btn-amber se-btn-sm">Thanh toán ngay</Link>
+                    <Link to="/payments" className="se-btn se-btn-primary se-btn-sm">Thanh toán ngay</Link>
                 </div>
             )}
 
@@ -101,7 +101,7 @@ export default function MyStoragePage() {
                             <p className="se-unit-progress-label">{c.status === 'Draft' ? 'Bắt đầu tính sau khi nhận kho' : `Đã dùng ${used}% thời hạn thuê`}</p>
                             <div className="se-progress"><span style={{ width: `${c.status === 'Draft' ? 1 : used}%` }} /></div>
                             <div className="se-unit-actions">
-                                <Link to={`/my-storage/units/${c.contractId}`} className="se-btn se-btn-primary se-btn-sm">Xem chi tiết</Link>
+                                <Link to={`/my-storage/units/${c.contractId}`} className="se-btn se-btn-outline se-btn-sm">Xem chi tiết</Link>
                                 <Link to={`/support/new?contractId=${c.contractId}`} className="se-btn se-btn-ghost se-btn-sm">Báo sự cố</Link>
                             </div>
                         </article>
@@ -122,7 +122,7 @@ export default function MyStoragePage() {
                         <p className="se-unit-progress-label">Bắt đầu tính sau khi nhận kho</p>
                         <div className="se-progress"><span style={{ width: '1%' }} /></div>
                         <div className="se-unit-actions">
-                            <Link to={`/booking/confirmed/${r.reservationId}`} className="se-btn se-btn-primary se-btn-sm">Xem đơn đặt kho</Link>
+                            <Link to={`/booking/confirmed/${r.reservationId}`} className="se-btn se-btn-outline se-btn-sm">Xem đơn đặt kho</Link>
                         </div>
                     </article>
                 ))}

@@ -63,7 +63,7 @@ function AccessCodeCard({ contract }) {
     );
 }
 
-function RenewCard({ contract, unitTypeId }) {
+function RenewCard({ contract, unitTypeId, quiet }) {
     const terms = useTerms().data;
     const queryClient = useQueryClient();
     const [months, setMonths] = useState(6);
@@ -97,7 +97,7 @@ function RenewCard({ contract, unitTypeId }) {
                     </div>
                     <div className="se-renew-preview">Ngày kết thúc mới: <strong>{formatDate(addMonths(contract.endDate, months))}</strong></div>
                     {renew.isError && <div className="se-alert" role="alert">{errorMessage(renew.error)}</div>}
-                    <button type="button" className="se-btn se-btn-primary se-btn-block" onClick={() => renew.mutate()} disabled={renew.isPending}>
+                    <button type="button" className={`se-btn se-btn-block ${quiet ? 'se-btn-outline' : 'se-btn-primary'}`} onClick={() => renew.mutate()} disabled={renew.isPending}>
                         {renew.isPending ? 'Đang gửi…' : 'Gửi yêu cầu gia hạn'}
                     </button>
                 </>
@@ -153,7 +153,7 @@ export default function UnitDetailPage() {
                 <div className="se-due">
                     <Icon name="file" size={20} />
                     <div><strong>Vui lòng ký hợp đồng thuê kho</strong><small>Sau khi bạn ký, nhân viên sẽ bàn giao và kích hoạt kho.</small></div>
-                    <button type="button" className="se-btn se-btn-amber se-btn-sm" onClick={() => sign.mutate()} disabled={sign.isPending}>{sign.isPending ? 'Đang ký…' : 'Ký hợp đồng'}</button>
+                    <button type="button" className="se-btn se-btn-primary se-btn-sm" onClick={() => sign.mutate()} disabled={sign.isPending}>{sign.isPending ? 'Đang ký…' : 'Ký hợp đồng'}</button>
                 </div>
             )}
             {sign.isError && <div className="se-alert" role="alert">{errorMessage(sign.error)}</div>}
@@ -161,7 +161,7 @@ export default function UnitDetailPage() {
             <div className="se-detail-grid">
                 <div>
                     <AccessCodeCard contract={c} />
-                    {active && <RenewCard contract={c} unitTypeId={r?.unitTypeId} />}
+                    {active && <RenewCard contract={c} unitTypeId={r?.unitTypeId} quiet={!!due} />}
                     {live && !active && <div className="se-alert info">Hãy thanh toán tiền thuê quá hạn để có thể gia hạn hoặc yêu cầu trả kho.</div>}
                     <section className="se-panel">
                         <h2>Lịch sử thanh toán</h2>
@@ -192,7 +192,7 @@ export default function UnitDetailPage() {
                         <div className="se-due-card">
                             <strong>{formatVnd(due.outstandingAmount)} · hạn {formatDate(due.dueDate)}</strong>
                             <small>{due.items?.[0]?.description ?? due.invoiceNumber}</small>
-                            <PayInvoiceButton invoice={due} className="se-btn se-btn-amber se-btn-block se-btn-sm">Thanh toán ngay</PayInvoiceButton>
+                            <PayInvoiceButton invoice={due} className="se-btn se-btn-primary se-btn-block se-btn-sm">Thanh toán ngay</PayInvoiceButton>
                         </div>
                     )}
                     <section className="se-panel">

@@ -72,7 +72,7 @@ export default function LocationsPage() {
                                         <p className="se-loc-addr"><Icon name="pin" size={14} /> {f.address}{f.district ? `, ${f.district}` : ''}</p>
                                         <p className="se-loc-meta">{f.openingHours ? `Mở cửa ${f.openingHours}` : 'Chưa cập nhật giờ mở cửa'}{f.phone ? ` · ${f.phone}` : ''}</p>
                                     </div>
-                                    <Link to={`/booking?facilityId=${f.facilityId}${unitTypeId ? `&unitTypeId=${unitTypeId}` : ''}`} className="se-btn se-btn-primary se-btn-sm">Xem kho trống</Link>
+                                    <Link to={`/booking?facilityId=${f.facilityId}${unitTypeId ? `&unitTypeId=${unitTypeId}` : ''}`} className="se-btn se-btn-outline se-btn-sm">Xem kho trống</Link>
                                 </article>
                             );
                         })}

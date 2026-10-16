@@ -355,10 +355,6 @@
       "label": {
         "displayName": "Label",
         "purpose": "Table headers (uppercase), field labels, badges."
-      },
-      "eyebrow": {
-        "displayName": "Eyebrow",
-        "purpose": "Uppercase orange kicker above a section heading."
       }
     },
     "shadows": [
