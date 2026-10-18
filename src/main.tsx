@@ -22,7 +22,7 @@ import UnitDetailPage from './customer/account/UnitDetailPage.jsx'
 import PaymentsPage from './customer/account/PaymentsPage.jsx'
 import SupportRequestPage from './customer/support/SupportRequestPage.jsx'
 import TicketDetailPage from './customer/support/TicketDetailPage.jsx'
-import MoveOutPage from './customer/account/MoveOutPage.jsx'
+import HandoverPage from './customer/account/HandoverPage.jsx'
 import ProfilePage from './customer/account/ProfilePage.jsx'
 // Backup admin portal (src/staff); Thiện's src/admin screens are kept but no longer routed.
 import AdminLoginPage from './staff/AdminLoginPage.jsx'
@@ -38,7 +38,7 @@ import TicketsPage from './staff/pages/TicketsPage.jsx'
 import UsersPage from './staff/pages/UsersPage.jsx'
 import TicketDetailPageAdmin from './staff/pages/TicketDetailPage.jsx'
 import RecordPaymentPage from './staff/pages/RecordPaymentPage.jsx'
-import MoveOutsPage from './staff/pages/MoveOutsPage.jsx'
+import HandoversPage from './staff/pages/HandoversPage.jsx'
 import CustomerPage from './staff/pages/CustomerPage.jsx'
 import FacilityDetailPage from './staff/pages/FacilityDetailPage.jsx'
 import ReportsPage from './staff/pages/ReportsPage.jsx'
@@ -80,7 +80,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/users/invite" element={<InviteUserPage />} />
               <Route path="/admin/tickets/:ticketId" element={<TicketDetailPageAdmin />} />
               <Route path="/admin/payments" element={<RecordPaymentPage />} />
-              <Route path="/admin/move-outs" element={<MoveOutsPage />} />
+              <Route path="/admin/handovers" element={<HandoversPage />} />
               <Route path="/admin/customers/:customerId" element={<CustomerPage />} />
               <Route path="/admin/facilities/new" element={<AddFacilityPage />} />
               <Route path="/admin/facilities/:facilityId" element={<FacilityDetailPage />} />
@@ -110,7 +110,7 @@ createRoot(document.getElementById('root')!).render(
                   <Route path="/support/new" element={<SupportRequestPage />} />
                   <Route path="/support/requests" element={<SupportRequestPage />} />
                   <Route path="/support/requests/:ticketId" element={<TicketDetailPage />} />
-                  <Route path="/move-out" element={<MoveOutPage />} />
+                  <Route path="/handover" element={<HandoverPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                 </Route>
               </Route>

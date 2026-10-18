@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { moveOutRequestsApi } from '../../api/generated';
+import { handoversApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import { addDays, formatDate, formatVnd, todayIso } from '../components/format.js';
@@ -27,12 +27,12 @@ const MOVE_OUT_BADGE = {
 };
 
 /** U15: ask to end a rental — date, checklist and where to refund the deposit. */
-export default function MoveOutPage() {
+export default function HandoverPage() {
     const [params] = useSearchParams();
     const queryClient = useQueryClient();
     const contracts = useMyContracts();
     const reservations = useMyReservations();
-    const requests = useQuery({ queryKey: ['move-outs'], queryFn: () => moveOutRequestsApi.list({ page: 1, pageSize: 50 }) });
+    const requests = useQuery({ queryKey: ['handovers'], queryFn: () => handoversApi.list({ page: 1, pageSize: 50 }) });
 
     const active = (contracts.data?.items ?? []).filter((c) => c.status === 'Active');
     const [picked, setPicked] = useState('');
@@ -43,21 +43,21 @@ export default function MoveOutPage() {
     const terms = useTerms();
     // The API refuses dates inside the notice period, so don't offer them.
     const earliest = addDays(todayIso(), terms.data?.noticeDays ?? 0);
-    const [form, setForm] = useState({ plannedMoveOutDate: '', reason: '', refundMethod: 'BankTransfer', refundAccount: '' });
+    const [form, setForm] = useState({ plannedHandoverDate: '', reason: '', refundMethod: 'BankTransfer', refundAccount: '' });
     const [checked, setChecked] = useState(CHECKS.map(() => false));
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const needsAccount = form.refundMethod === 'BankTransfer';
-    const ready = form.plannedMoveOutDate && checked.every(Boolean) && (!needsAccount || form.refundAccount.trim());
+    const ready = form.plannedHandoverDate && checked.every(Boolean) && (!needsAccount || form.refundAccount.trim());
 
     const submit = useMutation({
-        mutationFn: () => moveOutRequestsApi.create({
+        mutationFn: () => handoversApi.create({
             contractId: contract.contractId,
-            plannedMoveOutDate: form.plannedMoveOutDate,
+            plannedHandoverDate: form.plannedHandoverDate,
             reason: form.reason.trim() || null,
             refundMethod: form.refundMethod,
             refundAccount: needsAccount ? form.refundAccount.trim() : null,
         }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['move-outs'] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['handovers'] }),
     });
 
     if (contracts.isLoading) return <p className="se-empty">Đang tải…</p>;
@@ -94,7 +94,7 @@ export default function MoveOutPage() {
 
                     {open ? (
                         <div className="se-alert info">
-                            Bạn đã yêu cầu trả kho ngày {formatDate(open.plannedMoveOutDate)}. Trạng thái:{' '}
+                            Bạn đã yêu cầu trả kho ngày {formatDate(open.plannedHandoverDate)}. Trạng thái:{' '}
                             <span className={`se-badge ${MOVE_OUT_BADGE[open.status]?.[0] ?? ''}`}>{MOVE_OUT_BADGE[open.status]?.[1] ?? open.status}</span>
                             {open.inspectionSlot ? ` · lịch kiểm tra ${formatDate(open.inspectionSlot)}` : ''}
                         </div>
@@ -104,7 +104,7 @@ export default function MoveOutPage() {
                             <div className="se-panel-grid">
                                 <label><span className="se-label">Ngày dự kiến trả kho</span>
                                     <div className="se-field"><Icon name="calendar" />
-                                        <input type="date" min={earliest} max={contract.endDate} value={form.plannedMoveOutDate} onChange={(e) => set({ plannedMoveOutDate: e.target.value })} required />
+                                        <input type="date" min={earliest} max={contract.endDate} value={form.plannedHandoverDate} onChange={(e) => set({ plannedHandoverDate: e.target.value })} required />
                                     </div>
                                     <p className="se-hint">{terms.data ? `Cần báo trước ${terms.data.noticeDays} ngày: sớm nhất là ngày ${formatDate(earliest)}.` : 'Cần báo trước khi trả kho; ngày sớm nhất được kiểm tra khi bạn gửi yêu cầu.'}</p>
                                 </label>

@@ -8,7 +8,7 @@ const LINKS = [
     { to: '/my-storage', icon: 'grid', label: 'Kho của tôi' },
     { to: '/payments', icon: 'card', label: 'Thanh toán và hóa đơn' },
     { to: '/support/requests', icon: 'chat', label: 'Yêu cầu hỗ trợ' },
-    { to: '/move-out', icon: 'arrowLeft', label: 'Trả kho' },
+    { to: '/handover', icon: 'arrowLeft', label: 'Trả kho' },
     { to: '/profile', icon: 'key', label: 'Hồ sơ và cài đặt' },
 ];
 

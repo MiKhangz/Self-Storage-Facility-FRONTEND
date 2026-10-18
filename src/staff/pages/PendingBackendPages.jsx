@@ -60,7 +60,7 @@ export function WalkInBookingPage() {
                 <li><span><strong>Customer</strong><small>New or existing customer, Citizen ID checked at the desk</small></span></li>
                 <li><span><strong>Unit &amp; rental period</strong><small>Sizes offered: {types.map((t) => t.code).join(', ') || '—'}</small></span></li>
                 <li><span><strong>Payment</strong><small>Deposit and first month taken at the desk</small></span></li>
-                <li><span><strong>Handover</strong><small>Continue in Check-in &amp; Handover</small></span></li>
+                <li><span><strong>Check-in</strong><small>Continue in Check-in</small></span></li>
             </ol>
         </>
     );

@@ -69,7 +69,7 @@
 /** @typedef {"Success"|"Failure"} ActivityResult */
 
 /**
- * @typedef {Object} ApproveMoveOutRequest
+ * @typedef {Object} ApproveHandoverRequest
  * @property {string} [inspectionSlot] date-time
  */
 
@@ -229,7 +229,7 @@
  * @property {number} [totalPages] int32
  */
 
-/** @typedef {"Draft"|"Active"|"PendingMoveOut"|"Closed"|"Overdue"|"Suspended"|"Terminated"} ContractStatus */
+/** @typedef {"Draft"|"Active"|"PendingHandover"|"Closed"|"Overdue"|"Suspended"|"Terminated"} ContractStatus */
 
 /**
  * @typedef {Object} CreateCheckInRequest
@@ -247,21 +247,29 @@
  */
 
 /**
+ * @typedef {Object} CreateHandoverInspectionRequest
+ * @property {ConditionResult} [conditionResult]
+ * @property {number} [cleaningFee] double
+ * @property {number} [repairCharge] double
+ * @property {number} [otherDeduction] double
+ */
+
+/**
+ * @typedef {Object} CreateHandoverRequest
+ * @property {number} [contractId] int32
+ * @property {string} [plannedHandoverDate] date
+ * @property {(string|null)} [reason]
+ * @property {RefundMethod} [refundMethod]
+ * @property {(string|null)} [refundAccount]
+ */
+
+/**
  * @typedef {Object} CreateMaintenanceOrderRequest
  * @property {(string|null)} [description]
  * @property {(number|null)} [storageUnitId] int32
  * @property {(number|null)} [ticketId] int32
  * @property {(string|null)} [scheduledAt] date-time
  * @property {(number|null)} [assignedTo] int32
- */
-
-/**
- * @typedef {Object} CreateMoveOutRequest
- * @property {number} [contractId] int32
- * @property {string} [plannedMoveOutDate] date
- * @property {(string|null)} [reason]
- * @property {RefundMethod} [refundMethod]
- * @property {(string|null)} [refundAccount]
  */
 
 /**
@@ -289,14 +297,6 @@
  * @property {number} [unitTypeId] int32
  * @property {string} [moveInDate] date
  * @property {number} [rentalMonths] int32
- */
-
-/**
- * @typedef {Object} CreateReturnInspectionRequest
- * @property {ConditionResult} [conditionResult]
- * @property {number} [cleaningFee] double
- * @property {number} [repairCharge] double
- * @property {number} [otherDeduction] double
  */
 
 /**
@@ -367,13 +367,13 @@
 
 /**
  * @typedef {Object} DepositSettlementDto
- * @property {number} [moveOutRequestId] int32
+ * @property {number} [handoverId] int32
  * @property {number} [depositAmount] double
  * @property {number} [damageDeductions] double
  * @property {number} [outstandingInvoices] double
  * @property {number} [refundAmount] double
  * @property {number} [shortfall] double
- * @property {MoveOutRequestStatus} [status]
+ * @property {HandoverStatus} [status]
  */
 
 /**
@@ -488,6 +488,50 @@
  */
 
 /**
+ * @typedef {Object} HandoverDto
+ * @property {number} [handoverId] int32
+ * @property {number} [contractId] int32
+ * @property {(string|null)} [contractNumber]
+ * @property {number} [customerId] int32
+ * @property {(string|null)} [customerName]
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {string} [requestedAt] date-time
+ * @property {string} [plannedHandoverDate] date
+ * @property {(string|null)} [reason]
+ * @property {(string|null)} [inspectionSlot] date-time
+ * @property {RefundMethod} [refundMethod]
+ * @property {(string|null)} [refundAccount]
+ * @property {HandoverStatus} [status]
+ * @property {HandoverInspectionDto} [inspection]
+ */
+
+/**
+ * @typedef {Object} HandoverDtoPagedResult
+ * @property {(Array<HandoverDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/**
+ * @typedef {Object} HandoverInspectionDto
+ * @property {number} [handoverInspectionId] int32
+ * @property {string} [inspectedAt] date-time
+ * @property {ConditionResult} [conditionResult]
+ * @property {number} [cleaningFee] double
+ * @property {number} [repairCharge] double
+ * @property {number} [otherDeduction] double
+ * @property {number} [refundAmount] double
+ * @property {HandoverInspectionStatus} [status]
+ */
+
+/** @typedef {"Draft"|"Completed"|"Disputed"} HandoverInspectionStatus */
+
+/** @typedef {"Requested"|"Approved"|"Inspected"|"Completed"|"Cancelled"} HandoverStatus */
+
+/**
  * @typedef {Object} InvoiceAdjustmentRequest
  * @property {(string|null)} [description]
  * @property {number} [amount] double
@@ -582,36 +626,6 @@
  */
 
 /** @typedef {"Open"|"Scheduled"|"InProgress"|"Done"|"Cancelled"} MaintenanceOrderStatus */
-
-/**
- * @typedef {Object} MoveOutRequestDto
- * @property {number} [moveOutRequestId] int32
- * @property {number} [contractId] int32
- * @property {(string|null)} [contractNumber]
- * @property {number} [customerId] int32
- * @property {(string|null)} [customerName]
- * @property {number} [storageUnitId] int32
- * @property {(string|null)} [unitCode]
- * @property {string} [requestedAt] date-time
- * @property {string} [plannedMoveOutDate] date
- * @property {(string|null)} [reason]
- * @property {(string|null)} [inspectionSlot] date-time
- * @property {RefundMethod} [refundMethod]
- * @property {(string|null)} [refundAccount]
- * @property {MoveOutRequestStatus} [status]
- * @property {ReturnInspectionDto} [inspection]
- */
-
-/**
- * @typedef {Object} MoveOutRequestDtoPagedResult
- * @property {(Array<MoveOutRequestDto>|null)} [items]
- * @property {number} [page] int32
- * @property {number} [pageSize] int32
- * @property {number} [totalCount] int32
- * @property {number} [totalPages] int32
- */
-
-/** @typedef {"Requested"|"Approved"|"Inspected"|"Completed"|"Cancelled"} MoveOutRequestStatus */
 
 /**
  * @typedef {Object} NotificationSettingsDto
@@ -892,20 +906,6 @@
  * @property {(string|null)} [token]
  * @property {(string|null)} [newPassword]
  */
-
-/**
- * @typedef {Object} ReturnInspectionDto
- * @property {number} [returnInspectionId] int32
- * @property {string} [inspectedAt] date-time
- * @property {ConditionResult} [conditionResult]
- * @property {number} [cleaningFee] double
- * @property {number} [repairCharge] double
- * @property {number} [otherDeduction] double
- * @property {number} [refundAmount] double
- * @property {ReturnInspectionStatus} [status]
- */
-
-/** @typedef {"Draft"|"Completed"|"Disputed"} ReturnInspectionStatus */
 
 /**
  * @typedef {Object} RevenueMethodDto

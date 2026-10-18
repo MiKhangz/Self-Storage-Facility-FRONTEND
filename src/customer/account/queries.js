@@ -14,8 +14,8 @@ export const useMyTickets = () => useQuery({ queryKey: ['tickets', PAGE], queryF
 export const OPEN_INVOICE = ['Issued', 'Overdue'];
 export const OPEN_TICKET = ['New', 'InProgress', 'WaitingForCustomer'];
 export const AWAITING_CHECK_IN = ['Pending', 'Confirmed'];
-// A contract the customer still holds; Draft is signed-or-signing before handover.
-export const LIVE_CONTRACT = ['Draft', 'Active', 'PendingMoveOut', 'Overdue', 'Suspended'];
+// A contract the customer still holds; Draft is signed-or-signing before check-in.
+export const LIVE_CONTRACT = ['Draft', 'Active', 'PendingHandover', 'Overdue', 'Suspended'];
 
 /** Share of the rental period already used, 0–100. */
 export function periodUsed(startIso, endIso, todayIso) {
@@ -32,7 +32,7 @@ export const invoiceBadge = (inv) => INVOICE_BADGE[inv.status] ?? ['low', `Hạn
 
 /** [tone, label] per contract status, in the customer's words. */
 export const CONTRACT_BADGE = {
-    Draft: ['low', 'Chờ bàn giao'], Active: ['', 'Đang thuê'], PendingMoveOut: ['low', 'Đang trả kho'],
+    Draft: ['low', 'Chờ bàn giao'], Active: ['', 'Đang thuê'], PendingHandover: ['low', 'Đang trả kho'],
     Overdue: ['none', 'Quá hạn thanh toán'], Suspended: ['none', 'Tạm khóa ra vào'],
     Closed: ['muted', 'Đã kết thúc'], Terminated: ['muted', 'Đã chấm dứt'],
 };

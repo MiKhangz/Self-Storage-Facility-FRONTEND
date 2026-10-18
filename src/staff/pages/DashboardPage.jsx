@@ -58,7 +58,7 @@ export default function DashboardPage() {
             <div className="sa-stats">
                 <Stat icon="grid" label="Occupancy rate" value={`${occupancy(allUnits)}%`} note={`${allUnits.length} units`} />
                 <Stat icon="card" label={`Revenue (${new Date().toLocaleString('en', { month: 'short' })})`} value={compactVnd(paidInMonth(month))} note="paid on invoices issued this month" />
-                <Stat icon="file" label="Active contracts" value={active.length} note={`${allContracts.filter((c) => c.status === 'Draft').length} drafts awaiting handover`} />
+                <Stat icon="file" label="Active contracts" value={active.length} note={`${allContracts.filter((c) => c.status === 'Draft').length} drafts awaiting check-in`} />
                 <Stat icon="clock" tone="bad" label="Overdue payments" value={overdue.length} note={formatVnd(overdue.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} />
             </div>
 
