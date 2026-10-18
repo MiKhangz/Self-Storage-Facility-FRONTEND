@@ -5,7 +5,7 @@ import { facilitiesApi, unitTypesApi } from '../../api/generated';
 import Icon from '../components/Icon.jsx';
 import PageHead from '../components/PageHead.jsx';
 import { availability, formatVnd, todayIso } from '../components/format.js';
-import { discountFor, lateFeeText, useTerms } from '../components/terms.js';
+import { discountFor, earlyReturnText, lateFeeText, useTerms } from '../components/terms.js';
 import './SizesPage.css';
 
 // Shelf storage is not a StorEase service, so only the real unit filters remain.
@@ -20,7 +20,7 @@ function feeCards(t) {
     const tiers = [3, 6, 12].map((m) => [m, discountFor(t, m)]).filter(([, p]) => p > 0);
     return [
         { icon: 'shield', title: 'Tiền cọc', text: `Bằng ${months(t.depositMonths)} tiền thuê. Được hoàn lại sau khi trả kho trong tình trạng tốt, trừ các khoản phí phát sinh.` },
-        { icon: 'calendar', title: 'Trả kho', text: `Báo trước ${t.noticeDays} ngày khi muốn trả kho. Nhân viên sẽ cùng bạn kiểm tra kho.` },
+        { icon: 'calendar', title: 'Trả kho', text: `${earlyReturnText(t)} Nhân viên sẽ cùng bạn kiểm tra kho.` },
         { icon: 'clock', title: 'Phí trễ hạn', text: lateFeeText(t) },
         { icon: 'card', title: 'Giảm giá thuê dài hạn', text: tiers.length ? tiers.map(([m, p]) => `−${p}% khi thuê từ ${months(m)}`).join(', ') + '.' : 'Hiện chưa có giảm giá cho thuê dài hạn.' },
     ];

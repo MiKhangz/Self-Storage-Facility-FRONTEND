@@ -59,6 +59,7 @@ function Settle({ request, onDone }) {
                 <dl className="se-kv">
                     <div><dt>Deposit</dt><dd>{formatVnd(s.depositAmount)}</dd></div>
                     <div><dt>Damage deductions</dt><dd>− {formatVnd(s.damageDeductions)}</dd></div>
+                    {s.earlyTerminationPenalty > 0 && <div><dt>Early return penalty</dt><dd>− {formatVnd(s.earlyTerminationPenalty)}</dd></div>}
                     <div><dt>Outstanding invoices</dt><dd>− {formatVnd(s.outstandingInvoices)}</dd></div>
                     <div><dt><strong>Refund</strong></dt><dd>{formatVnd(s.refundAmount)}</dd></div>
                     {s.shortfall > 0 && <div><dt>Customer still owes</dt><dd className="sa-bad">{formatVnd(s.shortfall)}</dd></div>}

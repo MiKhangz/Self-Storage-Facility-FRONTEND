@@ -4,8 +4,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { handoversApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
-import { addDays, formatDate, formatVnd, todayIso } from '../components/format.js';
-import { useTerms } from '../components/terms.js';
+import { formatDate, formatVnd, todayIso } from '../components/format.js';
+import { earlyReturnText, useTerms } from '../components/terms.js';
 import { useMyContracts, useMyReservations } from './queries.js';
 import './UnitDetailPage.css';
 
@@ -41,8 +41,8 @@ export default function HandoverPage() {
     const open = requests.data?.items?.find((m) => m.contractId === contract?.contractId && m.status !== 'Cancelled');
 
     const terms = useTerms();
-    // The API refuses dates inside the notice period, so don't offer them.
-    const earliest = addDays(todayIso(), terms.data?.noticeDays ?? 0);
+    // No notice period any more (SR-04): any date from today; before the end date costs a share of the deposit.
+    const earliest = todayIso();
     const [form, setForm] = useState({ plannedHandoverDate: '', reason: '', refundMethod: 'BankTransfer', refundAccount: '' });
     const [checked, setChecked] = useState(CHECKS.map(() => false));
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
@@ -106,7 +106,7 @@ export default function HandoverPage() {
                                     <div className="se-field"><Icon name="calendar" />
                                         <input type="date" min={earliest} max={contract.endDate} value={form.plannedHandoverDate} onChange={(e) => set({ plannedHandoverDate: e.target.value })} required />
                                     </div>
-                                    <p className="se-hint">{terms.data ? `Cần báo trước ${terms.data.noticeDays} ngày: sớm nhất là ngày ${formatDate(earliest)}.` : 'Cần báo trước khi trả kho; ngày sớm nhất được kiểm tra khi bạn gửi yêu cầu.'}</p>
+                                    <p className="se-hint">{terms.data ? earlyReturnText(terms.data) : ''}</p>
                                 </label>
                                 <label><span className="se-label">Lý do (không bắt buộc)</span>
                                     <div className="se-input"><input maxLength={200} value={form.reason} onChange={(e) => set({ reason: e.target.value })} placeholder="Ví dụ: chuyển sang kho lớn hơn" /></div>

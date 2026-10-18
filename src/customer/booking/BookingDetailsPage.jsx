@@ -8,14 +8,14 @@ import Icon from '../components/Icon.jsx';
 import { useFacilities } from '../sizes/SizesPage.jsx';
 import BookingStepper from './BookingStepper.jsx';
 import BookingSummary from './BookingSummary.jsx';
-import { lateFeeText, useTerms } from '../components/terms.js';
+import { earlyReturnText, lateFeeText, useTerms } from '../components/terms.js';
 
 /** The rules the customer agrees to, worded from the terms the backend enforces. */
 const agreement = (t) => [
     `Tiền cọc (bằng ${t.depositMonths} tháng tiền thuê) được hoàn lại sau khi trả kho trong tình trạng tốt, trừ các khoản phí phát sinh.`,
     `Tiền thuê thanh toán hằng tháng. ${lateFeeText(t)}`,
     `Hủy trong vòng ${t.cancelFreeHours} giờ sau khi đặt kho được hoàn đủ tiền cọc; sau thời gian này tiền cọc không được hoàn lại.`,
-    `Muốn trả kho cần báo trước ${t.noticeDays} ngày.`,
+    earlyReturnText(t),
     'Không cất hàng dễ cháy nổ, hàng dễ hư hỏng và hàng cấm theo quy định pháp luật.',
 ];
 

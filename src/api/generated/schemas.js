@@ -280,6 +280,7 @@
  * @property {number} [graceDays] int32
  * @property {number} [noticeDays] int32
  * @property {number} [lateFeePercentPerWeek] double
+ * @property {number} [earlyTerminationPercent] double
  * @property {number} [suspendAfterDays] int32
  * @property {number} [clearOutAfterDays] int32
  * @property {number} [cancelFreeHours] int32
@@ -370,6 +371,7 @@
  * @property {number} [handoverId] int32
  * @property {number} [depositAmount] double
  * @property {number} [damageDeductions] double
+ * @property {number} [earlyTerminationPenalty] double
  * @property {number} [outstandingInvoices] double
  * @property {number} [refundAmount] double
  * @property {number} [shortfall] double
@@ -728,8 +730,8 @@
  * @property {number} [version] int32
  * @property {number} [depositMonths] int32
  * @property {number} [graceDays] int32
- * @property {number} [noticeDays] int32
  * @property {number} [lateFeePercentPerWeek] double
+ * @property {number} [earlyTerminationPercent] double
  * @property {number} [suspendAfterDays] int32
  * @property {number} [clearOutAfterDays] int32
  * @property {number} [cancelFreeHours] int32
@@ -753,6 +755,7 @@
  * @property {number} [graceDays] int32
  * @property {number} [noticeDays] int32
  * @property {number} [lateFeePercentPerWeek] double
+ * @property {number} [earlyTerminationPercent] double
  * @property {number} [suspendAfterDays] int32
  * @property {number} [clearOutAfterDays] int32
  * @property {number} [cancelFreeHours] int32
