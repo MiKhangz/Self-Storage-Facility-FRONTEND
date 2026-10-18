@@ -136,7 +136,39 @@
  * @property {(string|null)} [unitCode]
  * @property {(number|null)} [contractId] int32
  * @property {(Array<CheckInItemDto>|null)} [items]
- * @property {boolean} [readyForHandover]
+ * @property {boolean} [readyForCheckIn]
+ */
+
+/**
+ * @typedef {Object} CheckInDetailDto
+ * @property {number} [checkInId] int32
+ * @property {number} [reservationId] int32
+ * @property {(number|null)} [contractId] int32
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {number} [staffId] int32
+ * @property {(string|null)} [staffName]
+ * @property {string} [checkInTime] date-time
+ * @property {(string|null)} [lockSerial]
+ * @property {(string|null)} [cardNumber]
+ * @property {(string|null)} [conditionNote]
+ * @property {CheckInStatus} [status]
+ * @property {(Array<CheckInPhotoDto>|null)} [photos]
+ */
+
+/**
+ * @typedef {Object} CheckInDto
+ * @property {number} [checkInId] int32
+ * @property {number} [reservationId] int32
+ * @property {number} [contractId] int32
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {string} [checkInTime] date-time
+ * @property {(string|null)} [lockSerial]
+ * @property {(string|null)} [cardNumber]
+ * @property {(string|null)} [conditionNote]
+ * @property {CheckInStatus} [status]
+ * @property {(string|null)} [accessCode]
  */
 
 /**
@@ -146,6 +178,18 @@
  * @property {boolean} [done]
  * @property {(string|null)} [detail]
  */
+
+/**
+ * @typedef {Object} CheckInPhotoDto
+ * @property {number} [checkInPhotoId] int32
+ * @property {number} [checkInId] int32
+ * @property {(string|null)} [fileName]
+ * @property {(string|null)} [contentType]
+ * @property {number} [sizeBytes] int32
+ * @property {string} [uploadedAt] date-time
+ */
+
+/** @typedef {"Scheduled"|"InProgress"|"Completed"|"Cancelled"} CheckInStatus */
 
 /** @typedef {"Good"|"MinorDamage"|"MajorDamage"} ConditionResult */
 
@@ -179,18 +223,18 @@
 /** @typedef {"Draft"|"Active"|"PendingMoveOut"|"Closed"|"Overdue"|"Suspended"|"Terminated"} ContractStatus */
 
 /**
- * @typedef {Object} CreateContractRequest
- * @property {number} [reservationId] int32
- * @property {number} [paymentDay] int32
- */
-
-/**
- * @typedef {Object} CreateHandoverRequest
+ * @typedef {Object} CreateCheckInRequest
  * @property {number} [reservationId] int32
  * @property {number} [contractId] int32
  * @property {(string|null)} [lockSerial]
  * @property {(string|null)} [cardNumber]
  * @property {(string|null)} [conditionNote]
+ */
+
+/**
+ * @typedef {Object} CreateContractRequest
+ * @property {number} [reservationId] int32
+ * @property {number} [paymentDay] int32
  */
 
 /**
@@ -433,50 +477,6 @@
  * @property {(string|null)} [referenceNo]
  * @property {(string|null)} [signature]
  */
-
-/**
- * @typedef {Object} HandoverDetailDto
- * @property {number} [handoverId] int32
- * @property {number} [reservationId] int32
- * @property {(number|null)} [contractId] int32
- * @property {number} [storageUnitId] int32
- * @property {(string|null)} [unitCode]
- * @property {number} [staffId] int32
- * @property {(string|null)} [staffName]
- * @property {string} [handoverTime] date-time
- * @property {(string|null)} [lockSerial]
- * @property {(string|null)} [cardNumber]
- * @property {(string|null)} [conditionNote]
- * @property {HandoverStatus} [status]
- * @property {(Array<HandoverPhotoDto>|null)} [photos]
- */
-
-/**
- * @typedef {Object} HandoverDto
- * @property {number} [handoverId] int32
- * @property {number} [reservationId] int32
- * @property {number} [contractId] int32
- * @property {number} [storageUnitId] int32
- * @property {(string|null)} [unitCode]
- * @property {string} [handoverTime] date-time
- * @property {(string|null)} [lockSerial]
- * @property {(string|null)} [cardNumber]
- * @property {(string|null)} [conditionNote]
- * @property {HandoverStatus} [status]
- * @property {(string|null)} [accessCode]
- */
-
-/**
- * @typedef {Object} HandoverPhotoDto
- * @property {number} [handoverPhotoId] int32
- * @property {number} [handoverId] int32
- * @property {(string|null)} [fileName]
- * @property {(string|null)} [contentType]
- * @property {number} [sizeBytes] int32
- * @property {string} [uploadedAt] date-time
- */
-
-/** @typedef {"Scheduled"|"InProgress"|"Completed"|"Cancelled"} HandoverStatus */
 
 /**
  * @typedef {Object} InvoiceAdjustmentRequest
@@ -1045,7 +1045,7 @@
 
 /** @typedef {"New"|"InProgress"|"WaitingForCustomer"|"Resolved"|"Closed"} SupportTicketStatus */
 
-/** @typedef {"Handover"|"Inspection"|"Maintenance"|"Reminder"|"Other"} TaskType */
+/** @typedef {"CheckIn"|"Inspection"|"Maintenance"|"Reminder"|"Other"} TaskType */
 
 /**
  * @typedef {Object} TicketCategoryDto

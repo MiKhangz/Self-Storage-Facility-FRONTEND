@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { contractsApi, handoversApi } from '../../api/generated';
+import { checkInsApi, contractsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, rentalEndDate, todayIso } from '../../customer/components/format.js';
@@ -20,7 +20,7 @@ function HandoverWizard({ reservation, contract, onDone }) {
     const [form, setForm] = useState({ lockSerial: '', cardNumber: '', conditionNote: '' });
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const handover = useMutation({
-        mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, ...form }),
+        mutationFn: () => checkInsApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, ...form }),
     });
     // Refresh only after staff move on: refetching drops this reservation from the queue, which would unmount
     // the one-time access code before anyone reads it.
