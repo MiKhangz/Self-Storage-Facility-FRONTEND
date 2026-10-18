@@ -1222,6 +1222,36 @@
  */
 
 /**
+ * @typedef {Object} UnitVisitCheckInRequest
+ * @property {number} [contractId] int32
+ * @property {(string|null)} [note]
+ */
+
+/**
+ * @typedef {Object} UnitVisitDto
+ * @property {number} [unitVisitId] int32
+ * @property {number} [contractId] int32
+ * @property {(string|null)} [contractNumber]
+ * @property {(string|null)} [customerName]
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {number} [recordedBy] int32
+ * @property {(string|null)} [recordedByName]
+ * @property {string} [checkInAt] date-time
+ * @property {(string|null)} [checkOutAt] date-time
+ * @property {(string|null)} [note]
+ */
+
+/**
+ * @typedef {Object} UnitVisitDtoPagedResult
+ * @property {(Array<UnitVisitDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/**
  * @typedef {Object} UpdateProfileRequest
  * @property {(string|null)} [fullName]
  * @property {(string|null)} [phoneNumber]

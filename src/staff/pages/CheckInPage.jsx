@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { checkInsApi, contractsApi } from '../../api/generated';
+import { checkInsApi, contractsApi, unitVisitsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, rentalEndDate, todayIso } from '../../customer/components/format.js';
-import { NotWired, PageHeader, Stat, Status } from '../components/ui.jsx';
+import { PageHeader, Stat, Status } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useUnits } from '../queries.js';
 
 /** The physical checks the Figma lists before keys change hands; staff tick each one. */
@@ -161,6 +161,40 @@ function CancelCheckIn({ contractId }) {
     );
 }
 
+const visitTime = (iso) => new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+/** SR-05: record the customer entering and leaving their unit during the rental. */
+function UnitVisits({ contractId }) {
+    const queryClient = useQueryClient();
+    const [note, setNote] = useState('');
+    const visits = useQuery({ queryKey: ['unit-visits', contractId], queryFn: () => unitVisitsApi.list({ contractId, page: 1, pageSize: 5 }) });
+    const open = visits.data?.items?.find((v) => !v.checkOutAt);
+    const done = { onSuccess: () => { setNote(''); queryClient.invalidateQueries({ queryKey: ['unit-visits', contractId] }); } };
+    const checkIn = useMutation({ mutationFn: () => unitVisitsApi.checkIn({ contractId, note: note.trim() || null }), ...done });
+    const checkOut = useMutation({ mutationFn: () => unitVisitsApi.checkOut(open.unitVisitId), ...done });
+    const error = checkIn.error ?? checkOut.error;
+    return (
+        <div>
+            <h3>Unit visits</h3>
+            {open ? (
+                <p className="sa-muted">Inside since {visitTime(open.checkInAt)}{open.note ? ` · ${open.note}` : ''}</p>
+            ) : (
+                <label><span className="se-label">Note (optional)</span>
+                    <div className="se-input"><input value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} /></div></label>
+            )}
+            {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
+            {open
+                ? <button type="button" className="se-btn se-btn-primary" disabled={checkOut.isPending} onClick={() => checkOut.mutate()}>Check out</button>
+                : <button type="button" className="se-btn se-btn-primary" disabled={checkIn.isPending} onClick={() => checkIn.mutate()}>Check in visit</button>}
+            <ul className="sa-people">
+                {(visits.data?.items ?? []).filter((v) => v.checkOutAt).map((v) => (
+                    <li key={v.unitVisitId}><span>{visitTime(v.checkInAt)} → {visitTime(v.checkOutAt)}</span><small>{v.recordedByName}</small></li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
 function ActiveRentals() {
     const contracts = useContracts({ status: 'Active' });
     const invoices = useInvoices();
@@ -203,8 +237,7 @@ function ActiveRentals() {
                         <strong>{eligible ? 'Eligible for access' : 'Not eligible — check payment or access code'}</strong>
                     </div>
                     <CancelCheckIn key={current.contractId} contractId={current.contractId} />
-                    {/* ponytail: visit check-in/out with a time limit has no backend; wire it when a visits endpoint exists. */}
-                    <NotWired>Timed visitor check-in and check-out are not on the backend yet; gate entries appear in the access log.</NotWired>
+                    <UnitVisits key={`visits-${current.contractId}`} contractId={current.contractId} />
                 </section>
             )}
         </div>
