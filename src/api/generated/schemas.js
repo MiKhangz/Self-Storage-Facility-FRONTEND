@@ -157,6 +157,15 @@
  */
 
 /**
+ * @typedef {Object} CheckInDetailDtoPagedResult
+ * @property {(Array<CheckInDetailDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/**
  * @typedef {Object} CheckInDto
  * @property {number} [checkInId] int32
  * @property {number} [reservationId] int32

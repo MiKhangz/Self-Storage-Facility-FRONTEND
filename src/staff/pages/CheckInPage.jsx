@@ -140,6 +140,27 @@ function HandoverDesk() {
     );
 }
 
+/** SR-02: undo a check-in made by mistake. The reservation goes back to waiting for a unit. */
+function CancelCheckIn({ contractId }) {
+    const queryClient = useQueryClient();
+    const checkIns = useQuery({ queryKey: ['check-ins', 'Completed'], queryFn: () => checkInsApi.list({ status: 'Completed', page: 1, pageSize: 100 }) });
+    const checkIn = checkIns.data?.items?.find((c) => c.contractId === contractId);
+    const cancel = useMutation({
+        mutationFn: () => checkInsApi.cancel(checkIn.checkInId),
+        onSuccess: () => ['check-ins', 'contracts', 'reservations', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
+    });
+    if (!checkIn) return null;
+    return (
+        <>
+            {cancel.isError && <div className="se-alert" role="alert">{errorMessage(cancel.error)}</div>}
+            <button type="button" className="se-btn se-btn-ghost" disabled={cancel.isPending}
+                onClick={() => window.confirm('Cancel this check-in? The contract is terminated, the code revoked and the unit freed; the reservation waits for a unit again.') && cancel.mutate()}>
+                Cancel check-in
+            </button>
+        </>
+    );
+}
+
 function ActiveRentals() {
     const contracts = useContracts({ status: 'Active' });
     const invoices = useInvoices();
@@ -181,6 +202,7 @@ function ActiveRentals() {
                         <small>Access eligibility</small>
                         <strong>{eligible ? 'Eligible for access' : 'Not eligible — check payment or access code'}</strong>
                     </div>
+                    <CancelCheckIn key={current.contractId} contractId={current.contractId} />
                     {/* ponytail: visit check-in/out with a time limit has no backend; wire it when a visits endpoint exists. */}
                     <NotWired>Timed visitor check-in and check-out are not on the backend yet; gate entries appear in the access log.</NotWired>
                 </section>

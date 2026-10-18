@@ -2,8 +2,10 @@
 import { api } from '../axiosClient.js'
 
 /** @typedef {import('./schemas.js').CheckInDetailDto} CheckInDetailDto */
+/** @typedef {import('./schemas.js').CheckInDetailDtoPagedResult} CheckInDetailDtoPagedResult */
 /** @typedef {import('./schemas.js').CheckInDto} CheckInDto */
 /** @typedef {import('./schemas.js').CheckInPhotoDto} CheckInPhotoDto */
+/** @typedef {import('./schemas.js').CheckInStatus} CheckInStatus */
 /** @typedef {import('./schemas.js').CreateCheckInRequest} CreateCheckInRequest */
 
 export const checkInsApi = {
@@ -14,6 +16,20 @@ export const checkInsApi = {
    */
   create: (body) =>
     api.post(`/api/check-ins`, body).then((r) => r.data),
+  /**
+   * GET /api/check-ins
+   * @param {{ status?: CheckInStatus, page?: number, pageSize?: number }} [params] query string
+   * @returns {Promise<CheckInDetailDtoPagedResult>}
+   */
+  list: (params) =>
+    api.get(`/api/check-ins`, { params }).then((r) => r.data),
+  /**
+   * POST /api/check-ins/{id}/cancel
+   * @param {number} id
+   * @returns {Promise<void>}
+   */
+  cancel: (id) =>
+    api.post(`/api/check-ins/${id}/cancel`, undefined).then((r) => r.data),
   /**
    * GET /api/check-ins/{id}
    * @param {number} id
