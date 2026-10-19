@@ -38,6 +38,13 @@ export const contractsApi = {
   sign: (id) =>
     api.post(`/api/contracts/${id}/sign`, undefined).then((r) => r.data),
   /**
+   * POST /api/contracts/{id}/sign-at-desk
+   * @param {number} id
+   * @returns {Promise<ContractDto>}
+   */
+  signAtDesk: (id) =>
+    api.post(`/api/contracts/${id}/sign-at-desk`, undefined).then((r) => r.data),
+  /**
    * GET /api/contracts/export
    * @param {{ status?: ContractStatus }} [params] query string
    * @returns {Promise<void>}

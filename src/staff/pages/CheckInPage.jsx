@@ -19,6 +19,11 @@ function CheckInWizard({ reservation, contract, onDone }) {
     const [ticks, setTicks] = useState({});
     const [form, setForm] = useState({ lockSerial: '', cardNumber: '', conditionNote: '' });
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
+    // A walk-in customer may have no password yet: staff record that they signed the paper contract here.
+    const signAtDesk = useMutation({
+        mutationFn: () => contractsApi.signAtDesk(contract.contractId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
+    });
     const checkIn = useMutation({
         mutationFn: () => checkInsApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, ...form }),
     });
@@ -57,7 +62,14 @@ function CheckInWizard({ reservation, contract, onDone }) {
                     </li>
                 ))}
                 <li className={contract.signedAt ? 'done' : ''}>
-                    <span><strong>Customer signs the contract</strong><small>{contract.signedAt ? `Signed ${formatDate(contract.signedAt)}` : 'Waiting — the customer signs from My Storage before check-in'}</small></span>
+                    <span><strong>Customer signs the contract</strong><small>{contract.signedAt ? `Signed ${formatDate(contract.signedAt)}` : 'The customer signs from My Storage, or on paper here at the desk'}</small></span>
+                    {!contract.signedAt && (
+                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={signAtDesk.isPending}
+                            onClick={() => window.confirm('Confirm the customer signed the paper contract in front of you?') && signAtDesk.mutate()}>
+                            Customer signed on paper
+                        </button>
+                    )}
+                    {signAtDesk.isError && <div className="se-alert" role="alert">{errorMessage(signAtDesk.error)}</div>}
                 </li>
                 <li>
                     <span><strong>Hand over disc lock &amp; access card</strong><small>Record the serial numbers given to the customer</small></span>
