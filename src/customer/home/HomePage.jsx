@@ -17,7 +17,7 @@ const SERVICES = [
 const STEPS = [
     { icon: 'grid', title: '1. Chọn kho', text: 'Chọn cơ sở, kích thước, ngày nhận kho và thời hạn thuê.' },
     { icon: 'card', title: '2. Đặt kho và đóng cọc', text: 'Đặt kho trên trang web, rồi thanh toán tiền cọc trực tuyến trước ngày nhận kho.' },
-    { icon: 'key', title: '3. Nhận kho', text: 'Đến cơ sở vào ngày hẹn. Nhân viên bàn giao kho, ổ khóa và mã ra vào cho bạn.' },
+    { icon: 'key', title: '3. Nhận kho', text: 'Đến cơ sở vào ngày hẹn. Nhân viên giao kho, ổ khóa và mã ra vào cho bạn.' },
     { icon: 'box', title: '4. Cất đồ và quản lý', text: 'Gia hạn, thanh toán và gửi yêu cầu hỗ trợ ngay trong tài khoản.' },
 ];
 

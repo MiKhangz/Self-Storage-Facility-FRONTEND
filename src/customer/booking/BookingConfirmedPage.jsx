@@ -51,7 +51,7 @@ export default function BookingConfirmedPage() {
                                 <ul>
                                     <li>Căn cước công dân (CCCD) đúng tên người thuê</li>
                                     <li>Mã đặt kho {r.reservationCode}</li>
-                                    <li>Nhân viên sẽ bàn giao kho, ổ khóa và cài mã ra vào cá nhân cho bạn</li>
+                                    <li>Nhân viên sẽ giao kho, ổ khóa và cài mã ra vào cá nhân cho bạn</li>
                                 </ul>
                             </div>
                             <div className="se-confirm-actions">

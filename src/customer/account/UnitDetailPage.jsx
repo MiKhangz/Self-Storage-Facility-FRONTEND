@@ -38,7 +38,7 @@ function AccessCodeCard({ contract }) {
         return (
             <section className="se-code-card">
                 <h2><Icon name="key" size={18} /> Mã ra vào cá nhân</h2>
-                <p className="se-code-note">Mã được cấp khi nhân viên hoàn tất bàn giao kho cho bạn.</p>
+                <p className="se-code-note">Mã được cấp khi bạn đến cơ sở nhận kho.</p>
             </section>
         );
     }
@@ -152,7 +152,7 @@ export default function UnitDetailPage() {
             {c.status === 'Draft' && !c.signedAt && (
                 <div className="se-due">
                     <Icon name="file" size={20} />
-                    <div><strong>Vui lòng ký hợp đồng thuê kho</strong><small>Sau khi bạn ký, nhân viên sẽ bàn giao và kích hoạt kho.</small></div>
+                    <div><strong>Vui lòng ký hợp đồng thuê kho</strong><small>Sau khi bạn ký, nhân viên sẽ giao kho và kích hoạt hợp đồng khi bạn đến nhận.</small></div>
                     <button type="button" className="se-btn se-btn-primary se-btn-sm" onClick={() => sign.mutate()} disabled={sign.isPending}>{sign.isPending ? 'Đang ký…' : 'Ký hợp đồng'}</button>
                 </div>
             )}

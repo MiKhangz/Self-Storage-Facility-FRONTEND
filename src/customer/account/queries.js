@@ -32,7 +32,7 @@ export const invoiceBadge = (inv) => INVOICE_BADGE[inv.status] ?? ['low', `Hạn
 
 /** [tone, label] per contract status, in the customer's words. */
 export const CONTRACT_BADGE = {
-    Draft: ['low', 'Chờ bàn giao'], Active: ['', 'Đang thuê'], PendingHandover: ['low', 'Đang trả kho'],
+    Draft: ['low', 'Chờ nhận kho'], Active: ['', 'Đang thuê'], PendingHandover: ['low', 'Đang trả kho'],
     Overdue: ['none', 'Quá hạn thanh toán'], Suspended: ['none', 'Tạm khóa ra vào'],
     Closed: ['muted', 'Đã kết thúc'], Terminated: ['muted', 'Đã chấm dứt'],
 };
