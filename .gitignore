@@ -10,3 +10,4 @@ dist/
 *.tsbuildinfo
 .vite/
 .claude/
+graphify-out/
