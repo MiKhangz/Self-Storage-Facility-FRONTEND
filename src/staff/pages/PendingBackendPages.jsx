@@ -5,11 +5,7 @@ import { activityLogsApi, facilitiesApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate } from '../../customer/components/format.js';
-import { NotWired, PageHeader, Status, TableState } from '../components/ui.jsx';
-import { useUnitTypes } from '../queries.js';
-
-// ponytail: walk-in booking still has no backend (POST /api/reservations is customer-only); it shows the Figma
-// layout read-only until staff can create a reservation for a customer.
+import { PageHeader, Status, TableState } from '../components/ui.jsx';
 
 /** A16: system activity log — every write by a signed-in user, plus logins. */
 export function ActivityLogPage() {
@@ -44,24 +40,6 @@ export function ActivityLogPage() {
                     </tbody>
                 </table>
             </div>
-        </>
-    );
-}
-
-/** A18: reservation created by staff at the front desk. */
-export function WalkInBookingPage() {
-    const types = useUnitTypes().data ?? [];
-    return (
-        <>
-            <Link to="/admin/reservations" className="se-back"><Icon name="arrowLeft" size={16} /> Back to reservations</Link>
-            <PageHeader title="New walk-in booking" subtitle="Create a reservation for a customer at the desk" />
-            <NotWired>Only customers can create reservations (POST /api/reservations is customer-only), and staff cannot register a customer yet. Until then, help the customer book on the website, then assign the unit under Reservations.</NotWired>
-            <ol className="sa-steps">
-                <li><span><strong>Customer</strong><small>New or existing customer, Citizen ID checked at the desk</small></span></li>
-                <li><span><strong>Unit &amp; rental period</strong><small>Sizes offered: {types.map((t) => t.code).join(', ') || '—'}</small></span></li>
-                <li><span><strong>Payment</strong><small>Deposit and first month taken at the desk</small></span></li>
-                <li><span><strong>Check-in</strong><small>Continue in Check-in</small></span></li>
-            </ol>
         </>
     );
 }

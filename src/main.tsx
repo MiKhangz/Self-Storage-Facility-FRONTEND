@@ -44,7 +44,8 @@ import FacilityDetailPage from './staff/pages/FacilityDetailPage.jsx'
 import ReportsPage from './staff/pages/ReportsPage.jsx'
 import ShiftsPage from './staff/pages/ShiftsPage.jsx'
 import InviteUserPage from './staff/pages/InviteUserPage.jsx'
-import { ActivityLogPage, AddFacilityPage, WalkInBookingPage } from './staff/pages/PendingBackendPages.jsx'
+import { ActivityLogPage, AddFacilityPage } from './staff/pages/PendingBackendPages.jsx'
+import WalkInBookingPage from './staff/pages/WalkInBookingPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.

@@ -351,6 +351,24 @@
  */
 
 /**
+ * @typedef {Object} CustomerSummaryDto
+ * @property {number} [userId] int32
+ * @property {(string|null)} [fullName]
+ * @property {(string|null)} [email]
+ * @property {(string|null)} [phoneNumber]
+ * @property {(string|null)} [citizenId]
+ */
+
+/**
+ * @typedef {Object} CustomerSummaryDtoPagedResult
+ * @property {(Array<CustomerSummaryDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/**
  * @typedef {Object} DashboardDto
  * @property {number} [totalUnits] int32
  * @property {number} [availableUnits] int32
@@ -1299,6 +1317,25 @@
 /**
  * @typedef {Object} VerifyEmailRequest
  * @property {(string|null)} [token]
+ */
+
+/**
+ * @typedef {Object} WalkInCustomerRequest
+ * @property {(string|null)} [fullName]
+ * @property {(string|null)} [email]
+ * @property {(string|null)} [phoneNumber]
+ * @property {(string|null)} [citizenId]
+ */
+
+/**
+ * @typedef {Object} WalkInReservationRequest
+ * @property {(number|null)} [customerId] int32
+ * @property {WalkInCustomerRequest} [newCustomer]
+ * @property {number} [facilityId] int32
+ * @property {number} [unitTypeId] int32
+ * @property {number} [storageUnitId] int32
+ * @property {string} [moveInDate] date
+ * @property {number} [rentalMonths] int32
  */
 
 export {}

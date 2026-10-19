@@ -89,7 +89,7 @@ export default function ReservationsPage() {
     return (
         <>
             <PageHeader title="Reservations" subtitle="Review online bookings, assign a suitable unit and schedule check-in">
-                <Link to="/admin/walk-in" className="se-btn se-btn-primary"><Icon name="box" size={16} /> New walk-in booking</Link>
+                {canAssign && <Link to="/admin/walk-in" className="se-btn se-btn-primary"><Icon name="box" size={16} /> New walk-in booking</Link>}
             </PageHeader>
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
