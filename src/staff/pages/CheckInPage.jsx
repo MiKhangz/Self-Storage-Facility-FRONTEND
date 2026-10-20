@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { checkInsApi, contractsApi, unitVisitsApi } from '../../api/generated';
+import { accessCodesApi, checkInsApi, contractsApi, unitVisitsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, rentalEndDate, todayIso } from '../../customer/components/format.js';
@@ -207,6 +207,26 @@ function UnitVisits({ contractId }) {
     );
 }
 
+/** TH-06: a lost card or leaked code. The customer gets a new code from their unit page. */
+function RevokeCode({ contractId, accessCodeId }) {
+    const queryClient = useQueryClient();
+    const revoke = useMutation({
+        mutationFn: () => accessCodesApi.revoke(accessCodeId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts', contractId, 'access-code'] }),
+    });
+    const confirmAndRevoke = () => {
+        if (window.confirm('Revoke this access code? The customer cannot open the unit until they request a new code.')) revoke.mutate();
+    };
+    return (
+        <>
+            {revoke.isError && <div className="se-alert" role="alert">{errorMessage(revoke.error)}</div>}
+            <button type="button" className="se-btn se-btn-ghost" disabled={revoke.isPending} onClick={confirmAndRevoke}>
+                <Icon name="key" size={16} /> {revoke.isPending ? 'Revoking…' : 'Revoke code'}
+            </button>
+        </>
+    );
+}
+
 function ActiveRentals() {
     const contracts = useContracts({ status: 'Active' });
     const invoices = useInvoices();
@@ -248,6 +268,7 @@ function ActiveRentals() {
                         <small>Access eligibility</small>
                         <strong>{eligible ? 'Eligible for access' : 'Not eligible — check payment or access code'}</strong>
                     </div>
+                    {code.data?.isActive && <RevokeCode key={code.data.accessCodeId} contractId={current.contractId} accessCodeId={code.data.accessCodeId} />}
                     <CancelCheckIn key={current.contractId} contractId={current.contractId} />
                     <UnitVisits key={`visits-${current.contractId}`} contractId={current.contractId} />
                 </section>
