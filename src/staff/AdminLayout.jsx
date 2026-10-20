@@ -33,7 +33,7 @@ const NAV = [
     },
     {
         section: 'System', items: [
-            { to: '/admin/users', icon: 'shield', label: 'Users & Roles', roles: [ADMIN] },
+            { to: '/admin/users', icon: 'shield', label: 'Users & Roles', roles: [ADMIN, FM] },
             { to: '/admin/activity', icon: 'clock', label: 'Activity Log', roles: [ADMIN] },
         ],
     },

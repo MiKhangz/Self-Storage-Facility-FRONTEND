@@ -30,4 +30,5 @@ export const PERMISSIONS = [
     { group: 'Operations', feature: 'Assign staff tasks', roles: [FM] },
     { group: 'Operations', feature: 'View gate access logs', roles: [FM] },
     { group: 'System', feature: 'Manage staff accounts', roles: [SA] },
+    { group: 'System', feature: 'Assign staff to facilities', roles: [SA, FM] },
 ];
