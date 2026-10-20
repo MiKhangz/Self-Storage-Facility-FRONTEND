@@ -47,6 +47,7 @@ import InviteUserPage from './staff/pages/InviteUserPage.jsx'
 import { ActivityLogPage, AddFacilityPage } from './staff/pages/PendingBackendPages.jsx'
 import WalkInBookingPage from './staff/pages/WalkInBookingPage.jsx'
 import OverdueCasesPage from './staff/pages/OverdueCasesPage.jsx'
+import MaintenancePage from './staff/pages/MaintenancePage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -91,6 +92,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/activity" element={<ActivityLogPage />} />
               <Route path="/admin/walk-in" element={<WalkInBookingPage />} />
               <Route path="/admin/overdue" element={<OverdueCasesPage />} />
+              <Route path="/admin/maintenance" element={<MaintenancePage />} />
               <Route path="/admin/*" element={<Navigate to="/admin" replace />} />
             </Route>
             <Route element={<CustomerLayout />}>
