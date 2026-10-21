@@ -1,5 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 40 40" role="img" aria-label="StorEase">
-  <!-- Placeholder mark until the real StorEase logo is exported from Figma. -->
-  <rect width="40" height="40" rx="10" fill="#118a7e"/>
-  <text x="20" y="27" text-anchor="middle" font-family="Be Vietnam Pro, Segoe UI, sans-serif" font-size="20" font-weight="700" fill="#ffffff">S</text>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><rect width="48" height="48" rx="10" fill="#118a7e"/><path d="M10 20 24 10 38 20v19H10z" fill="white"/><path d="M17 24h14v15H17z" fill="#118a7e"/><path d="M19 28h10m-10 5h10" stroke="white" stroke-width="2"/></svg>

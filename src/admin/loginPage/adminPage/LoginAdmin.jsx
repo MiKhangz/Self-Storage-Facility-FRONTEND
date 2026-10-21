@@ -1,9 +1,7 @@
-import { useState } from 'react'
-import { useLocation, useNavigate } from 'react-router-dom'
-import { useAuth } from '../../../features/auth/AuthContext'
-import { ADMIN_PORTAL_ROLES } from '../../../features/auth/roles'
-import { errorMessage as apiErrorMessage } from '../../../api/axiosClient'
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './LoginAdmin.css'
+import { login, restoreSession } from '../../auth.js'
 import Logo from '../../assets/logo.svg'
 import PeopleLogo from '../../assets/people.svg'
 import Business from '../../assets/business.svg'
@@ -11,38 +9,42 @@ import Building from '../../assets/building.svg'
 import Key from '../../assets/key.svg'
 
 function LoginAdmin() {
-    const { login, logout } = useAuth()
     const navigate = useNavigate()
-    const location = useLocation()
 
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
-    // The token is held in memory only, so this checkbox cannot keep anyone signed in across a reload yet.
+    const [showPassword, setShowPassword] = useState(false)
     const [keepSignedIn, setKeepSignedIn] = useState(false)
 
-    const [submitting, setSubmitting] = useState(false)
+    const [loading, setLoading] = useState(false)
+    const [checking, setChecking] = useState(true)
     const [errorMessage, setErrorMessage] = useState('')
+
+    useEffect(() => {
+        let active = true
+        restoreSession()
+            .then(value => { if (active && value) navigate('/admin', { replace: true }) })
+            .catch(error => { if (active) setErrorMessage(error.message) })
+            .finally(() => { if (active) setChecking(false) })
+        return () => { active = false }
+    }, [navigate])
 
     const handleSubmit = async (e) => {
         e.preventDefault()
         setErrorMessage('')
-        setSubmitting(true)
+        setLoading(true)
         try {
-            const session = await login(email, password)
-            if (!ADMIN_PORTAL_ROLES.includes(session.role)) {
-                logout()
-                setErrorMessage('This portal is for staff accounts. Customers sign in on the customer site.')
-                return
-            }
-            navigate(location.state?.from ?? '/admin', { replace: true })
+            await login(email, password, keepSignedIn)
+            setPassword('')
+            navigate('/admin', { replace: true })
         } catch (error) {
-            setErrorMessage(apiErrorMessage(error))
+            setErrorMessage(error.message)
         } finally {
-            setSubmitting(false)
+            setLoading(false)
         }
     }
 
-    
+    if (checking) return <p role="status">Checking your session...</p>
     return (
         <div className="portal-container">
             {/* LEFT COLUMN: BRANDING & ROLE INFO */}
@@ -113,6 +115,7 @@ function LoginAdmin() {
                     <p className="form-subtitle">Use the work account created by your System Administrator.</p>
 
                     <form onSubmit={handleSubmit} className="login-form">
+                        {errorMessage && <p role="alert" style={{ color: '#b42318' }}>{errorMessage}</p>}
                         {/* Email Input Block */}
                         <div className="input-group">
                             <label htmlFor="email">Work email</label>
@@ -120,7 +123,7 @@ function LoginAdmin() {
                                 <input 
                                     type="email" 
                                     id="email" 
-                                    placeholder="admin@storease.vn"
+                                    placeholder="admin@storeease.vn"
                                     value={email}
                                     onChange={(e) => setEmail(e.target.value)}
                                     required 
@@ -133,17 +136,19 @@ function LoginAdmin() {
                             <label htmlFor="password">Password</label>
                             <div className="input-with-icon">
                                 <input 
-                                    type="password" 
+                                    type={showPassword ? 'text' : 'password'} 
                                     id="password" 
                                     placeholder="••••••••"
                                     value={password}
                                     onChange={(e) => setPassword(e.target.value)}
                                     required 
                                 />
+                                <button type="button" className="password-toggle" aria-label={showPassword ? 'Hide password' : 'Show password'} aria-pressed={showPassword} onClick={() => setShowPassword(value => !value)}>
+                                    <svg aria-hidden="true" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/>{showPassword&&<path d="m4 4 16 16"/>}</svg>
+                                </button>
                             </div>
                         </div>
 
-                        {/* Options: Remember Me & Forgot Password */}
                         <div className="form-options">
                             <label className="checkbox-container">
                                 <input 
@@ -153,20 +158,17 @@ function LoginAdmin() {
                                 />
                                 <span className="checkmark"></span> Keep me signed in
                             </label>
-                            <a href="#forgot" className="forgot-link">Forgot password?</a>
+                            <span className="forgot-link">Contact your administrator for password help.</span>
                         </div>
 
                         {/* Submit Action */}
-                        {errorMessage && <p className="form-error" role="alert">{errorMessage}</p>}
-                        <button type="submit" className="btn-signin" disabled={submitting}>
-                            {submitting ? 'Signing in…' : 'Sign in'}
-                        </button>
+                        <button type="submit" className="btn-signin" disabled={loading}>{loading ? 'Signing in...' : 'Sign in'}</button>
                     </form>
 
                     {/* Warning/Security Banner */}
                     <div className="security-banner">
                         <span className="shield-icon">🛡️</span>
-                        <p>After 5 failed attempts the account is locked for 15 minutes. All sign-ins are recorded in the login history.</p>
+                        <p>Sign in with your active staff account. Your session expires automatically; log out when using a shared computer.</p>
                     </div>
                 </main>
             </div>
@@ -175,3 +177,5 @@ function LoginAdmin() {
 }
 
 export default LoginAdmin
+
+

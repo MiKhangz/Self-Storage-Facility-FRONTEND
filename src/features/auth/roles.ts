@@ -9,10 +9,10 @@ export const Roles = {
 
 export type Role = (typeof Roles)[keyof typeof Roles]
 
-/** Everyone who signs in through the admin portal. */
 export const ADMIN_PORTAL_ROLES: Role[] = [
   Roles.FacilityStaff,
   Roles.FacilityManager,
   Roles.BusinessOperationsManager,
   Roles.SystemAdministrator,
 ]
+
