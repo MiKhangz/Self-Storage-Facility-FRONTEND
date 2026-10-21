@@ -36,7 +36,7 @@ export default function VnPayReturnPage() {
                 </>
             ))}
             {!vnp.vnp_TxnRef && <p>Không có thông tin giao dịch.</p>}
-            <Link to="/account/payments" className="se-btn se-btn-primary">Về trang thanh toán</Link>
+            <Link to="/payments" className="se-btn se-btn-primary">Về trang thanh toán</Link>
         </section>
     );
 }
