@@ -3,10 +3,11 @@ import { ACCOUNTS, PASSWORD, apiAs, loginStaff, openAdmin, uniqueEmail } from '.
 
 // One rental from booking to check-in, each step a test. Later steps use what earlier ones made, so they run in order
 // and stop at the first failure. The customer and the staff member each have their own browser window.
-test.describe.serial('rental: book, pay deposit, assign, contract, sign, check in', () => {
+test.describe.serial('rental: book, deposit, assign, contract, check in, rent, renew, hand back', () => {
   const name = `Khách E2E ${Date.now()}`
   const email = uniqueEmail('rental')
-  let customer, staff, staffApi, reservationCode, reservationId
+  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' })
+  let customer, staff, staffApi, reservationCode, reservationId, contract
 
   test.beforeAll(async ({ browser, baseURL }) => {
     customer = await (await browser.newContext()).newPage()
@@ -91,7 +92,66 @@ test.describe.serial('rental: book, pay deposit, assign, contract, sign, check i
 
     await expect(staff.getByRole('heading', { name: /Check-in complete/ })).toBeVisible()
     const contracts = await staffApi.get(`/api/contracts?page=1&pageSize=100`)
-    const contract = contracts.items.find((c) => c.reservationId === reservationId)
+    contract = contracts.items.find((c) => c.reservationId === reservationId)
     expect(contract.status).toBe('Active')
+  })
+
+  test('E06 the billing run issues rent and the customer pays it online', async ({ baseURL }) => {
+    const ops = await apiAs(baseURL, ACCOUNTS.ops)
+    await ops.post(`/api/billing/run?date=${today}`)
+    await ops.dispose()
+
+    await customer.getByRole('link', { name: 'Thanh toán và hóa đơn' }).click()
+    await customer.getByRole('button', { name: 'Thanh toán ngay' }).click()
+    await expect.poll(async () => {
+      const invoices = (await staffApi.get('/api/invoices?page=1&pageSize=100')).items.filter((i) => i.contractId === contract.contractId)
+      return invoices.length > 0 && invoices.every((i) => i.status === 'Paid')
+    }).toBe(true)
+  })
+
+  test('E07 the customer asks for a renewal and the manager approves it', async ({ browser }) => {
+    // The header and the account menu both link to it.
+    await customer.getByRole('link', { name: 'Kho của tôi', exact: true }).first().click()
+    await customer.getByRole('link', { name: 'Xem chi tiết' }).first().click()
+    await customer.getByRole('radiogroup', { name: 'Thời gian gia hạn' }).getByRole('radio').first().click()
+    await customer.getByRole('button', { name: 'Gửi yêu cầu gia hạn' }).click()
+
+    const manager = await (await browser.newContext()).newPage()
+    manager.on('dialog', (d) => d.accept())
+    await loginStaff(manager, ACCOUNTS.manager)
+    await openAdmin(manager, 'Customers & Contracts')
+    await manager.getByRole('row', { name: new RegExp(contract.contractNumber) }).getByRole('button', { name: 'Approve' }).click()
+
+    await expect.poll(async () => (await staffApi.get(`/api/contracts/${contract.contractId}`)).endDate).not.toBe(contract.endDate)
+    await manager.context().close()
+  })
+
+  test('E08 the customer hands the unit back; staff inspect and ops settle the deposit', async ({ browser }) => {
+    await customer.getByRole('link', { name: 'Yêu cầu trả kho' }).click()
+    await customer.getByLabel('Ngày dự kiến trả kho').fill(today)
+    for (const box of await customer.locator('.se-checklist').getByRole('checkbox').all()) await box.check()
+    await customer.getByLabel('Cách nhận tiền cọc').selectOption('Cash')
+    await customer.getByRole('button', { name: /Gửi yêu cầu trả kho/ }).click()
+    await expect(customer.getByRole('button', { name: /Gửi yêu cầu trả kho/ })).toBeHidden()
+
+    await openAdmin(staff, 'Handovers')
+    await staff.getByRole('row', { name: new RegExp(name) }).click()
+    await staff.getByRole('button', { name: 'Approve & book inspection' }).click()
+    await staff.getByRole('tab', { name: /Approved/ }).click()
+    await staff.getByRole('row', { name: new RegExp(name) }).click()
+    await staff.getByRole('radiogroup', { name: 'Unit condition' }).getByRole('radio', { name: 'Good' }).click()
+    await staff.getByRole('button', { name: 'Save inspection' }).click()
+
+    const ops = await (await browser.newContext()).newPage()
+    ops.on('dialog', (d) => d.accept())
+    await loginStaff(ops, ACCOUNTS.ops)
+    await openAdmin(ops, 'Handovers')
+    await ops.getByRole('tab', { name: /Inspected/ }).click()
+    await ops.getByRole('row', { name: new RegExp(name) }).click()
+    await ops.getByRole('button', { name: 'Settle deposit & close' }).click()
+    await expect(ops.getByText('Refund', { exact: true })).toBeVisible()
+
+    expect((await staffApi.get(`/api/contracts/${contract.contractId}`)).status).toBe('Closed')
+    await ops.context().close()
   })
 })
