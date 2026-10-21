@@ -24,7 +24,7 @@ export default function InviteUserPage() {
     const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
     const needsFacility = NEEDS_FACILITY.includes(form.role);
     const strong = form.password.length >= 8 && /\d/.test(form.password);
-    const valid = form.fullName.trim() && /^\S+@\S+\.\S+$/.test(form.email) && strong && (!needsFacility || facilityIds.length);
+    const valid = form.fullName.trim() && /^\S+@\S+\.\S+$/.test(form.email) && form.phoneNumber.trim() && strong && (!needsFacility || facilityIds.length);
 
     const create = useMutation({
         mutationFn: async () => {
@@ -47,7 +47,7 @@ export default function InviteUserPage() {
                     <h2>New user</h2>
                     <label><span className="se-label">Full name *</span><div className="se-input"><input value={form.fullName} onChange={set('fullName')} required /></div></label>
                     <label><span className="se-label">Work email *</span><div className="se-input"><Icon name="mail" size={16} /><input type="email" value={form.email} onChange={set('email')} required /></div></label>
-                    <label><span className="se-label">Phone</span><div className="se-input"><input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} /></div></label>
+                    <label><span className="se-label">Phone *</span><div className="se-input"><input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} required /></div></label>
                     <label><span className="se-label">Temporary password *</span><PasswordInput value={form.password} onChange={set('password')} invalid={form.password && !strong} autoComplete="new-password" />
                         <p className="se-hint">At least 8 characters and 1 number. Share it privately; the person should change it after signing in.</p></label>
                     <span className="se-label">Role *</span>

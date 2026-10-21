@@ -8,6 +8,7 @@ import { api } from '../axiosClient.js'
 /** @typedef {import('./schemas.js').PricingPolicyDto} PricingPolicyDto */
 /** @typedef {import('./schemas.js').PricingPolicyDtoPagedResult} PricingPolicyDtoPagedResult */
 /** @typedef {import('./schemas.js').UnitPriceDto} UnitPriceDto */
+/** @typedef {import('./schemas.js').UpdatePricingPolicyRequest} UpdatePricingPolicyRequest */
 /** @typedef {import('./schemas.js').UpsertUnitPriceRequest} UpsertUnitPriceRequest */
 
 export const pricingPoliciesApi = {
@@ -41,7 +42,7 @@ export const pricingPoliciesApi = {
   /**
    * PUT /api/pricing-policies/{id}
    * @param {number} id
-   * @param {CreatePricingPolicyRequest} body
+   * @param {UpdatePricingPolicyRequest} body
    * @returns {Promise<PricingPolicyDto>}
    */
   update: (id, body) =>

@@ -1270,6 +1270,20 @@
  */
 
 /**
+ * @typedef {Object} UpdatePricingPolicyRequest
+ * @property {string} [effectiveFrom] date
+ * @property {(string|null)} [effectiveTo] date
+ * @property {number} [depositMonths] int32
+ * @property {number} [graceDays] int32
+ * @property {number} [noticeDays] int32
+ * @property {number} [lateFeePercentPerWeek] double
+ * @property {number} [earlyTerminationPercent] double
+ * @property {number} [suspendAfterDays] int32
+ * @property {number} [clearOutAfterDays] int32
+ * @property {number} [cancelFreeHours] int32
+ */
+
+/**
  * @typedef {Object} UpdateProfileRequest
  * @property {(string|null)} [fullName]
  * @property {(string|null)} [phoneNumber]

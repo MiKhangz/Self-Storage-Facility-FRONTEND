@@ -13,8 +13,18 @@ import { humanize, useHandovers } from '../queries.js';
 const TABS = ['Requested', 'Approved', 'Inspected', 'Completed', 'Cancelled'];
 const CONDITIONS = ['Good', 'MinorDamage', 'MajorDamage'];
 
+/** 09:00 on the planned day, or the next full hour when that has already passed (a same-day handover). */
+function firstSlot(plannedDate) {
+    const nine = new Date(`${plannedDate}T09:00`);
+    if (nine > new Date()) return `${plannedDate}T09:00`;
+    const next = new Date();
+    next.setHours(next.getHours() + 1, 0, 0, 0);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${next.getFullYear()}-${pad(next.getMonth() + 1)}-${pad(next.getDate())}T${pad(next.getHours())}:00`;
+}
+
 function Approve({ request, onDone }) {
-    const [slot, setSlot] = useState(`${request.plannedHandoverDate}T09:00`);
+    const [slot, setSlot] = useState(() => firstSlot(request.plannedHandoverDate));
     const approve = useMutation({ mutationFn: () => handoversApi.approve(request.handoverId, { inspectionSlot: slot }), onSuccess: onDone });
     return (
         <>
