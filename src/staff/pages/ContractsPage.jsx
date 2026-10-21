@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, errorMessage } from '../../api/axiosClient';
-import { contractsApi, pricingPoliciesApi } from '../../api/generated';
+import { contractsApi, pricingPoliciesApi, renewalsApi } from '../../api/generated';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
@@ -90,6 +90,50 @@ function ContractPanel({ contract, invoices, onClose }) {
 }
 
 /** A07: every rental contract — who, which unit, what is owed — with overdue follow-up. */
+/** T-01: renewals customers asked for. Facility managers (own facilities) and business operations decide. */
+function RenewalRequests() {
+    const queryClient = useQueryClient();
+    const canDecide = [Roles.FacilityManager, Roles.BusinessOperationsManager].includes(useAuth().session?.role);
+    const requested = useQuery({ queryKey: ['renewals', 'Requested'], queryFn: () => renewalsApi.list({ status: 'Requested', page: 1, pageSize: 100 }) });
+    const decide = useMutation({
+        mutationFn: ({ id, approve }) => (approve ? renewalsApi.approve(id) : renewalsApi.reject(id)),
+        onSuccess: () => ['renewals', 'contracts', 'invoices'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
+    });
+    const list = requested.data?.items ?? [];
+    if (!list.length) return null;
+    return (
+        <section className="se-panel" style={{ marginBottom: 20 }}>
+            <div className="sa-card-title"><h2>Renewal requests</h2><span className="se-count">{list.length}</span></div>
+            {decide.isError && <div className="se-alert" role="alert">{errorMessage(decide.error)}</div>}
+            <div className="se-table-wrap">
+                <table className="se-table">
+                    <thead><tr><th>Contract</th><th>Unit</th><th>Extend</th><th>End date</th><th>Monthly rent</th><th>Requested</th>{canDecide && <th />}</tr></thead>
+                    <tbody>
+                        {list.map((r) => (
+                            <tr key={r.renewalId}>
+                                <td className="strong">{r.contractNumber}</td>
+                                <td>{r.unitCode}</td>
+                                <td>{r.extendMonths} month{r.extendMonths > 1 ? 's' : ''}</td>
+                                <td>{formatDate(r.currentEndDate)} → <strong>{formatDate(r.newEndDate)}</strong></td>
+                                <td>{formatVnd(r.currentMonthlyRent)} → <strong>{formatVnd(r.newMonthlyRent)}</strong></td>
+                                <td>{formatDate(r.requestedAt)}</td>
+                                {canDecide && (
+                                    <td className="sa-row-actions">
+                                        <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={decide.isPending}
+                                            onClick={() => window.confirm(`Approve? ${r.contractNumber} runs to ${formatDate(r.newEndDate)} at ${formatVnd(r.newMonthlyRent)} a month.`) && decide.mutate({ id: r.renewalId, approve: true })}>Approve</button>{' '}
+                                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={decide.isPending}
+                                            onClick={() => window.confirm(`Reject the renewal of ${r.contractNumber}?`) && decide.mutate({ id: r.renewalId, approve: false })}>Reject</button>
+                                    </td>
+                                )}
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    );
+}
+
 export default function ContractsPage() {
     const today = todayIso();
     const [tab, setTab] = useState('all');
@@ -118,6 +162,7 @@ export default function ContractsPage() {
                 <button type="button" className="se-btn se-btn-primary" onClick={exportCsv}><Icon name="file" size={16} /> Export CSV</button>
             </PageHeader>
             {exportError && <div className="se-alert" role="alert">{exportError}</div>}
+            <RenewalRequests />
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
                     <button key={t.key} role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
