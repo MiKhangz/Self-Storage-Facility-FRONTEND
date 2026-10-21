@@ -60,68 +60,68 @@ export default function ChooseUnitPage() {
                 <div className="se-container se-booking-grid">
                     <div>
                     <section className="se-panel">
-                        <h2>1. Where and what size?</h2>
-                        <span className="se-label">Facility</span>
+                        <h2>1. Ở đâu và cỡ nào?</h2>
+                        <span className="se-label">Cơ sở</span>
                         <div className="se-field"><Icon name="pin" />
-                            <select value={facilityId ?? ''} onChange={(e) => set({ facilityId: e.target.value })} aria-label="Facility">
+                            <select value={facilityId ?? ''} onChange={(e) => set({ facilityId: e.target.value })} aria-label="Cơ sở">
                                 {facilities.data?.items?.map((f) => <option key={f.facilityId} value={f.facilityId}>{f.name}</option>)}
                             </select>
                         </div>
-                        <span className="se-label">Unit size</span>
-                        <div className="se-chips" role="radiogroup" aria-label="Unit size">
+                        <span className="se-label">Kích thước kho</span>
+                        <div className="se-chips" role="radiogroup" aria-label="Kích thước kho">
                             {types.map((t) => (
                                 <button key={t.unitTypeId} type="button" role="radio" aria-checked={t.unitTypeId === unitTypeId}
                                     className={`se-chip${t.unitTypeId === unitTypeId ? ' active' : ''}`} onClick={() => set({ unitTypeId: t.unitTypeId })}>
-                                    {t.unitTypeId === unitTypeId && <Icon name="check" size={14} />}{t.code} · {t.areaM2} m²
+                                    {t.unitTypeId === unitTypeId && <Icon name="check" size={14} />}{t.code} · {t.areaM2.toLocaleString('vi-VN')} m²
                                 </button>
                             ))}
                         </div>
                     </section>
 
                     <section className="se-panel">
-                        <h2>2. When and how long?</h2>
+                        <h2>2. Khi nào và thuê bao lâu?</h2>
                         <div className="se-panel-grid">
-                            <label><span className="se-label">Move-in date</span>
+                            <label><span className="se-label">Ngày nhận kho</span>
                                 <div className="se-field"><Icon name="calendar" />
                                     <input type="date" value={form.moveInDate} min={todayIso()} onChange={(e) => set({ moveInDate: e.target.value })} required />
                                 </div>
                             </label>
-                            <div><span className="se-label">End date (auto)</span>
+                            <div><span className="se-label">Ngày kết thúc (tự tính)</span>
                                 <div className="se-field" aria-readonly="true"><Icon name="calendar" />
                                     {form.moveInDate ? formatDate(rentalEndDate(form.moveInDate, form.rentalMonths)) : '—'}
                                 </div>
                             </div>
                         </div>
-                        <span className="se-label">Rental period</span>
-                        <div className="se-chips" role="radiogroup" aria-label="Rental period">
+                        <span className="se-label">Thời hạn thuê</span>
+                        <div className="se-chips" role="radiogroup" aria-label="Thời hạn thuê">
                             {PERIODS.map((months) => (
                                 <button key={months} type="button" role="radio" aria-checked={form.rentalMonths === months}
                                     className={`se-chip${form.rentalMonths === months ? ' active' : ''}`} onClick={() => set({ rentalMonths: months })}>
-                                    {form.rentalMonths === months && <Icon name="check" size={14} />}{months} {months === 1 ? 'month' : 'months'} {discountLabel(terms, months, unitTypeId) && <small>{discountLabel(terms, months, unitTypeId)}</small>}
+                                    {form.rentalMonths === months && <Icon name="check" size={14} />}{months} tháng {discountLabel(terms, months, unitTypeId) && <small>{discountLabel(terms, months, unitTypeId)}</small>}
                                 </button>
                             ))}
                         </div>
                     </section>
 
                     <section className="se-panel">
-                        <h2>3. Your unit</h2>
+                        <h2>3. Kho của bạn</h2>
                         {type && (
                             <p className="se-booking-note">
-                                Size {type.code} · {type.areaM2} m² · {type.width} × {type.depth} × {type.height} m
+                                Kho {type.code} · {type.areaM2.toLocaleString('vi-VN')} m² · {[type.width, type.depth, type.height].map((n) => n.toLocaleString('vi-VN')).join(' × ')} m
                                 {badge && <> &nbsp;<span className={`se-badge ${badge.tone}`}>{badge.label}</span></>}
                             </p>
                         )}
                         <p className="se-hint">
-                            {quote.data ? <>Monthly rent {formatVnd(quote.data.monthlyRent)} for {form.rentalMonths} {form.rentalMonths === 1 ? 'month' : 'months'}. </> : null}
-                            Staff assign your exact unit before check-in.
+                            {quote.data ? <>Tiền thuê {formatVnd(quote.data.monthlyRent)} mỗi tháng khi thuê {form.rentalMonths} tháng. </> : null}
+                            Nhân viên sẽ xếp số kho cụ thể cho bạn trước ngày nhận kho.
                         </p>
-                        {(quote.isError || stock.isError) && <div className="se-alert" role="alert">Prices could not be loaded for this choice. Please try another size or date.</div>}
+                        {(quote.isError || stock.isError) && <div className="se-alert" role="alert">Chưa có giá cho lựa chọn này. Hãy thử cỡ kho, cơ sở hoặc ngày khác.</div>}
                     </section>
 
                     </div>
                     <BookingSummary facility={facility} type={type} moveInDate={form.moveInDate} rentalMonths={form.rentalMonths} quote={quote}>
                         <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta" disabled={!ready || soldOut || !quote.data} onClick={next}>
-                        {soldOut ? 'No units left for this size' : <>Continue to details <Icon name="arrow" size={16} /></>}
+                        {soldOut ? 'Cỡ kho này đã hết, hãy chọn cỡ khác' : <>Tiếp tục <Icon name="arrow" size={16} /></>}
                     </button>
                     </BookingSummary>
                 </div>

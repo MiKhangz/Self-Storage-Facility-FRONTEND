@@ -19,6 +19,8 @@ const TABS = [
     { status: 'Expired', label: 'Expired' },
 ];
 
+const waitingForUnit = (r) => r.status === 'Pending' || (r.status === 'Confirmed' && !r.storageUnitId);
+
 function AssignPanel({ reservation, onClose }) {
     const queryClient = useQueryClient();
     const units = useUnits({ facilityId: reservation.facilityId, status: 'Available' });
@@ -33,7 +35,8 @@ function AssignPanel({ reservation, onClose }) {
             onClose();
         },
     });
-    const pending = reservation.status === 'Pending';
+    // Pending, or Confirmed again after its check-in was cancelled (no unit any more).
+    const pending = waitingForUnit(reservation);
 
     return (
         <aside className="se-panel sa-side-panel">
@@ -86,7 +89,7 @@ export default function ReservationsPage() {
     return (
         <>
             <PageHeader title="Reservations" subtitle="Review online bookings, assign a suitable unit and schedule check-in">
-                <Link to="/admin/walk-in" className="se-btn se-btn-primary"><Icon name="box" size={16} /> New walk-in booking</Link>
+                {canAssign && <Link to="/admin/walk-in" className="se-btn se-btn-primary"><Icon name="box" size={16} /> New walk-in booking</Link>}
             </PageHeader>
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
@@ -108,7 +111,7 @@ export default function ReservationsPage() {
                                     <td>{r.facilityName}</td>
                                     <td>{formatDate(r.moveInDate)}</td>
                                     <td>{r.rentalMonths} mo</td>
-                                    <td>{r.status === 'Pending' && canAssign && <button type="button" className="se-btn se-btn-outline se-btn-sm">Assign</button>}</td>
+                                    <td>{waitingForUnit(r) && canAssign && <button type="button" className="se-btn se-btn-outline se-btn-sm">Assign</button>}</td>
                                 </tr>
                             ))}
                             <TableState query={reservations} rows={shown} cols={7} empty="No reservations in this list." />

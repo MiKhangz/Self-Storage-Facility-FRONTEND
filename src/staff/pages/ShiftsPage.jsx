@@ -31,8 +31,8 @@ export default function ShiftsPage() {
     const tasks = useTasks().data ?? [];
     const isAdmin = session?.role === Roles.SystemAdministrator;
     const canWrite = isAdmin || session?.role === Roles.FacilityManager;
-    // Only a System Administrator can list staff accounts; others pick from people already on the roster.
-    const staff = useStaff(undefined, isAdmin).data ?? [];
+    // Admins and managers can list staff accounts; others pick from people already on the roster.
+    const staff = useStaff(undefined, canWrite).data ?? [];
     const people = new Map([...staff.map((s) => [s.userId, s.fullName]), ...shifts.map((s) => [s.userId, s.userName]), [session?.userId, session?.fullName]]);
 
     const [form, setForm] = useState(null);

@@ -7,6 +7,8 @@ import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../components/Icon.jsx';
 import { initials } from '../layout/CustomerLayout.jsx';
 import { PRIORITY_TONE, formatDateTime, ticketBadge } from './support.js';
+
+const PRIORITY_LABEL = { Low: 'Không gấp', Normal: 'Bình thường', High: 'Cao', Urgent: 'Khẩn cấp' };
 import './Support.css';
 
 /** U16: one support request — the conversation, replies and closing it. */
@@ -28,7 +30,7 @@ export default function TicketDetailPage() {
         onSuccess: refresh,
     });
 
-    if (ticket.isLoading) return <p className="se-empty">Loading request…</p>;
+    if (ticket.isLoading) return <p className="se-empty">Đang tải yêu cầu…</p>;
     if (ticket.isError) return <div className="se-alert" role="alert">{errorMessage(ticket.error)}</div>;
 
     const t = ticket.data;
@@ -38,15 +40,15 @@ export default function TicketDetailPage() {
 
     return (
         <>
-            <Link to="/support/requests" className="se-back"><Icon name="arrowLeft" size={16} /> Back to all requests</Link>
+            <Link to="/support/requests" className="se-back"><Icon name="arrowLeft" size={16} /> Quay lại danh sách yêu cầu</Link>
             <div className="se-account-title">
                 <div>
                     <h1>{t.subject} <span className={`se-badge ${tone}`}>{label}</span></h1>
-                    <p>{[t.ticketCode, `opened ${formatDateTime(t.createdAt)}`, t.unitCode && `unit ${t.unitCode}`, t.facilityName].filter(Boolean).join(' · ')}</p>
+                    <p>{[t.ticketCode, `gửi lúc ${formatDateTime(t.createdAt)}`, t.unitCode && `kho ${t.unitCode}`, t.facilityName].filter(Boolean).join(' · ')}</p>
                 </div>
                 {!closed && (
-                    <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm('Close this request? You cannot reply after closing.') && close.mutate()} disabled={close.isPending}>
-                        <Icon name="check" size={16} /> Close request
+                    <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm('Đóng yêu cầu này? Sau khi đóng, bạn không thể trả lời thêm.') && close.mutate()} disabled={close.isPending}>
+                        <Icon name="check" size={16} /> Đóng yêu cầu
                     </button>
                 )}
             </div>
@@ -54,7 +56,7 @@ export default function TicketDetailPage() {
 
             <div className="se-support-grid">
                 <section className="se-panel se-convo">
-                    <h2>Conversation <small>{messages.data?.length ?? 0} messages</small></h2>
+                    <h2>Trao đổi <small>{messages.data?.length ?? 0} tin nhắn</small></h2>
                     <ol className="se-messages">
                         {messages.data?.map((m) => {
                             const own = m.senderId === session?.userId;
@@ -69,28 +71,28 @@ export default function TicketDetailPage() {
                             );
                         })}
                     </ol>
-                    {t.status === 'WaitingForCustomer' && <div className="se-alert info"><Icon name="clock" size={14} /> Staff are waiting for your reply.</div>}
+                    {t.status === 'WaitingForCustomer' && <div className="se-alert info"><Icon name="clock" size={14} /> Nhân viên đang chờ bạn phản hồi.</div>}
                     {closed ? (
-                        <p className="se-hint">This request is closed. <Link to="/support/new" className="se-link">Open a new request</Link></p>
+                        <p className="se-hint">Yêu cầu này đã đóng. <Link to="/support/new" className="se-link">Gửi yêu cầu mới</Link></p>
                     ) : (
                         <form className="se-reply" onSubmit={(e) => { e.preventDefault(); if (reply.trim()) send.mutate(); }}>
-                            <textarea className="se-textarea" rows={3} maxLength={1000} placeholder="Write a reply…" value={reply} onChange={(e) => setReply(e.target.value)} aria-label="Reply" />
-                            <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={!reply.trim() || send.isPending}>{send.isPending ? 'Sending…' : 'Send reply'}</button>
+                            <textarea className="se-textarea" rows={3} maxLength={1000} placeholder="Viết phản hồi…" value={reply} onChange={(e) => setReply(e.target.value)} aria-label="Phản hồi" />
+                            <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={!reply.trim() || send.isPending}>{send.isPending ? 'Đang gửi…' : 'Gửi phản hồi'}</button>
                         </form>
                     )}
                 </section>
 
                 <aside className="se-panel">
-                    <h2>Request details</h2>
+                    <h2>Thông tin yêu cầu</h2>
                     <dl className="se-kv">
-                        <div><dt>Request no.</dt><dd>{t.ticketCode}</dd></div>
-                        <div><dt>Status</dt><dd><span className={`se-badge ${tone}`}>{label}</span></dd></div>
-                        <div><dt>Priority</dt><dd><span className={`se-badge ${PRIORITY_TONE[t.priority] ?? ''}`}>{t.priority}</span></dd></div>
-                        <div><dt>Category</dt><dd>{t.categoryName}</dd></div>
-                        {t.unitCode && <div><dt>Unit</dt><dd>{t.unitCode}</dd></div>}
-                        <div><dt>Facility</dt><dd>{t.facilityName}</dd></div>
-                        <div><dt>Opened</dt><dd>{formatDateTime(t.createdAt)}</dd></div>
-                        {t.resolvedAt && <div><dt>Resolved</dt><dd>{formatDateTime(t.resolvedAt)}</dd></div>}
+                        <div><dt>Mã yêu cầu</dt><dd>{t.ticketCode}</dd></div>
+                        <div><dt>Trạng thái</dt><dd><span className={`se-badge ${tone}`}>{label}</span></dd></div>
+                        <div><dt>Mức độ khẩn</dt><dd><span className={`se-badge ${PRIORITY_TONE[t.priority] ?? ''}`}>{PRIORITY_LABEL[t.priority] ?? t.priority}</span></dd></div>
+                        <div><dt>Loại vấn đề</dt><dd>{t.categoryName}</dd></div>
+                        {t.unitCode && <div><dt>Kho</dt><dd>{t.unitCode}</dd></div>}
+                        <div><dt>Cơ sở</dt><dd>{t.facilityName}</dd></div>
+                        <div><dt>Ngày gửi</dt><dd>{formatDateTime(t.createdAt)}</dd></div>
+                        {t.resolvedAt && <div><dt>Ngày giải quyết</dt><dd>{formatDateTime(t.resolvedAt)}</dd></div>}
                     </dl>
                 </aside>
             </div>

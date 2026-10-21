@@ -1,7 +1,7 @@
 /** [tone, label] for a support ticket status badge. */
 const TICKET_BADGE = {
-    New: ['low', 'New'], InProgress: ['low', 'In progress'], WaitingForCustomer: ['none', 'Waiting for you'],
-    Resolved: ['', 'Resolved'], Closed: ['muted', 'Closed'],
+    New: ['low', 'Mới gửi'], InProgress: ['low', 'Đang xử lý'], WaitingForCustomer: ['none', 'Chờ bạn phản hồi'],
+    Resolved: ['', 'Đã giải quyết'], Closed: ['muted', 'Đã đóng'],
 };
 export const ticketBadge = (status) => TICKET_BADGE[status] ?? ['', status];
 

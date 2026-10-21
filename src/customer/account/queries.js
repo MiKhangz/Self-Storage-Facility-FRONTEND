@@ -14,8 +14,8 @@ export const useMyTickets = () => useQuery({ queryKey: ['tickets', PAGE], queryF
 export const OPEN_INVOICE = ['Issued', 'Overdue'];
 export const OPEN_TICKET = ['New', 'InProgress', 'WaitingForCustomer'];
 export const AWAITING_CHECK_IN = ['Pending', 'Confirmed'];
-// A contract the customer still holds; Draft is signed-or-signing before handover.
-export const LIVE_CONTRACT = ['Draft', 'Active', 'PendingMoveOut', 'Overdue', 'Suspended'];
+// A contract the customer still holds; Draft is signed-or-signing before check-in.
+export const LIVE_CONTRACT = ['Draft', 'Active', 'PendingHandover', 'Overdue', 'Suspended'];
 
 /** Share of the rental period already used, 0–100. */
 export function periodUsed(startIso, endIso, todayIso) {
@@ -25,7 +25,14 @@ export function periodUsed(startIso, endIso, todayIso) {
     return Math.min(100, Math.max(0, Math.round(((day(todayIso) - day(startIso)) / total) * 100)));
 }
 
-const INVOICE_BADGE = { Paid: ['', 'Paid'], Overdue: ['none', 'Overdue'], WrittenOff: ['none', 'Written off'] };
+const INVOICE_BADGE = { Paid: ['', 'Đã thanh toán'], Overdue: ['none', 'Quá hạn'], WrittenOff: ['none', 'Đã xóa nợ'] };
 
 /** [tone, label] for an invoice status badge; an open invoice shows its due date. */
-export const invoiceBadge = (inv) => INVOICE_BADGE[inv.status] ?? ['low', `Due ${formatDate(inv.dueDate)}`];
+export const invoiceBadge = (inv) => INVOICE_BADGE[inv.status] ?? ['low', `Hạn ${formatDate(inv.dueDate)}`];
+
+/** [tone, label] per contract status, in the customer's words. */
+export const CONTRACT_BADGE = {
+    Draft: ['low', 'Chờ nhận kho'], Active: ['', 'Đang thuê'], PendingHandover: ['low', 'Đang trả kho'],
+    Overdue: ['none', 'Quá hạn thanh toán'], Suspended: ['none', 'Tạm khóa ra vào'],
+    Closed: ['muted', 'Đã kết thúc'], Terminated: ['muted', 'Đã chấm dứt'],
+};

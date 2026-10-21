@@ -17,6 +17,10 @@ export function discountLabel(terms, months, unitTypeId) {
     return percent > 0 ? `−${percent}%` : undefined;
 }
 
+/** The early-return rule (SR-04): no notice needed; before the contract's end date a share of the deposit is kept. */
+export const earlyReturnText = (t) =>
+    `Có thể trả kho bất cứ lúc nào, không cần báo trước${t.earlyTerminationPercent > 0 ? `; trả trước ngày hết hạn hợp đồng sẽ bị giữ lại ${t.earlyTerminationPercent}% tiền cọc` : ''}.`;
+
 /** One sentence for the late-fee rule, shared by the sizes page and the rental agreement. */
 export const lateFeeText = (t) =>
-    `Late fee: ${t.lateFeePercentPerWeek}% of the rent per full week overdue, after ${t.graceDays} days' grace. Access is suspended after ${t.suspendAfterDays} days overdue.`;
+    `Phí trễ hạn: ${t.lateFeePercentPerWeek}% tiền thuê cho mỗi tuần trễ trọn vẹn, sau ${t.graceDays} ngày ân hạn. Quyền ra vào bị tạm khóa khi trễ hạn quá ${t.suspendAfterDays} ngày.`;

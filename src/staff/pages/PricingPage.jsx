@@ -9,7 +9,7 @@ import { useUnitTypes } from '../queries.js';
 
 const TERMS = [
     { title: 'Deposit', icon: 'shield', rows: [['depositMonths', 'Deposit amount', 'month(s) rent']] },
-    { title: 'Cancellation', icon: 'clock', rows: [['cancelFreeHours', 'Free cancellation before move-in', 'hours'], ['noticeDays', 'Move-out notice', 'days']] },
+    { title: 'Cancellation', icon: 'clock', rows: [['cancelFreeHours', 'Free cancellation before move-in', 'hours'], ['earlyTerminationPercent', 'Early return penalty', '% of deposit']] },
     {
         title: 'Overdue handling', icon: 'card', rows: [
             ['graceDays', 'Grace period', 'days'], ['lateFeePercentPerWeek', 'Late fee', '% / week'],

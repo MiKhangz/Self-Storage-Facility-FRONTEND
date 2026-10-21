@@ -9,8 +9,16 @@ import { api } from '../axiosClient.js'
 /** @typedef {import('./schemas.js').ReservationDto} ReservationDto */
 /** @typedef {import('./schemas.js').ReservationDtoPagedResult} ReservationDtoPagedResult */
 /** @typedef {import('./schemas.js').ReservationStatus} ReservationStatus */
+/** @typedef {import('./schemas.js').WalkInReservationRequest} WalkInReservationRequest */
 
 export const reservationsApi = {
+  /**
+   * POST /api/reservations/walk-in
+   * @param {WalkInReservationRequest} body
+   * @returns {Promise<ReservationDto>}
+   */
+  walkIn: (body) =>
+    api.post(`/api/reservations/walk-in`, body).then((r) => r.data),
   /**
    * POST /api/reservations
    * @param {CreateReservationRequest} body

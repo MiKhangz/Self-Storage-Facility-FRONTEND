@@ -29,6 +29,11 @@
 .se-unit-actions .se-btn { flex: 1; }
 
 @media (max-width: 640px) {
-    .se-stats, .se-units { grid-template-columns: 1fr; }
+    .se-units { grid-template-columns: minmax(0, 1fr); }
+    .se-stats { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+    .se-stat { padding: 14px; }
+    .se-stat strong { font-size: 20px; }
+    .se-stat small { white-space: normal; }
     .se-due { flex-wrap: wrap; }
+    .se-due .se-btn { width: 100%; }
 }

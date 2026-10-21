@@ -23,9 +23,17 @@
 .se-account-main h2 { margin: 28px 0 14px; font-size: 20px; font-weight: 700; color: var(--se-dark); }
 
 @media (max-width: 900px) {
-    .se-account-grid { grid-template-columns: 1fr; }
+    .se-account-grid { grid-template-columns: minmax(0, 1fr); }
     .se-account-side { position: static; }
     .se-account-side nav { grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); }
+}
+@media (max-width: 640px) {
+    .se-account-page { padding-top: 16px; }
+    .se-account-side { padding: 8px; margin: 0 -16px; border-radius: 0; border-left: 0; border-right: 0; }
+    .se-account-who { display: none; }
+    .se-account-side nav { display: flex; overflow-x: auto; scrollbar-width: none; }
+    .se-account-side nav a, .se-account-side nav button { flex: none; min-height: 44px; white-space: nowrap; }
+    .se-account-title h1 { font-size: 24px; }
 }
 .se-account-main .se-panel h2 { margin: 0 0 16px; font-size: 18px; }
 /* Lets wide tables scroll inside their card instead of stretching the grid. */

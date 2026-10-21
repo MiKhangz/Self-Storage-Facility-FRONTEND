@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { staffApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
+import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
@@ -35,16 +36,19 @@ export function PermissionMatrix({ highlight }) {
     );
 }
 
-function EditUser({ user, onClose }) {
+/** `managed` is null for an admin; for a facility manager, the facility ids they may add or remove. */
+function EditUser({ user, managed, onClose }) {
     const queryClient = useQueryClient();
     const facilities = useFacilities();
     // The API refuses to let an admin lock or demote themselves (nobody could undo it), so don't offer it.
     const self = useAuth().session?.userId === user.userId;
+    const isManager = managed !== null;
     const [form, setForm] = useState({ fullName: user.fullName ?? '', phoneNumber: user.phoneNumber ?? '', role: user.role, status: user.status });
     const [facilityIds, setFacilityIds] = useState((user.facilities ?? []).map((f) => f.facilityId));
     const save = useMutation({
         mutationFn: async () => {
-            await staffApi.update(user.userId, form);
+            // Managers may only change facility assignments; account details stay with the admin.
+            if (!isManager) await staffApi.update(user.userId, form);
             await staffApi.facilities(user.userId, { facilityIds });
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['staff'] }); onClose(); },
@@ -55,6 +59,9 @@ function EditUser({ user, onClose }) {
         <aside className="se-panel sa-side-panel">
             <div className="sa-card-title"><h2>Edit {user.fullName}</h2><button type="button" className="sa-close" onClick={onClose} aria-label="Close"><Icon name="arrowLeft" size={16} /></button></div>
             <p className="sa-muted">{user.email}</p>
+            {isManager ? (
+                <p className="se-hint">{self ? 'Only a system administrator can change your own facilities.' : 'You can add or remove the facilities you manage.'}</p>
+            ) : (<>
             <label><span className="se-label">Full name</span><div className="se-input"><input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div></label>
             <label><span className="se-label">Phone</span><div className="se-input"><input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} /></div></label>
             <label><span className="se-label">Role</span>
@@ -62,20 +69,23 @@ function EditUser({ user, onClose }) {
             <label><span className="se-label">Status</span>
                 <div className="se-field"><select value={form.status} disabled={self} onChange={(e) => setForm({ ...form, status: e.target.value })}>{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
                 <p className="se-hint">{self ? 'You cannot change your own role or status.' : 'Disabled accounts cannot sign in or be assigned work.'}</p></label>
+            </>)}
             <span className="se-label">Assigned facilities</span>
             <div className="sa-checklist">
                 {(facilities.data ?? []).map((f) => (
-                    <label key={f.facilityId} className="se-check"><input type="checkbox" checked={facilityIds.includes(f.facilityId)} onChange={() => toggle(f.facilityId)} /><span>{f.name}</span></label>
+                    <label key={f.facilityId} className="se-check"><input type="checkbox" checked={facilityIds.includes(f.facilityId)} disabled={isManager && (self || !managed.includes(f.facilityId))} onChange={() => toggle(f.facilityId)} /><span>{f.name}</span></label>
                 ))}
             </div>
             {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
-            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={save.isPending || !form.fullName.trim()} onClick={() => save.mutate()}>{save.isPending ? 'Saving…' : 'Save changes'}</button>
+            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={save.isPending || !form.fullName.trim() || (isManager && self)} onClick={() => save.mutate()}>{save.isPending ? 'Saving…' : 'Save changes'}</button>
         </aside>
     );
 }
 
 /** A10: staff accounts, their roles and facilities, plus what each role may do. */
 export default function UsersPage() {
+    const { session } = useAuth();
+    const isAdmin = session?.role === Roles.SystemAdministrator;
     const [search, setSearch] = useState('');
     const [role, setRole] = useState('');
     const [selected, setSelected] = useState(null);
@@ -83,11 +93,13 @@ export default function UsersPage() {
     const all = staff.data ?? [];
     const shown = all.filter((u) => (!role || u.role === role) && matches(search, u.fullName, u.email));
     const current = all.find((u) => u.userId === selected);
+    // A facility manager's list includes their own account, which says which facilities they manage.
+    const managed = isAdmin ? null : (all.find((u) => u.userId === session?.userId)?.facilities ?? []).map((f) => f.facilityId);
 
     return (
         <>
-            <PageHeader title="Users & roles" subtitle="Manage staff accounts, assign roles and control access by facility">
-                <Link to="/admin/users/invite" className="se-btn se-btn-primary"><Icon name="shield" size={16} /> Add user</Link>
+            <PageHeader title="Users & roles" subtitle={isAdmin ? 'Manage staff accounts, assign roles and control access by facility' : 'Assign facility staff to the facilities you manage'}>
+                {isAdmin && <Link to="/admin/users/invite" className="se-btn se-btn-primary"><Icon name="shield" size={16} /> Add user</Link>}
             </PageHeader>
             <Filters>
                 <SearchFilter value={search} onChange={setSearch} placeholder="Search name or email" />
@@ -112,7 +124,7 @@ export default function UsersPage() {
                     </table>
                 </div>
                 {current
-                    ? <EditUser key={current.userId} user={current} onClose={() => setSelected(null)} />
+                    ? <EditUser key={current.userId} user={current} managed={managed} onClose={() => setSelected(null)} />
                     : <aside className="se-panel sa-side-panel"><h2>Permission matrix</h2><p className="sa-muted">SA · BO · FM · ST = the four staff roles, as enforced by the API.</p><PermissionMatrix /></aside>}
             </div>
         </>

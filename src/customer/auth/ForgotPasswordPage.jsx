@@ -35,10 +35,10 @@ function RequestStep({ onSent }) {
 
     return (
         <>
-            <span className="se-step-pill">Step 1 · Request link</span>
+            <span className="se-step-pill">Bước 1 · Nhận liên kết</span>
             <span className="se-reset-icon"><Icon name="lock" size={22} /></span>
-            <h1>Forgot your password?</h1>
-            <p className="se-auth-lead">Enter the email on your account. We will send a reset link valid for 30 minutes.</p>
+            <h1>Quên mật khẩu?</h1>
+            <p className="se-auth-lead">Nhập email của tài khoản. Chúng tôi sẽ gửi liên kết đặt lại mật khẩu, có hiệu lực trong 30 phút.</p>
             <form className="se-form" onSubmit={submit}>
                 <label><span>Email</span>
                     <div className="se-input"><Icon name="mail" size={16} />
@@ -46,9 +46,9 @@ function RequestStep({ onSent }) {
                     </div>
                 </label>
                 {error && <div className="se-alert" role="alert">{error}</div>}
-                <button type="submit" className="se-btn se-btn-primary" disabled={busy}>Send reset link</button>
+                <button type="submit" className="se-btn se-btn-primary" disabled={busy}>{busy ? 'Đang gửi…' : 'Gửi liên kết đặt lại'}</button>
             </form>
-            <Link to="/login" className="se-back se-reset-back"><Icon name="arrowLeft" size={16} /> Back to login</Link>
+            <Link to="/login" className="se-back se-reset-back"><Icon name="arrowLeft" size={16} /> Quay lại đăng nhập</Link>
         </>
     );
 }
@@ -56,11 +56,11 @@ function RequestStep({ onSent }) {
 function SentStep({ email }) {
     return (
         <>
-            <span className="se-step-pill blue">Step 2 · Check email</span>
+            <span className="se-step-pill blue">Bước 2 · Kiểm tra email</span>
             <span className="se-reset-icon blue"><Icon name="mail" size={22} /></span>
-            <h1>Check your email</h1>
-            <p className="se-auth-lead">We sent a reset link to {maskEmail(email)}. The link expires in 30 minutes and can be used once.</p>
-            <div className="se-auth-note">No email after a few minutes? Check the spam folder.</div>
+            <h1>Kiểm tra email của bạn</h1>
+            <p className="se-auth-lead">Nếu {maskEmail(email)} có tài khoản, chúng tôi đã gửi liên kết đặt lại mật khẩu tới đó. Liên kết hết hạn sau 30 phút và chỉ dùng được một lần.</p>
+            <div className="se-auth-note">Vài phút chưa thấy email? Hãy xem trong thư mục Spam.</div>
         </>
     );
 }
@@ -71,16 +71,17 @@ function NewPasswordStep({ token }) {
     const [error, setError] = useState('');
     const [done, setDone] = useState(false);
     const rules = [
-        ['At least 8 characters', password.length >= 8],
-        ['Contains a number', /\d/.test(password)],
-        ['Contains an upper-case letter', /[A-Z]/.test(password)],
+        // The backend's rule: at least 8 characters with a letter and a digit.
+        ['Ít nhất 8 ký tự', password.length >= 8],
+        ['Có ít nhất một chữ cái', /[A-Za-z]/.test(password)],
+        ['Có ít nhất một chữ số', /\d/.test(password)],
     ];
 
     const submit = async (e) => {
         e.preventDefault();
         setError('');
-        if (rules.some(([, ok]) => !ok)) return setError('The new password does not meet every rule below.');
-        if (password !== confirm) return setError('Passwords do not match.');
+        if (rules.some(([, ok]) => !ok)) return setError('Mật khẩu mới chưa đáp ứng đủ các yêu cầu bên dưới.');
+        if (password !== confirm) return setError('Mật khẩu nhập lại không khớp.');
         try {
             await saveNewPassword(token, password);
             setDone(true);
@@ -91,31 +92,31 @@ function NewPasswordStep({ token }) {
 
     if (done) return (
         <>
-            <h1>Password updated</h1>
-            <p className="se-auth-lead">You can now log in with your new password.</p>
-            <Link to="/login" className="se-btn se-btn-primary se-btn-block">Go to login</Link>
+            <h1>Đã đổi mật khẩu</h1>
+            <p className="se-auth-lead">Bạn có thể đăng nhập bằng mật khẩu mới.</p>
+            <Link to="/login" className="se-btn se-btn-primary se-btn-block">Đến trang đăng nhập</Link>
         </>
     );
 
     return (
         <>
-            <span className="se-step-pill green">Step 3 · New password</span>
+            <span className="se-step-pill green">Bước 3 · Mật khẩu mới</span>
             <span className="se-reset-icon green"><Icon name="key" size={22} /></span>
-            <h1>Set a new password</h1>
+            <h1>Đặt mật khẩu mới</h1>
             <form className="se-form" onSubmit={submit}>
-                <label><span>New password</span>
+                <label><span>Mật khẩu mới</span>
                     <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" />
                 </label>
-                <label><span>Confirm new password</span>
+                <label><span>Nhập lại mật khẩu mới</span>
                     <PasswordInput value={confirm} onChange={(e) => setConfirm(e.target.value)} invalid={confirm && confirm !== password} autoComplete="new-password" />
                 </label>
                 <ul className="se-rules">
                     {rules.map(([label, ok]) => <li key={label} className={ok ? 'ok' : ''}><Icon name="check" size={14} />{label}</li>)}
                 </ul>
                 {error && <div className="se-alert" role="alert">{error}</div>}
-                <button type="submit" className="se-btn se-btn-primary">Save new password</button>
+                <button type="submit" className="se-btn se-btn-primary">Lưu mật khẩu mới</button>
             </form>
-            <p className="se-hint se-reset-foot">You will be signed out on all other devices.</p>
+            <p className="se-hint se-reset-foot">Bạn sẽ bị đăng xuất trên mọi thiết bị khác.</p>
         </>
     );
 }

@@ -1,26 +1,31 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { contractsApi, handoversApi } from '../../api/generated';
+import { accessCodesApi, checkInsApi, contractsApi, unitVisitsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, rentalEndDate, todayIso } from '../../customer/components/format.js';
-import { NotWired, PageHeader, Stat, Status } from '../components/ui.jsx';
+import { PageHeader, Stat, Status } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useUnits } from '../queries.js';
 
 /** The physical checks the Figma lists before keys change hands; staff tick each one. */
 const CHECKS = [
     { key: 'identity', title: 'Verify identity', text: 'Citizen ID (CCCD) matches the renter name' },
-    { key: 'payment', title: 'Verify payment', text: 'The deposit is paid (handover is refused until it is)' },
+    { key: 'payment', title: 'Verify payment', text: 'The deposit is paid (check-in is refused until it is)' },
     { key: 'inspect', title: 'Inspect unit with customer', text: 'Agree the condition before handing over' },
 ];
 
-function HandoverWizard({ reservation, contract, onDone }) {
+function CheckInWizard({ reservation, contract, onDone }) {
     const queryClient = useQueryClient();
     const [ticks, setTicks] = useState({});
     const [form, setForm] = useState({ lockSerial: '', cardNumber: '', conditionNote: '' });
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
-    const handover = useMutation({
-        mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, ...form }),
+    // A walk-in customer may have no password yet: staff record that they signed the paper contract here.
+    const signAtDesk = useMutation({
+        mutationFn: () => contractsApi.signAtDesk(contract.contractId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
+    });
+    const checkIn = useMutation({
+        mutationFn: () => checkInsApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, ...form }),
     });
     // Refresh only after staff move on: refetching drops this reservation from the queue, which would unmount
     // the one-time access code before anyone reads it.
@@ -29,13 +34,13 @@ function HandoverWizard({ reservation, contract, onDone }) {
         onDone();
     };
 
-    if (handover.data) {
+    if (checkIn.data) {
         return (
-            <div className="se-panel sa-handover-done">
+            <div className="se-panel sa-checkin-done">
                 <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
-                <h2>Handover complete — unit {handover.data.unitCode} is now occupied</h2>
+                <h2>Check-in complete — unit {checkIn.data.unitCode} is now occupied</h2>
                 <p className="sa-muted">Give the customer this access code. It is shown once only.</p>
-                <div className="se-code-digits dark">{(handover.data.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
+                <div className="se-code-digits dark">{(checkIn.data.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
                 <button type="button" className="se-btn se-btn-primary" onClick={next}>Next check-in</button>
             </div>
         );
@@ -46,7 +51,7 @@ function HandoverWizard({ reservation, contract, onDone }) {
     return (
         <div className="se-panel">
             <div className="sa-card-title">
-                <h2>Handover · {reservation.customerName} → Unit {reservation.unitCode}</h2>
+                <h2>Check-in · {reservation.customerName} → Unit {reservation.unitCode}</h2>
                 <span className="sa-muted">{reservation.reservationCode} · {contract.contractNumber}</span>
             </div>
             <ol className="sa-steps">
@@ -57,7 +62,14 @@ function HandoverWizard({ reservation, contract, onDone }) {
                     </li>
                 ))}
                 <li className={contract.signedAt ? 'done' : ''}>
-                    <span><strong>Customer signs the contract</strong><small>{contract.signedAt ? `Signed ${formatDate(contract.signedAt)}` : 'Waiting — the customer signs from My Storage before handover'}</small></span>
+                    <span><strong>Customer signs the contract</strong><small>{contract.signedAt ? `Signed ${formatDate(contract.signedAt)}` : 'The customer signs from My Storage, or on paper here at the desk'}</small></span>
+                    {!contract.signedAt && (
+                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={signAtDesk.isPending}
+                            onClick={() => window.confirm('Confirm the customer signed the paper contract in front of you?') && signAtDesk.mutate()}>
+                            Customer signed on paper
+                        </button>
+                    )}
+                    {signAtDesk.isError && <div className="se-alert" role="alert">{errorMessage(signAtDesk.error)}</div>}
                 </li>
                 <li>
                     <span><strong>Hand over disc lock &amp; access card</strong><small>Record the serial numbers given to the customer</small></span>
@@ -68,18 +80,18 @@ function HandoverWizard({ reservation, contract, onDone }) {
                     <label><span className="se-label">Condition note (optional)</span><textarea className="se-textarea" rows={2} maxLength={300} value={form.conditionNote} onChange={(e) => set({ conditionNote: e.target.value })} /></label>
                 </li>
             </ol>
-            {handover.isError && <div className="se-alert" role="alert">{errorMessage(handover.error)}</div>}
+            {checkIn.isError && <div className="se-alert" role="alert">{errorMessage(checkIn.error)}</div>}
             <div className="sa-form-actions">
                 <span className="sa-muted">Completing activates the contract, occupies the unit and issues the access code.</span>
-                <button type="button" className="se-btn se-btn-primary" disabled={!ready || handover.isPending} onClick={() => handover.mutate()}>
-                    {handover.isPending ? 'Completing…' : 'Complete handover'}
+                <button type="button" className="se-btn se-btn-primary" disabled={!ready || checkIn.isPending} onClick={() => checkIn.mutate()}>
+                    {checkIn.isPending ? 'Completing…' : 'Complete check-in'}
                 </button>
             </div>
         </div>
     );
 }
 
-/** Drafts the contract a handover needs, at the active policy's rent. */
+/** Drafts the contract a check-in needs, at the active policy's rent. */
 function DraftContract({ reservation }) {
     const queryClient = useQueryClient();
     const [paymentDay, setPaymentDay] = useState(Math.min(Number(reservation.moveInDate.slice(8, 10)), 28));
@@ -103,7 +115,7 @@ function DraftContract({ reservation }) {
     );
 }
 
-function HandoverDesk() {
+function CheckInDesk() {
     const today = todayIso();
     const reservations = useReservations({ status: 'Confirmed' });
     const drafts = useContracts({ status: 'Draft' });
@@ -127,7 +139,7 @@ function HandoverDesk() {
                 </div>
             </section>
             <div>
-                {current && contract && <HandoverWizard key={current.reservationId} reservation={current} contract={contract} onDone={() => setSelected(null)} />}
+                {current && contract && <CheckInWizard key={current.reservationId} reservation={current} contract={contract} onDone={() => setSelected(null)} />}
                 {current && !contract && !drafts.isLoading && (
                     <div className="se-panel">
                         <h2>{current.customerName} → Unit {current.unitCode}</h2>
@@ -137,6 +149,81 @@ function HandoverDesk() {
                 )}
             </div>
         </div>
+    );
+}
+
+/** SR-02: undo a check-in made by mistake. The reservation goes back to waiting for a unit. */
+function CancelCheckIn({ contractId }) {
+    const queryClient = useQueryClient();
+    const checkIns = useQuery({ queryKey: ['check-ins', 'Completed'], queryFn: () => checkInsApi.list({ status: 'Completed', page: 1, pageSize: 100 }) });
+    const checkIn = checkIns.data?.items?.find((c) => c.contractId === contractId);
+    const cancel = useMutation({
+        mutationFn: () => checkInsApi.cancel(checkIn.checkInId),
+        onSuccess: () => ['check-ins', 'contracts', 'reservations', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
+    });
+    if (!checkIn) return null;
+    return (
+        <>
+            {cancel.isError && <div className="se-alert" role="alert">{errorMessage(cancel.error)}</div>}
+            <button type="button" className="se-btn se-btn-ghost" disabled={cancel.isPending}
+                onClick={() => window.confirm('Cancel this check-in? The contract is terminated, the code revoked and the unit freed; the reservation waits for a unit again.') && cancel.mutate()}>
+                Cancel check-in
+            </button>
+        </>
+    );
+}
+
+const visitTime = (iso) => new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+/** SR-05: record the customer entering and leaving their unit during the rental. */
+function UnitVisits({ contractId }) {
+    const queryClient = useQueryClient();
+    const [note, setNote] = useState('');
+    const visits = useQuery({ queryKey: ['unit-visits', contractId], queryFn: () => unitVisitsApi.list({ contractId, page: 1, pageSize: 5 }) });
+    const open = visits.data?.items?.find((v) => !v.checkOutAt);
+    const done = { onSuccess: () => { setNote(''); queryClient.invalidateQueries({ queryKey: ['unit-visits', contractId] }); } };
+    const checkIn = useMutation({ mutationFn: () => unitVisitsApi.checkIn({ contractId, note: note.trim() || null }), ...done });
+    const checkOut = useMutation({ mutationFn: () => unitVisitsApi.checkOut(open.unitVisitId), ...done });
+    const error = checkIn.error ?? checkOut.error;
+    return (
+        <div>
+            <h3>Unit visits</h3>
+            {open ? (
+                <p className="sa-muted">Inside since {visitTime(open.checkInAt)}{open.note ? ` · ${open.note}` : ''}</p>
+            ) : (
+                <label><span className="se-label">Note (optional)</span>
+                    <div className="se-input"><input value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} /></div></label>
+            )}
+            {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
+            {open
+                ? <button type="button" className="se-btn se-btn-primary" disabled={checkOut.isPending} onClick={() => checkOut.mutate()}>Check out</button>
+                : <button type="button" className="se-btn se-btn-primary" disabled={checkIn.isPending} onClick={() => checkIn.mutate()}>Check in visit</button>}
+            <ul className="sa-people">
+                {(visits.data?.items ?? []).filter((v) => v.checkOutAt).map((v) => (
+                    <li key={v.unitVisitId}><span>{visitTime(v.checkInAt)} → {visitTime(v.checkOutAt)}</span><small>{v.recordedByName}</small></li>
+                ))}
+            </ul>
+        </div>
+    );
+}
+
+/** TH-06: a lost card or leaked code. The customer gets a new code from their unit page. */
+function RevokeCode({ contractId, accessCodeId }) {
+    const queryClient = useQueryClient();
+    const revoke = useMutation({
+        mutationFn: () => accessCodesApi.revoke(accessCodeId),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts', contractId, 'access-code'] }),
+    });
+    const confirmAndRevoke = () => {
+        if (window.confirm('Revoke this access code? The customer cannot open the unit until they request a new code.')) revoke.mutate();
+    };
+    return (
+        <>
+            {revoke.isError && <div className="se-alert" role="alert">{errorMessage(revoke.error)}</div>}
+            <button type="button" className="se-btn se-btn-ghost" disabled={revoke.isPending} onClick={confirmAndRevoke}>
+                <Icon name="key" size={16} /> {revoke.isPending ? 'Revoking…' : 'Revoke code'}
+            </button>
+        </>
     );
 }
 
@@ -181,8 +268,9 @@ function ActiveRentals() {
                         <small>Access eligibility</small>
                         <strong>{eligible ? 'Eligible for access' : 'Not eligible — check payment or access code'}</strong>
                     </div>
-                    {/* ponytail: visit check-in/out with a time limit has no backend; wire it when a visits endpoint exists. */}
-                    <NotWired>Timed visitor check-in and check-out are not on the backend yet; gate entries appear in the access log.</NotWired>
+                    {code.data?.isActive && <RevokeCode key={code.data.accessCodeId} contractId={current.contractId} accessCodeId={code.data.accessCodeId} />}
+                    <CancelCheckIn key={current.contractId} contractId={current.contractId} />
+                    <UnitVisits key={`visits-${current.contractId}`} contractId={current.contractId} />
                 </section>
             )}
         </div>
@@ -191,7 +279,7 @@ function ActiveRentals() {
 
 /** A06: the on-site desk — hand over newly booked units, and see who may access their unit. */
 export default function CheckInPage() {
-    const [tab, setTab] = useState('handover');
+    const [tab, setTab] = useState('desk');
     const units = useUnits();
     const reservations = useReservations({ status: 'Confirmed' });
     const active = useContracts({ status: 'Active' });
@@ -199,7 +287,7 @@ export default function CheckInPage() {
 
     return (
         <>
-            <PageHeader title="Check-in & Handover" subtitle={`Today, ${formatDate(todayIso())}`} />
+            <PageHeader title="Check-in" subtitle={`Today, ${formatDate(todayIso())}`} />
             <div className="sa-stats">
                 <Stat icon="key" label="Waiting for check-in" value={reservations.data?.length ?? 0} />
                 <Stat icon="file" label="Active rentals" value={active.data?.length ?? 0} />
@@ -207,10 +295,10 @@ export default function CheckInPage() {
                 <Stat icon="shield" tone="warn" label="In maintenance" value={all.filter((u) => u.status === 'Maintenance').length} />
             </div>
             <div className="se-tabs se-tabs-line" role="tablist">
-                <button role="tab" aria-selected={tab === 'handover'} className={tab === 'handover' ? 'active' : ''} onClick={() => setTab('handover')}>Handover desk</button>
+                <button role="tab" aria-selected={tab === 'desk'} className={tab === 'desk' ? 'active' : ''} onClick={() => setTab('desk')}>Check-in desk</button>
                 <button role="tab" aria-selected={tab === 'active'} className={tab === 'active' ? 'active' : ''} onClick={() => setTab('active')}>Active rentals &amp; access</button>
             </div>
-            {tab === 'handover' ? <HandoverDesk /> : <ActiveRentals />}
+            {tab === 'desk' ? <CheckInDesk /> : <ActiveRentals />}
         </>
     );
 }

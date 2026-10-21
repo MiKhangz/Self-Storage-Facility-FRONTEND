@@ -5,11 +5,11 @@ import { initials } from '../layout/CustomerLayout.jsx';
 import './AccountLayout.css';
 
 const LINKS = [
-    { to: '/my-storage', icon: 'grid', label: 'My units' },
-    { to: '/payments', icon: 'card', label: 'Payments & invoices' },
-    { to: '/support/requests', icon: 'chat', label: 'Support requests' },
-    { to: '/move-out', icon: 'arrowLeft', label: 'Move-out' },
-    { to: '/profile', icon: 'key', label: 'Profile & settings' },
+    { to: '/my-storage', icon: 'grid', label: 'Kho của tôi' },
+    { to: '/payments', icon: 'card', label: 'Thanh toán và hóa đơn' },
+    { to: '/support/requests', icon: 'chat', label: 'Yêu cầu hỗ trợ' },
+    { to: '/handover', icon: 'arrowLeft', label: 'Trả kho' },
+    { to: '/profile', icon: 'key', label: 'Hồ sơ và cài đặt' },
 ];
 
 /** Left sidebar shared by the signed-in customer pages (U09, U13–U16). */
@@ -23,14 +23,14 @@ export default function AccountLayout() {
                 <aside className="se-account-side">
                     <div className="se-account-who">
                         <span className="se-avatar lg">{initials(session?.fullName)}</span>
-                        <div><strong>{session?.fullName}</strong><small>Storage customer</small></div>
+                        <div><strong>{session?.fullName}</strong><small>Khách thuê kho</small></div>
                     </div>
-                    <nav>
+                    <nav aria-label="Tài khoản">
                         {LINKS.map((l) => (
                             <NavLink key={l.to} to={l.to}><Icon name={l.icon} size={17} />{l.label}</NavLink>
                         ))}
                         <button type="button" onClick={() => { logout(); navigate('/', { replace: true }); }}>
-                            <Icon name="arrowLeft" size={17} />Log out
+                            <Icon name="arrowLeft" size={17} />Đăng xuất
                         </button>
                     </nav>
                 </aside>

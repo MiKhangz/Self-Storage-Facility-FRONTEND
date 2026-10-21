@@ -15,11 +15,11 @@ export default function VerifyEmailPage() {
         <div className="se-auth-bg">
             <div className="se-reset-card">
                 <span className="se-reset-icon green"><Icon name="mail" size={22} /></span>
-                {!token ? <><h1>Link incomplete</h1><p className="se-auth-lead">Open the full link from your email.</p></>
-                    : verify.isPending ? <h1>Activating your account…</h1>
-                        : verify.isError ? <><h1>Activation failed</h1><div className="se-alert" role="alert">{errorMessage(verify.error)}</div></>
-                            : <><h1>Email verified</h1><p className="se-auth-lead">Your account is active. You can log in now.</p></>}
-                <Link to="/login" className="se-btn se-btn-primary se-btn-block">Go to login</Link>
+                {!token ? <><h1>Liên kết chưa đầy đủ</h1><p className="se-auth-lead">Hãy mở đúng đường liên kết trong email kích hoạt.</p></>
+                    : verify.isPending ? <h1>Đang kích hoạt tài khoản…</h1>
+                        : verify.isError ? <><h1>Kích hoạt không thành công</h1><div className="se-alert" role="alert">{errorMessage(verify.error)}</div></>
+                            : <><h1>Đã xác nhận email</h1><p className="se-auth-lead">Tài khoản của bạn đã được kích hoạt. Bạn có thể đăng nhập ngay.</p></>}
+                <Link to="/login" className="se-btn se-btn-primary se-btn-block">Đến trang đăng nhập</Link>
             </div>
         </div>
     );

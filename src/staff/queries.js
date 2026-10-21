@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import {
-    contractsApi, facilitiesApi, invoicesApi, moveOutRequestsApi, reservationsApi, shiftsApi, staffApi,
+    contractsApi, facilitiesApi, invoicesApi, handoversApi, reservationsApi, shiftsApi, staffApi,
     staffTasksApi, storageUnitsApi, ticketQueueApi, unitTypesApi,
 } from '../api/generated';
 
@@ -27,7 +27,7 @@ export const useReservations = (params) => useQuery(all('reservations', reservat
 export const useContracts = (params) => useQuery(all('contracts', contractsApi.list, params));
 export const useInvoices = (params) => useQuery(all('invoices', invoicesApi.list, params));
 export const useTickets = (params) => useQuery(all('tickets', ticketQueueApi.list, params));
-export const useMoveOuts = (params) => useQuery(all('move-outs', moveOutRequestsApi.list, params));
+export const useHandovers = (params) => useQuery(all('handovers', handoversApi.list, params));
 export const useShifts = (params) => useQuery(all('shifts', shiftsApi.list, params));
 export const useTasks = (params) => useQuery(all('staff-tasks', staffTasksApi.list, params));
 export const useStaff = (params, enabled = true) => useQuery({ ...all('staff', staffApi.list, params), enabled });
@@ -36,7 +36,7 @@ export const useStaff = (params, enabled = true) => useQuery({ ...all('staff', s
 export const TONE = {
     Available: '', Active: '', Paid: '', Completed: '', Done: '', Resolved: '', Confirmed: '', CheckedIn: '', Succeeded: '', Success: '', Good: '',
     Reserved: 'low', Pending: 'low', Draft: 'low', Issued: 'low', Requested: 'low', Approved: 'low', Inspected: 'low', InProgress: 'low',
-    New: 'low', Scheduled: 'low', ToDo: 'low', WaitingForCustomer: 'low', PendingMoveOut: 'low', MinorDamage: 'low', Open: 'low',
+    New: 'low', Scheduled: 'low', ToDo: 'low', WaitingForCustomer: 'low', PendingHandover: 'low', MinorDamage: 'low', Open: 'low',
     Occupied: 'info', Maintenance: 'none', Overdue: 'none', Suspended: 'none', Rejected: 'none', Cancelled: 'muted', Expired: 'muted',
     Closed: 'muted', Terminated: 'muted', Retired: 'muted', Superseded: 'muted', WrittenOff: 'muted', Inactive: 'muted', Disabled: 'muted', MajorDamage: 'none',
     Failure: 'none', Urgent: 'none', High: 'low', Normal: '', Low: 'muted',

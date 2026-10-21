@@ -5,8 +5,8 @@ export default function PageHead({ crumb, title, children }) {
     return (
         <section className="se-page-head">
             <div className="se-container">
-                <nav className="se-crumbs" aria-label="Breadcrumb">
-                    <Link to="/">Home</Link><span>/</span><strong>{crumb}</strong>
+                <nav className="se-crumbs" aria-label="Đường dẫn">
+                    <Link to="/">Trang chủ</Link><span>/</span><strong>{crumb}</strong>
                 </nav>
                 <h1>{title}</h1>
                 {children && <p>{children}</p>}
