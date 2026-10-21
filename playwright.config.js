@@ -20,6 +20,8 @@ export default defineConfig({
     video: 'retain-on-failure',
     locale: 'vi-VN',
     timezoneId: 'Asia/Ho_Chi_Minh',
+    // E2E_SLOWMO=500 waits 500 ms between actions, so a --headed run can be followed by eye.
+    launchOptions: { slowMo: Number(process.env.E2E_SLOWMO ?? 0) },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   webServer: [

@@ -18,7 +18,8 @@ That one command:
 Needs SQL Server Express (`localhost\SQLEXPRESS`), the .NET 8 SDK, and once: `npx playwright install chromium`.
 
 After a failure, `npm run e2e:report` opens the report with the screenshot, video and step-by-step trace.
-To watch it run: `npx playwright test --headed`, or step through with `npx playwright test --ui`.
+To watch it run: `E2E_SLOWMO=500 npx playwright test --headed` (PowerShell: `$env:E2E_SLOWMO=500; npx playwright test --headed`),
+or step through with `npx playwright test --ui`.
 
 Settings you can override: `E2E_BACKEND_DIR`, `E2E_DB_CONNECTION`, `E2E_API_PORT`, `E2E_WEB_PORT`.
 
