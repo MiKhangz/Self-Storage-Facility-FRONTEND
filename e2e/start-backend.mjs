@@ -31,6 +31,8 @@ function run(cmd, args, cwd) {
 run('dotnet', ['build', path.join(backendDir, 'StorEase.Api'), '-nologo', '-v', 'q', '-o', out], backendDir)
 run('dotnet', ['StorEase.Api.dll', '--seed-only', '--reset'], out)
 
-const api = spawn('dotnet', ['StorEase.Api.dll', '--urls', `http://localhost:${port}`], { cwd: out, env, stdio: 'inherit', shell: process.platform === 'win32' })
-for (const signal of ['SIGINT', 'SIGTERM']) process.on(signal, () => { api.kill(); process.exit(0) })
+// No shell here: Playwright stops this script at the end, and a shell in between would leave the API running.
+const api = spawn('dotnet', ['StorEase.Api.dll', '--urls', `http://localhost:${port}`], { cwd: out, env, stdio: 'inherit' })
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(signal, () => { api.kill(); process.exit(0) })
+process.on('exit', () => api.kill())
 api.on('exit', (code) => process.exit(code ?? 0))

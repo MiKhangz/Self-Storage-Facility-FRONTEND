@@ -10,7 +10,8 @@ export default defineConfig({
   // The flows share one database; running them one at a time keeps "the first free unit" and similar picks stable.
   workers: 1,
   fullyParallel: false,
-  timeout: 60_000,
+  // Slow motion (E2E_SLOWMO) multiplies every action, so a watched run gets far more time per test.
+  timeout: process.env.E2E_SLOWMO ? 600_000 : 60_000,
   expect: { timeout: 10_000 },
   reporter: [['list'], ['html', { outputFolder: 'e2e-report', open: 'never' }]],
   use: {
