@@ -34,7 +34,10 @@ export async function loginStaff(page, email) {
 
 /** Navigates inside the admin portal through the sidebar (a page load would sign the user out). */
 export async function openAdmin(page, label) {
-  await page.getByRole('navigation').getByRole('link', { name: label, exact: true }).click()
+  // Some links carry a live counter ("Reservations 2") once their count loads; accept the label with or without it.
+  // (Sidebar labels are plain words and "&", nothing a regular expression would read specially.)
+  const name = new RegExp(`^${label}( \\d+)?$`)
+  await page.getByRole('navigation').getByRole('link', { name }).click()
 }
 
 /**
