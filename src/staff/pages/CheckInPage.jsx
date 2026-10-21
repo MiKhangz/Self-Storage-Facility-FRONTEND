@@ -125,7 +125,7 @@ function CheckInDesk() {
     const contract = current && (drafts.data ?? []).find((c) => c.reservationId === current.reservationId);
 
     return (
-        <div className="sa-split open">
+        <div className="sa-split open sa-desk">
             <section className="se-panel">
                 <div className="sa-card-title"><h2>Waiting for check-in</h2><span className="se-count">{queue.length}</span></div>
                 <div className="sa-queue">
@@ -243,7 +243,7 @@ function ActiveRentals() {
     const eligible = current && !overdue && code.data?.isActive;
 
     return (
-        <div className="sa-split open">
+        <div className="sa-split open sa-desk">
             <section className="se-panel">
                 <div className="sa-card-title"><h2>Active rentals</h2><span className="se-count">{list.length}</span></div>
                 <div className="sa-queue">
