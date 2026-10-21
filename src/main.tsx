@@ -24,6 +24,7 @@ import SupportRequestPage from './customer/support/SupportRequestPage.jsx'
 import TicketDetailPage from './customer/support/TicketDetailPage.jsx'
 import HandoverPage from './customer/account/HandoverPage.jsx'
 import ProfilePage from './customer/account/ProfilePage.jsx'
+import VnPayReturnPage from './customer/account/VnPayReturnPage.jsx'
 // Backup admin portal (src/staff); Thiện's src/admin screens are kept but no longer routed.
 import AdminLoginPage from './staff/AdminLoginPage.jsx'
 import AdminLayout from './staff/AdminLayout.jsx'
@@ -102,6 +103,8 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/forgot-password" element={<ForgotPasswordPage />} />
               <Route path="/reset-password" element={<ForgotPasswordPage />} />
               <Route path="/verify-email" element={<VerifyEmailPage />} />
+              {/* Public: VNPay sends the customer back with a full page load, which drops the in-memory sign-in. */}
+              <Route path="/account/payments/vnpay-return" element={<VnPayReturnPage />} />
               <Route path="/sizes" element={<SizesPage />} />
               <Route path="/locations" element={<LocationsPage />} />
               <Route path="/booking" element={<ChooseUnitPage />} />
