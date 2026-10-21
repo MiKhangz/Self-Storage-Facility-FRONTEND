@@ -11,3 +11,8 @@ dist/
 .vite/
 .claude/
 graphify-out/
+
+# E2E (Playwright)
+e2e/.backend/
+e2e-report/
+test-results/
