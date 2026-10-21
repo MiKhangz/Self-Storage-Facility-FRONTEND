@@ -27,4 +27,18 @@ export const renewalsApi = {
    */
   getById: (id) =>
     api.get(`/api/renewals/${id}`).then((r) => r.data),
+  /**
+   * POST /api/renewals/{id}/approve
+   * @param {number} id
+   * @returns {Promise<RenewalDto>}
+   */
+  approve: (id) =>
+    api.post(`/api/renewals/${id}/approve`, undefined).then((r) => r.data),
+  /**
+   * POST /api/renewals/{id}/reject
+   * @param {number} id
+   * @returns {Promise<RenewalDto>}
+   */
+  reject: (id) =>
+    api.post(`/api/renewals/${id}/reject`, undefined).then((r) => r.data),
 }

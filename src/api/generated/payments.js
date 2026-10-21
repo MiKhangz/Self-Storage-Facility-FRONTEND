@@ -31,6 +31,18 @@ export const paymentsApi = {
   gatewayCallback: (body) =>
     api.post(`/api/payments/gateway-callback`, body).then((r) => r.data),
   /**
+   * GET /api/payments/vnpay-ipn
+   * @returns {Promise<void>}
+   */
+  vnpayIpn: () =>
+    api.get(`/api/payments/vnpay-ipn`).then((r) => r.data),
+  /**
+   * GET /api/payments/vnpay-return
+   * @returns {Promise<InvoiceDto>}
+   */
+  vnpayReturn: () =>
+    api.get(`/api/payments/vnpay-return`).then((r) => r.data),
+  /**
    * POST /api/payments/{paymentCode}/simulate-success
    * @param {string} paymentCode
    * @returns {Promise<InvoiceDto>}

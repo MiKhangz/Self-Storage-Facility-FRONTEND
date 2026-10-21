@@ -61,12 +61,16 @@ function renderTypedef(name, schema) {
 
 const jsonSchema = (content) => content?.['application/json']?.schema
 
-function functionName(path, method, methodsOnPath) {
+function functionName(path, method, methodsOnPath, tag, clashes = new Set()) {
   const segments = path.split('/').slice(3) // drop '', 'api', resource
   const action = segments.filter((s) => !isParam(s)).map(camel).join('_').replace(/_(\w)/g, (_, c) => c.toUpperCase())
   if (!action) {
     const byId = segments.some(isParam)
-    return { get: byId ? 'getById' : 'list', post: 'create', put: 'update', patch: 'patch', delete: 'remove' }[method]
+    const verb = { get: byId ? 'getById' : 'list', post: 'create', put: 'update', patch: 'patch', delete: 'remove' }[method]
+    // Two routes in one tag with the same verb (PUT /pricing-policies/{id}, PUT /fee-types/{id}): the one on another
+    // resource names it.
+    const resource = camel(path.split('/')[2])
+    return clashes.has(verb) && resource !== camel(tag) ? verb + resource[0].toUpperCase() + resource.slice(1) : verb
   }
   // A sub-resource read by id (GET /handovers/{id}/photos/{photoId}) must not clash with its list or upload.
   if (method === 'get' && isParam(segments.at(-1))) return action + 'ById'
@@ -74,8 +78,8 @@ function functionName(path, method, methodsOnPath) {
   return methodsOnPath > 1 ? method + action[0].toUpperCase() + action.slice(1) : action
 }
 
-function renderOperation(path, method, op, methodsOnPath, refs) {
-  const name = functionName(path, method, methodsOnPath)
+function renderOperation(path, method, op, methodsOnPath, refs, tag, clashes) {
+  const name = functionName(path, method, methodsOnPath, tag, clashes)
   const params = op.parameters ?? []
   const pathParams = params.filter((p) => p.in === 'path')
   const queryParams = params.filter((p) => p.in === 'query')
@@ -111,6 +115,17 @@ await writeFile(new URL('schemas.js', OUT),
   `${header}// Request and response shapes, for editor hints only; this module has no runtime code.\n\n` +
     schemas.map(([n, s]) => renderTypedef(n, s)).join('\n\n') + '\n\nexport {}\n')
 
+// Plain names used more than once inside a tag, so functionName can tell them apart.
+const seen = new Map()
+for (const [path, item] of Object.entries(doc.paths)) {
+  const methods = Object.keys(item).filter((m) => ['get', 'post', 'put', 'patch', 'delete'].includes(m))
+  for (const method of methods) {
+    const key = `${item[method].tags?.[0] ?? 'Misc'} ${functionName(path, method, methods.length, '')}`
+    seen.set(key, (seen.get(key) ?? 0) + 1)
+  }
+}
+const clashesIn = (tag) => new Set([...seen].filter(([k, n]) => n > 1 && k.startsWith(`${tag} `)).map(([k]) => k.slice(tag.length + 1)))
+
 const byTag = new Map()
 for (const [path, item] of Object.entries(doc.paths)) {
   const methods = Object.keys(item).filter((m) => ['get', 'post', 'put', 'patch', 'delete'].includes(m))
@@ -118,7 +133,7 @@ for (const [path, item] of Object.entries(doc.paths)) {
     const tag = item[method].tags?.[0] ?? 'Misc'
     if (!byTag.has(tag)) byTag.set(tag, { ops: [], refs: new Set() })
     const group = byTag.get(tag)
-    group.ops.push(renderOperation(path, method, item[method], methods.length, group.refs))
+    group.ops.push(renderOperation(path, method, item[method], methods.length, group.refs, tag, clashesIn(tag)))
   }
 }
 
