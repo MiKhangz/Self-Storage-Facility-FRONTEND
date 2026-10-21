@@ -7,13 +7,17 @@ import { formatVnd } from '../components/format.js';
 export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-outline se-btn-sm', children = 'Thanh toán' }) {
     const queryClient = useQueryClient();
     const pay = useMutation({
-        // ponytail: the backend's development-only simulate-success stands in for the gateway. Once VNPay/MoMo
-        // is live, send the customer to intent.checkoutUrl instead and let the gateway callback credit the invoice.
+        // With VNPay configured the backend returns VNPay's checkout page: leave the site and pay there; VNPay sends
+        // the customer back to VnPayReturnPage. Otherwise (demo) the development-only simulate-success pays at once.
         mutationFn: async () => {
             const intent = await invoicesApi.paymentsOnline(invoice.invoiceId, { amount: invoice.outstandingAmount, referenceNo: null });
+            if (intent.checkoutUrl?.includes('vnpayment.vn')) {
+                window.location.assign(intent.checkoutUrl);
+                return 'redirected';
+            }
             return paymentsApi.simulateSuccess(intent.paymentCode);
         },
-        onSuccess: () => ['invoices', 'reservations'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] })),
+        onSuccess: (result) => result !== 'redirected' && ['invoices', 'reservations'].forEach((key) => queryClient.invalidateQueries({ queryKey: [key] })),
         onError: (err) => window.alert(errorMessage(err)),
     });
 

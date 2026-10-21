@@ -39,6 +39,14 @@ export const pricingPoliciesApi = {
   getById: (id) =>
     api.get(`/api/pricing-policies/${id}`).then((r) => r.data),
   /**
+   * PUT /api/pricing-policies/{id}
+   * @param {number} id
+   * @param {CreatePricingPolicyRequest} body
+   * @returns {Promise<PricingPolicyDto>}
+   */
+  update: (id, body) =>
+    api.put(`/api/pricing-policies/${id}`, body).then((r) => r.data),
+  /**
    * POST /api/pricing-policies/{id}/activate
    * @param {number} id
    * @returns {Promise<PricingPolicyDto>}
@@ -68,7 +76,7 @@ export const pricingPoliciesApi = {
    * @param {FeeTypeRequest} body
    * @returns {Promise<FeeTypeDto>}
    */
-  update: (feeTypeId, body) =>
+  updateFeeTypes: (feeTypeId, body) =>
     api.put(`/api/fee-types/${feeTypeId}`, body).then((r) => r.data),
   /**
    * DELETE /api/fee-types/{feeTypeId}

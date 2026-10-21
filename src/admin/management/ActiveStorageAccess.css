@@ -1,0 +1,719 @@
+/* ==========================================================================
+   Active Storage & Access  (ActiveStorageAccess.jsx)
+   Tabs: Active rentals, Check-in, On-site
+   Replace the whole existing ActiveStorageAccess.css with this file.
+   Specificity: base element rules sit under .asa-page, variants use one extra
+   class, so nothing needs !important.
+   ========================================================================== */
+
+.asa-page {
+  --asa-bg: #f3f6f9;
+  --asa-surface: #ffffff;
+  --asa-text: #12263a;
+  --asa-muted: #687b90;
+  --asa-border: #e4ebf0;
+  --asa-border-strong: #d3dce5;
+  --asa-teal: #078f90;
+  --asa-teal-hover: #067a7b;
+  --asa-teal-soft: #e1f4f4;
+  --asa-ok: #1c9b55;
+  --asa-danger: #c73742;
+  --asa-danger-hover: #ad2734;
+  --asa-danger-soft: #ffebeb;
+  --asa-disabled: #9aa4ac;
+
+  box-sizing: border-box;
+  min-height: 100%;
+  padding: 24px 28px 40px;
+  background: var(--asa-bg);
+  color: var(--asa-text);
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+.asa-page *,
+.asa-page *::before,
+.asa-page *::after {
+  box-sizing: border-box;
+}
+
+/* ---------- Header ---------- */
+
+.asa-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.asa-header h1 {
+  margin: 0;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.asa-header p {
+  margin: 4px 0 0;
+  color: var(--asa-muted);
+}
+
+.asa-notice {
+  margin: 16px 0 0;
+  padding: 11px 14px;
+  border: 1px solid #b9e2d0;
+  border-radius: 8px;
+  background: #e9f8ef;
+  color: #14794e;
+  font-size: 13px;
+}
+
+/* ---------- Base controls ---------- */
+
+.asa-page button {
+  padding: 9px 16px;
+  border: 1px solid var(--asa-border-strong);
+  border-radius: 6px;
+  background: var(--asa-surface);
+  color: var(--asa-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.2;
+  cursor: pointer;
+}
+
+.asa-page button:hover:not(:disabled) {
+  background: #f6f9fb;
+}
+
+.asa-page button:disabled {
+  border-color: var(--asa-disabled);
+  background: var(--asa-disabled);
+  color: #fff;
+  cursor: not-allowed;
+}
+
+.asa-page input:not([type="checkbox"]),
+.asa-page select {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--asa-border-strong);
+  border-radius: 8px;
+  background: var(--asa-surface);
+  color: var(--asa-text);
+  font: inherit;
+  font-size: 12px;
+}
+
+.asa-page select {
+  appearance: none;
+  padding-right: 34px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath d='M4 6l4 4 4-4' fill='none' stroke='%23687b90' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-position: right 10px center;
+  background-repeat: no-repeat;
+  background-size: 14px;
+  cursor: pointer;
+}
+
+.asa-page :is(button, input, select):focus-visible {
+  outline: 2px solid var(--asa-teal);
+  outline-offset: 2px;
+}
+
+/* Primary and danger actions */
+.asa-page .asa-grant {
+  border-color: var(--asa-teal);
+  background: var(--asa-teal);
+  color: #fff;
+  font-weight: 700;
+}
+
+.asa-page .asa-grant:hover:not(:disabled) {
+  border-color: var(--asa-teal-hover);
+  background: var(--asa-teal-hover);
+}
+
+.asa-page .asa-checkout {
+  border-color: var(--asa-danger);
+  background: var(--asa-danger);
+  color: #fff;
+}
+
+.asa-page .asa-checkout:hover:not(:disabled) {
+  border-color: var(--asa-danger-hover);
+  background: var(--asa-danger-hover);
+}
+
+/* ---------- Tabs ---------- */
+
+.asa-tabs {
+  display: flex;
+  gap: 4px;
+  margin-top: 18px;
+  border-bottom: 1px solid var(--asa-border);
+  overflow-x: auto;
+}
+
+.asa-page .asa-tabs button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: -1px;
+  padding: 10px 12px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--asa-muted);
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.asa-page .asa-tabs button:hover {
+  background: transparent;
+  color: var(--asa-text);
+}
+
+.asa-page .asa-tabs button.selected {
+  border-bottom-color: var(--asa-teal);
+  color: var(--asa-teal);
+  font-weight: 600;
+}
+
+.asa-tabs small {
+  min-width: 22px;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: #e8edf2;
+  color: var(--asa-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.asa-tabs .selected small {
+  background: var(--asa-teal-soft);
+  color: var(--asa-teal);
+}
+
+/* ---------- Search, errors, empty ---------- */
+
+.asa-filter {
+  margin-top: 16px;
+}
+
+.asa-filter input {
+  max-width: 420px;
+}
+
+.asa-error {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 14px 0 0;
+  padding: 11px 14px;
+  border: 1px solid #f3c3c4;
+  border-radius: 8px;
+  background: #fff3f3;
+  color: #b42331;
+  font-size: 13px;
+}
+
+.asa-page .asa-error button {
+  padding: 5px 10px;
+}
+
+.asa-inline-error {
+  margin: 8px 0 0;
+  padding: 9px 11px;
+  border-radius: 7px;
+  background: #fff1d8;
+  color: #8c511a;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.asa-empty {
+  grid-column: 1 / -1;
+  margin: 0;
+  padding: 28px 16px;
+  border: 1px dashed var(--asa-border-strong);
+  border-radius: 10px;
+  background: var(--asa-surface);
+  color: var(--asa-muted);
+  text-align: center;
+}
+
+.asa-preview-note {
+  display: block;
+  margin: 9px 0;
+  color: var(--asa-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+/* ---------- Layout: list on the left, detail on the right ---------- */
+
+.asa-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 20px;
+  margin-top: 16px;
+  align-items: start;
+}
+
+.asa-layout.has-detail {
+  grid-template-columns: 270px minmax(0, 1fr);
+}
+
+/* ---------- List cards ---------- */
+
+.asa-rental-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 10px;
+}
+
+.has-detail .asa-rental-list {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.asa-page .asa-rental {
+  display: grid;
+  gap: 2px;
+  justify-items: start;
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid var(--asa-border);
+  border-radius: 8px;
+  background: var(--asa-surface);
+  text-align: left;
+}
+
+.asa-page .asa-rental:hover:not(:disabled) {
+  border-color: var(--asa-border-strong);
+  background: var(--asa-surface);
+}
+
+.asa-page .asa-rental.selected {
+  border-color: var(--asa-teal);
+  box-shadow: 0 0 0 1px var(--asa-teal);
+}
+
+.asa-rental strong {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.asa-rental span,
+.asa-rental small {
+  color: var(--asa-muted);
+  font-size: 11px;
+  font-weight: 400;
+}
+
+.asa-overtime-pill,
+.asa-overtime-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  width: max-content;
+  max-width: 100%;
+  margin-top: 5px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  background: var(--asa-danger-soft);
+  color: var(--asa-danger);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.asa-pager {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--asa-muted);
+  font-size: 11px;
+}
+
+.asa-pager div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.asa-page .asa-pager button {
+  padding: 5px 10px;
+}
+
+.asa-page .asa-pager button:disabled {
+  border-color: var(--asa-border);
+  background: #f1f4f7;
+  color: var(--asa-disabled);
+}
+
+/* ---------- Detail card ---------- */
+
+.asa-detail {
+  position: relative;
+  min-width: 0;
+  border: 1px solid var(--asa-border);
+  border-radius: 12px;
+  background: var(--asa-surface);
+  box-shadow: 0 1px 2px rgba(18, 38, 58, 0.04);
+}
+
+.asa-page .asa-close {
+  position: absolute;
+  top: 9px;
+  right: 9px;
+  z-index: 1;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--asa-muted);
+  font-size: 18px;
+  line-height: 1;
+}
+
+.asa-detail > header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 52px 16px 20px;
+  border-bottom: 1px solid var(--asa-border);
+}
+
+.asa-detail > header strong {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.asa-detail > header small {
+  display: block;
+  margin-top: 2px;
+  color: var(--asa-muted);
+  font-size: 11px;
+  line-height: 1.45;
+}
+
+.asa-avatar {
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--asa-text);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.asa-avatar.late {
+  background: var(--asa-danger);
+}
+
+.asa-detail section {
+  padding: 18px 20px 4px;
+}
+
+.asa-detail h2 {
+  margin: 0 0 12px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.asa-section-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.asa-detail dl {
+  margin: 0;
+}
+
+.asa-detail dl > div {
+  margin: 0 0 12px;
+}
+
+.asa-detail dt {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.asa-detail dd {
+  margin: 2px 0 0;
+  color: var(--asa-muted);
+  font-size: 11px;
+}
+
+/* Optional helpers (add the class in the JSX to use them) */
+.asa-detail dd.asa-ok {
+  color: var(--asa-ok);
+}
+
+.asa-detail dd.asa-bad {
+  color: var(--asa-danger);
+}
+
+.asa-boxed dd {
+  max-width: 140px;
+  margin-top: 4px;
+  padding: 6px 10px;
+  border: 1px solid var(--asa-border-strong);
+  border-radius: 6px;
+  background: var(--asa-surface);
+}
+
+.asa-visit-detail .asa-overdue-row dd {
+  color: var(--asa-danger);
+  font-weight: 700;
+}
+
+/* ---------- Authorized persons ---------- */
+
+.asa-people {
+  display: grid;
+  gap: 4px;
+  margin: 0 0 12px;
+}
+
+.asa-page .asa-people label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.asa-people span {
+  display: grid;
+  gap: 2px;
+}
+
+.asa-people strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.asa-people small {
+  color: var(--asa-muted);
+  font-size: 11px;
+}
+
+/* Checkbox sits on the right, like the design */
+.asa-page .asa-people input[type="checkbox"] {
+  order: 2;
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  accent-color: var(--asa-teal);
+}
+
+.asa-detail .asa-access-log-link {
+  padding: 8px 20px 14px;
+}
+
+/* ---------- Detail footer (Edits / Grant access) ---------- */
+
+.asa-detail-footer {
+  display: grid;
+  gap: 7px;
+  padding: 14px 20px 18px;
+  border-top: 1px solid var(--asa-border);
+}
+
+.asa-footer-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.asa-detail-footer small {
+  color: #9b5a18;
+  font-size: 11px;
+}
+
+/* ---------- Check-in and On-site detail ---------- */
+
+.asa-visit-detail section {
+  padding-bottom: 20px;
+}
+
+.asa-duration {
+  display: grid;
+  gap: 6px;
+  max-width: 200px;
+  margin-top: 16px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.asa-visit-detail section > .asa-grant {
+  margin-top: 8px;
+}
+
+.asa-visit-actions {
+  display: flex;
+  gap: 8px;
+  margin: 18px -20px 0;
+  padding: 16px 20px 0;
+  border-top: 1px solid var(--asa-border);
+}
+
+/* ---------- Dialogs and drawer ---------- */
+
+.asa-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  background: rgba(15, 45, 69, 0.4);
+}
+
+.asa-dialog,
+.asa-drawer {
+  width: min(560px, 100%);
+  max-height: 90vh;
+  padding: 22px;
+  overflow: auto;
+  border: 1px solid #dce5ed;
+  border-radius: 12px;
+  background: var(--asa-surface);
+  box-shadow: 0 18px 55px rgba(21, 50, 77, 0.2);
+}
+
+.asa-dialog h2,
+.asa-drawer h2 {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.asa-dialog p,
+.asa-drawer p {
+  margin: 0 0 10px;
+  color: var(--asa-muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.asa-dialog footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 20px;
+}
+
+.asa-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.asa-edit-person {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  align-items: end;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.asa-edit-person label {
+  display: grid;
+  gap: 5px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.asa-drawer {
+  align-self: stretch;
+  width: min(500px, 100%);
+  max-height: none;
+  margin-left: auto;
+  border-radius: 12px 0 0 12px;
+}
+
+.asa-drawer header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--asa-border);
+}
+
+.asa-drawer header p {
+  margin: 0;
+}
+
+.asa-log-list {
+  display: grid;
+  gap: 8px;
+  padding-top: 12px;
+}
+
+.asa-log-list article {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid var(--asa-border);
+  border-radius: 8px;
+}
+
+.asa-log-list small {
+  color: var(--asa-muted);
+  font-size: 11px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 900px) {
+  .asa-page {
+    padding: 18px 16px 32px;
+  }
+
+  .asa-layout.has-detail {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .asa-footer-actions {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 620px) {
+  .asa-edit-person {
+    grid-template-columns: 1fr;
+  }
+
+  .asa-drawer {
+    border-radius: 12px;
+  }
+
+  .asa-visit-actions {
+    flex-direction: column;
+  }
+
+  .asa-visit-actions button {
+    width: 100%;
+  }
+}

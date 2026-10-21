@@ -56,6 +56,42 @@ function PriceRow({ policy, type, price, editable }) {
 }
 
 /** A08: versioned pricing policy — unit prices, discounts and rental terms. Only a draft version can be edited. */
+/** T-03: a Draft policy's terms and start date, saved together; published versions stay read-only. */
+function DraftTerms({ policy }) {
+    const queryClient = useQueryClient();
+    const [form, setForm] = useState(() => ({
+        effectiveFrom: policy.effectiveFrom,
+        ...Object.fromEntries([...TERM_KEYS, 'noticeDays'].map((k) => [k, String(policy[k] ?? 0)])),
+    }));
+    const save = useMutation({
+        mutationFn: () => pricingPoliciesApi.update(policy.pricingPolicyId, {
+            ...Object.fromEntries([...TERM_KEYS, 'noticeDays'].map((k) => [k, Number(form[k])])),
+            effectiveFrom: form.effectiveFrom,
+            effectiveTo: policy.effectiveTo ?? null,
+        }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pricing-policies'] }),
+    });
+    return (
+        <form className="sa-terms" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
+            <section className="se-panel">
+                <label><span className="se-label">Starts on</span><div className="se-input"><input type="date" value={form.effectiveFrom} onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })} required /></div></label>
+            </section>
+            {TERMS.map((group) => (
+                <section key={group.title} className="se-panel">
+                    <div className="sa-card-title"><h2><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {group.title}</h2></div>
+                    {group.rows.map(([k, label, unit]) => (
+                        <label key={k}><span className="se-label">{label} ({unit})</span>
+                            <div className="se-input"><input type="number" min="0" step="any" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} required /></div></label>
+                    ))}
+                </section>
+            ))}
+            {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
+            {save.isSuccess && !save.isPending && <div className="se-alert info">Terms saved.</div>}
+            <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save terms'}</button>
+        </form>
+    );
+}
+
 export default function PricingPage() {
     const queryClient = useQueryClient();
     const policies = useQuery({ queryKey: ['pricing-policies'], queryFn: () => pricingPoliciesApi.list({ page: 1, pageSize: 50 }) });
@@ -125,14 +161,14 @@ export default function PricingPage() {
                             </>
                         )}
                     </section>
-                    <div className="sa-terms">
+                    {editable ? <DraftTerms key={policy.pricingPolicyId} policy={policy} /> : <div className="sa-terms">
                         {TERMS.map((group) => (
                             <section key={group.title} className="se-panel">
                                 <div className="sa-card-title"><h2><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {group.title}</h2></div>
                                 <dl className="se-kv">{group.rows.map(([k, label, unit]) => <div key={k}><dt>{label}</dt><dd>{policy[k]} {unit}</dd></div>)}</dl>
                             </section>
                         ))}
-                    </div>
+                    </div>}
                 </div>
             )}
         </>

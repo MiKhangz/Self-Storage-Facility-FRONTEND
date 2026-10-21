@@ -187,6 +187,17 @@ body, html {
     font-size: 14px;
     color: #495057;
 }
+.password-toggle {
+    display: inline-grid;
+    place-items: center;
+    flex: 0 0 auto;
+    padding: 6px;
+    border: 0;
+    background: transparent;
+    color: #64748b;
+    cursor: pointer;
+}
+.password-toggle svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 
 /* Options Bar Structure */
 .form-options {
@@ -247,16 +258,4 @@ body, html {
     font-size: 12px;
     color: #6c757d;
     line-height: 1.4;
-}
-
-/* API error under the form */
-.form-error {
-    margin: 0 0 12px;
-    color: #c0392b;
-    font-size: 14px;
-}
-
-.btn-signin:disabled {
-    opacity: 0.7;
-    cursor: wait;
 }

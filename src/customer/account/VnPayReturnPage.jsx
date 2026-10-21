@@ -1,0 +1,42 @@
+import { useQuery } from '@tanstack/react-query';
+import { Link, useSearchParams } from 'react-router-dom';
+import { api, errorMessage } from '../../api/axiosClient';
+import Icon from '../components/Icon.jsx';
+import { formatVnd } from '../components/format.js';
+
+/**
+ * VNPay sends the customer back here. The page forwards VNPay's signed parameters to the backend, which checks the
+ * signature and records the result (the same check as VNPay's server-to-server IPN, so a repeat is harmless).
+ */
+export default function VnPayReturnPage() {
+    const [params] = useSearchParams();
+    const vnp = Object.fromEntries([...params].filter(([k]) => k.startsWith('vnp_')));
+    const paid = vnp.vnp_ResponseCode === '00' && vnp.vnp_TransactionStatus === '00';
+    // The generated client does not declare VNPay's dynamic query parameters, so this one call uses the shared axios client.
+    const result = useQuery({
+        queryKey: ['vnpay-return', vnp.vnp_TxnRef, vnp.vnp_ResponseCode],
+        queryFn: () => api.get('/api/payments/vnpay-return', { params: vnp }).then((r) => r.data),
+        enabled: !!vnp.vnp_TxnRef,
+    });
+
+    return (
+        <section className="se-panel" style={{ maxWidth: 560, margin: '40px auto', textAlign: 'center' }}>
+            {result.isLoading && <p>Đang xác nhận thanh toán…</p>}
+            {result.isError && <div className="se-alert" role="alert">Không xác nhận được thanh toán: {errorMessage(result.error)}</div>}
+            {result.data && (paid ? (
+                <>
+                    <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
+                    <h1>Thanh toán thành công</h1>
+                    <p>Hóa đơn {result.data.invoiceNumber} · đã trả {formatVnd(result.data.paidAmount)}.</p>
+                </>
+            ) : (
+                <>
+                    <h1>Thanh toán chưa hoàn tất</h1>
+                    <p>Giao dịch đã bị hủy hoặc không thành công. Bạn chưa bị trừ tiền cho hóa đơn {result.data.invoiceNumber}.</p>
+                </>
+            ))}
+            {!vnp.vnp_TxnRef && <p>Không có thông tin giao dịch.</p>}
+            <Link to="/account/payments" className="se-btn se-btn-primary">Về trang thanh toán</Link>
+        </section>
+    );
+}
