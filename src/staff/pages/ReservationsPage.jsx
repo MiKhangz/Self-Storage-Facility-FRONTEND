@@ -6,7 +6,7 @@ import { errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
-import { formatDate, rentalEndDate } from '../../customer/components/format.js';
+import { formatDate, formatVnd, rentalEndDate, todayIso } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Status, TableState } from '../components/ui.jsx';
 import { useReservations, useUnits } from '../queries.js';
@@ -20,6 +20,52 @@ const TABS = [
 ];
 
 const waitingForUnit = (r) => r.status === 'Pending' || (r.status === 'Confirmed' && !r.storageUnitId);
+
+/** Staff end a booking before check-in: cancel (deposit refunded) or, after the move-in date, a no-show (deposit kept). */
+function CloseBooking({ reservation }) {
+    const queryClient = useQueryClient();
+    const [reason, setReason] = useState('');
+    const close = useMutation({
+        mutationFn: (noShow) => (noShow ? reservationsApi.noShow(reservation.reservationId)
+            : reservationsApi.cancel(reservation.reservationId, { reason: reason.trim() || null })),
+        // Reservations refresh only on Done: the booking leaves this list, which would unmount the result before it is read.
+        onSuccess: () => ['storage-units', 'invoices', 'deposit-refunds'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
+    });
+    const late = reservation.moveInDate < todayIso();
+    const paid = reservation.depositStatus === 'Paid' ? reservation.depositAmount : 0;
+
+    if (close.data) {
+        const r = close.data;
+        return (
+            <div className="se-alert info" role="status">
+                {r.reservation.status === 'Expired' ? 'Marked as a no-show.' : 'Booking cancelled.'}{' '}
+                {r.depositPaid > 0 && (r.depositRefundable
+                    ? `The ${formatVnd(r.depositPaid)} deposit is owed back; it now waits in Deposit Refunds.`
+                    : `The ${formatVnd(r.depositPaid)} deposit is kept.`)}
+                <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['reservations'] })}>Done</button>
+            </div>
+        );
+    }
+    return (
+        <>
+            <span className="se-label">End this booking</span>
+            <label><span className="se-label">Reason (optional)</span>
+                <div className="se-input"><input maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} /></div></label>
+            {close.isError && <div className="se-alert" role="alert">{errorMessage(close.error)}</div>}
+            <div className="sa-form-actions">
+                <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
+                    onClick={() => window.confirm(`Cancel ${reservation.reservationCode}?${paid ? ` The ${formatVnd(paid)} deposit will be owed back.` : ''}`) && close.mutate(false)}>
+                    Cancel booking</button>
+                {late && (
+                    <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
+                        onClick={() => window.confirm(`Mark ${reservation.reservationCode} as a no-show?${paid ? ` The ${formatVnd(paid)} deposit is kept.` : ''}`) && close.mutate(true)}>
+                        Mark no-show</button>
+                )}
+            </div>
+            {!late && <p className="se-hint">No-show is possible once the move-in date ({formatDate(reservation.moveInDate)}) has passed.</p>}
+        </>
+    );
+}
 
 function AssignPanel({ reservation, onClose }) {
     const queryClient = useQueryClient();
@@ -71,6 +117,7 @@ function AssignPanel({ reservation, onClose }) {
                     </button>
                 </>
             )}
+            {['Pending', 'Confirmed'].includes(reservation.status) && <CloseBooking reservation={reservation} />}
         </aside>
     );
 }
