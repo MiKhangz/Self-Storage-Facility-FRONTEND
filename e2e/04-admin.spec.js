@@ -63,3 +63,22 @@ test('E12 an admin creates a staff account; a manager can change only their own 
   await admin.dispose()
   await manager.context().close()
 })
+
+test('E16 an admin copies the live price version into a draft, then deletes the draft', async ({ page }) => {
+  page.on('dialog', (d) => d.accept())
+  await loginStaff(page, ACCOUNTS.admin)
+  await openAdmin(page, 'Pricing & Policies')
+  const versions = page.getByLabel('Policy version')
+  await expect(versions).toBeVisible() // count only once the versions have loaded
+  const before = await versions.locator('option').count()
+
+  await page.getByRole('button', { name: /^Copy version \d+ to a new draft$/ }).click()
+  await expect(page.getByRole('button', { name: /^Publish version/ })).toBeVisible()
+  // The draft starts with the copied prices, not zeros.
+  await expect(page.getByLabel('S5 basePricePerMonth')).toHaveValue('900000')
+  await expect(versions.locator('option')).toHaveCount(before + 1)
+
+  await page.getByRole('button', { name: 'Delete draft' }).click()
+  await expect(versions.locator('option')).toHaveCount(before)
+  await expect(page.getByRole('button', { name: /^Copy version \d+ to a new draft$/ })).toBeVisible()
+})
