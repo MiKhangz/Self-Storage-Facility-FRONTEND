@@ -6,6 +6,7 @@ import Icon from '../components/Icon.jsx';
 import { formatDate, formatVnd, rentalEndDate } from '../components/format.js';
 import PayInvoiceButton from '../account/PayInvoiceButton.jsx';
 import BookingStepper from './BookingStepper.jsx';
+import CancelBooking from './CancelBooking.jsx';
 
 const STATUS_LABEL = { Pending: 'Đang chờ xếp kho', Confirmed: 'Chờ nhận kho', CheckedIn: 'Đã nhận kho', Cancelled: 'Đã hủy', Expired: 'Đã hết hạn', Rejected: 'Bị từ chối' };
 
@@ -24,8 +25,8 @@ export default function BookingConfirmedPage() {
                     {reservation.isError && <div className="se-alert" role="alert">{errorMessage(reservation.error)}</div>}
                     {r && (
                         <>
-                            <div className="se-confirm-icon"><Icon name="check" size={30} /></div>
-                            <h1>Bạn đã đặt kho thành công!</h1>
+                            <div className="se-confirm-icon"><Icon name={r.status === 'Cancelled' ? 'arrowLeft' : 'check'} size={30} /></div>
+                            <h1>{r.status === 'Cancelled' ? 'Đơn đặt kho đã huỷ' : 'Bạn đã đặt kho thành công!'}</h1>
                             <p>Chúng tôi giữ một kho {r.unitTypeName} cho bạn tại {r.facilityName}.</p>
 
                             <div className="se-ticket">
@@ -58,6 +59,7 @@ export default function BookingConfirmedPage() {
                                 <Link to="/my-storage" className={`se-btn ${r.depositInvoiceId && r.depositStatus !== 'Paid' ? 'se-btn-outline' : 'se-btn-primary'}`}>Đến Kho của tôi</Link>
                                 <Link to="/" className="se-btn se-btn-ghost">Về trang chủ</Link>
                             </div>
+                            {['Pending', 'Confirmed'].includes(r.status) && <CancelBooking key={r.reservationId} reservation={r} />}
                         </>
                     )}
                 </div>
