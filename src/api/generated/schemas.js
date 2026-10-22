@@ -413,6 +413,8 @@
  * @property {number} [floorNumber] int32
  * @property {(string|null)} [name]
  * @property {number} [unitCount] int32
+ * @property {FloorStatus} [status]
+ * @property {number} [rentedUnits] int32
  */
 
 /**
@@ -483,7 +485,10 @@
  * @typedef {Object} FloorRequest
  * @property {number} [floorNumber] int32
  * @property {(string|null)} [name]
+ * @property {FloorStatus} [status]
  */
+
+/** @typedef {"Open"|"UnderConstruction"|"Renovation"|"Removed"} FloorStatus */
 
 /**
  * @typedef {Object} ForgotPasswordRequest

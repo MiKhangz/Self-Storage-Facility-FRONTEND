@@ -23,6 +23,16 @@ test('E11 an admin opens a facility with a floor and a unit, and customers can s
   await page.getByRole('button', { name: 'Add unit' }).click()
   await expect(page.getByRole('status')).toContainText('Unit E2E-101 added')
 
+  // A floor closes for renovation and opens again.
+  await page.getByRole('button', { name: 'Edit floor 1' }).click()
+  await page.getByLabel('Status').first().selectOption('Renovation')
+  await page.getByRole('button', { name: 'Save floor' }).click()
+  await expect(page.locator('.sa-floor-row').filter({ hasText: 'Floor 1' })).toContainText('Renovation')
+  await page.getByRole('button', { name: 'Edit floor 1' }).click()
+  await page.getByLabel('Status').first().selectOption('Open')
+  await page.getByRole('button', { name: 'Save floor' }).click()
+  await expect(page.locator('.sa-floor-row').filter({ hasText: 'Floor 1' })).toContainText('Open')
+
   const visitor = await (await browser.newContext()).newPage()
   await visitor.goto('/locations')
   await expect(visitor.getByText(facility).first()).toBeVisible()

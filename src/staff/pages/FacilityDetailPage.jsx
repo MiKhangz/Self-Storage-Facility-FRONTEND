@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { facilitiesApi, storageUnitsApi } from '../../api/generated';
+import { facilitiesApi, floorsApi, storageUnitsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
@@ -26,22 +26,77 @@ function group(units, key) {
 const Field = ({ label, children }) => <label><span className="se-label">{label}</span><div className="se-input">{children}</div></label>;
 
 /** Floors of the facility and the forms that add a floor or a unit (facility managers and admins). */
+/** A floor can close while it is built or renovated: its free units come off sale until it reopens. */
+const FLOOR_STATUS = { Open: ['', 'Open'], UnderConstruction: ['low', 'Under construction'], Renovation: ['none', 'Renovation'] };
+
+/** One floor in the list: shows its state, and edits or removes it in place. */
+function FloorRow({ floor, onChanged }) {
+    const [form, setForm] = useState(null);
+    const save = useMutation({
+        mutationFn: () => floorsApi.update(floor.floorId, { floorNumber: Number(form.floorNumber), name: form.name.trim() || null, status: form.status }),
+        onSuccess: () => { setForm(null); onChanged(); },
+    });
+    const remove = useMutation({ mutationFn: () => floorsApi.remove(floor.floorId), onSuccess: onChanged });
+    const [tone, label] = FLOOR_STATUS[floor.status] ?? ['', floor.status];
+    const rented = floor.rentedUnits > 0;
+    const error = save.error ?? remove.error;
+
+    if (form) return (
+        <li className="sa-floor-edit">
+            <form className="se-form" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
+                <div className="se-panel-grid">
+                    <Field label="Floor number *"><input type="number" min={-5} max={200} required value={form.floorNumber} onChange={(e) => setForm({ ...form, floorNumber: e.target.value })} /></Field>
+                    <Field label="Name"><input maxLength={50} value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} /></Field>
+                </div>
+                <Field label="Status">
+                    <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+                        {Object.entries(FLOOR_STATUS).map(([value, [, text]]) => <option key={value} value={value}>{text}</option>)}
+                    </select>
+                </Field>
+                {form.status !== 'Open' && floor.status === 'Open' && <p className="se-hint">Free units on this floor stop being bookable until it reopens. Rented units keep their customers.</p>}
+                {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
+                <div className="sa-form-actions">
+                    <button type="button" className="se-btn se-btn-ghost" onClick={() => setForm(null)}>Cancel</button>
+                    <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save floor'}</button>
+                </div>
+            </form>
+        </li>
+    );
+
+    return (
+        <li className="sa-floor-row">
+            <span><strong>Floor {floor.floorNumber}{floor.name ? ` · ${floor.name}` : ''}</strong>
+                <small>{floor.unitCount} units{rented ? ` · ${floor.rentedUnits} rented` : ''}</small></span>
+            <span className={`se-badge ${tone}`}>{label}</span>
+            <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Edit floor ${floor.floorNumber}`}
+                onClick={() => setForm({ floorNumber: String(floor.floorNumber), name: floor.name ?? '', status: floor.status })}>Edit</button>
+            <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Remove floor ${floor.floorNumber}`}
+                disabled={rented || remove.isPending}
+                title={rented ? 'Customers still hold units on this floor' : undefined}
+                onClick={() => window.confirm(`Remove floor ${floor.floorNumber}? Its ${floor.unitCount} unit(s) go too, or are retired if they have past bookings.`) && remove.mutate()}>Remove</button>
+            {remove.error && <div className="se-alert" role="alert">{errorMessage(remove.error)}</div>}
+        </li>
+    );
+}
+
 function FloorsAndUnits({ facilityId, onClose }) {
     const queryClient = useQueryClient();
     const floors = useQuery({ queryKey: ['facilities', facilityId, 'floors'], queryFn: () => facilitiesApi.getFloors(facilityId) });
     const types = useUnitTypes().data ?? [];
     const list = [...(floors.data ?? [])].sort((a, b) => a.floorNumber - b.floorNumber);
 
-    const [floor, setFloor] = useState({ floorNumber: '', name: '' });
+    const [floor, setFloor] = useState({ floorNumber: '', name: '', status: 'Open' });
     const addFloor = useMutation({
-        mutationFn: () => facilitiesApi.postFloors(facilityId, { floorNumber: Number(floor.floorNumber), name: floor.name.trim() || null }),
+        mutationFn: () => facilitiesApi.postFloors(facilityId, { floorNumber: Number(floor.floorNumber), name: floor.name.trim() || null, status: floor.status }),
         onSuccess: (created) => {
             queryClient.invalidateQueries({ queryKey: ['facilities', facilityId, 'floors'] });
-            setFloor({ floorNumber: '', name: '' });
+            setFloor({ floorNumber: '', name: '', status: 'Open' });
             setUnit((u) => ({ ...u, floorId: String(created.floorId) }));
         },
     });
 
+    // A floor change moves unit statuses and counts, so the unit lists and facility totals refresh too.
+    const changed = () => ['facilities', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
     const [unit, setUnit] = useState({ floorId: '', unitTypeId: '', unitCode: '', zone: '' });
     const setU = (key) => (e) => setUnit({ ...unit, [key]: e.target.value });
     const addUnit = useMutation({
@@ -63,7 +118,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
             <div>
             <h3>Floors</h3>
             <ul className="sa-people">
-                {list.map((f) => <li key={f.floorId}><span>Floor {f.floorNumber}{f.name ? ` · ${f.name}` : ''}</span><small>{f.unitCount} units</small></li>)}
+                {list.map((f) => <FloorRow key={f.floorId} floor={f} onChanged={changed} />)}
                 {!list.length && <li className="sa-muted">{floors.isLoading ? 'Loading…' : 'No floors yet. Add one, then add its units.'}</li>}
             </ul>
             </div>
@@ -74,6 +129,11 @@ function FloorsAndUnits({ facilityId, onClose }) {
                     <Field label="Floor number *"><input type="number" min={-5} max={200} required value={floor.floorNumber} onChange={(e) => setFloor({ ...floor, floorNumber: e.target.value })} /></Field>
                     <Field label="Name"><input maxLength={50} placeholder="e.g. Tầng 1" value={floor.name} onChange={(e) => setFloor({ ...floor, name: e.target.value })} /></Field>
                 </div>
+                <Field label="Status">
+                    <select value={floor.status} onChange={(e) => setFloor({ ...floor, status: e.target.value })}>
+                        {Object.entries(FLOOR_STATUS).map(([value, [, text]]) => <option key={value} value={value}>{text}</option>)}
+                    </select>
+                </Field>
                 {addFloor.isError && <div className="se-alert" role="alert">{errorMessage(addFloor.error)}</div>}
                 <div className="sa-form-actions"><button type="submit" className="se-btn sa-btn-blue" disabled={addFloor.isPending}>{addFloor.isPending ? 'Adding…' : 'Add floor'}</button></div>
             </form>
