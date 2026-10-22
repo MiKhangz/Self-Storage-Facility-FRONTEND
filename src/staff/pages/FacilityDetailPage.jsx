@@ -9,7 +9,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatVnd, todayIso } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { PageHeader, Stat, Status, Modal } from '../components/ui.jsx';
-import { useShifts, useSizePrices, useStaff, useTickets, useUnitTypes, useUnits } from '../queries.js';
+import { humanize, useShifts, useSizePrices, useStaff, useTickets, useUnitTypes, useUnits } from '../queries.js';
 import { FACILITY_FIELDS } from './PendingBackendPages.jsx';
 import { occupancy } from './DashboardPage.jsx';
 
@@ -231,6 +231,10 @@ export default function FacilityDetailPage() {
     const sizePrice = useSizePrices();
     const role = useAuth().session?.role;
     const canSetUp = [Roles.FacilityManager, Roles.SystemAdministrator].includes(role);
+    // Staff accounts are readable by admins and managers only (GET /api/staff).
+    const team = (useStaff({}, canSetUp).data ?? [])
+        .filter((u) => u.facilities?.some((f) => f.facilityId === facilityId))
+        .sort((a, b) => (a.role === b.role ? a.fullName.localeCompare(b.fullName) : a.role === Roles.FacilityManager ? -1 : 1));
     // One panel at a time under the header: 'edit' or 'floors'. A facility just created opens on floors, its next step.
     const location = useLocation();
     const [panel, setPanel] = useState(location.state?.setUp ? 'floors' : null);
@@ -296,6 +300,21 @@ export default function FacilityDetailPage() {
                             <div><dt>Total units</dt><dd>{units.length}</dd></div>
                         </dl>
                     </section>
+                    {canSetUp && (
+                        <section className="se-panel">
+                            <div className="sa-card-title"><h2>Staff at this facility <span className="se-count">{team.length}</span></h2><Link to="/admin/users" className="se-link">Users &amp; roles <Icon name="arrow" size={14} /></Link></div>
+                            <ul className="sa-people">
+                                {team.map((u) => (
+                                    <li key={u.userId}>
+                                        <span className="se-avatar sm">{initials(u.fullName)}</span>
+                                        <span className="sa-person-text"><strong>{u.fullName}</strong><small>{u.email}</small></span>
+                                        <span className={`se-badge ${u.status === 'Active' ? 'info' : 'muted'}`}>{u.userId === facility.managerId ? 'Manager of record' : humanize(u.role)}{u.status === 'Active' ? '' : ` · ${u.status}`}</span>
+                                    </li>
+                                ))}
+                                {!team.length && <li className="sa-muted">No staff assigned yet. Assign them on Users &amp; roles.</li>}
+                            </ul>
+                        </section>
+                    )}
                     <section className="se-panel">
                         <div className="sa-card-title"><h2>Staff on duty today</h2><Link to="/admin/staff" className="se-link">Shifts <Icon name="arrow" size={14} /></Link></div>
                         <ul className="sa-people">
