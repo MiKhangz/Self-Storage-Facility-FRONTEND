@@ -3,8 +3,8 @@ import { api } from '../axiosClient.js'
 
 /** @typedef {import('./schemas.js').AssignUnitRequest} AssignUnitRequest */
 /** @typedef {import('./schemas.js').CancelReservationRequest} CancelReservationRequest */
-/** @typedef {import('./schemas.js').CheckInChecklistDto} CheckInChecklistDto */
 /** @typedef {import('./schemas.js').CreateReservationRequest} CreateReservationRequest */
+/** @typedef {import('./schemas.js').HandoverChecklistDto} HandoverChecklistDto */
 /** @typedef {import('./schemas.js').ReservationCancellationDto} ReservationCancellationDto */
 /** @typedef {import('./schemas.js').ReservationDto} ReservationDto */
 /** @typedef {import('./schemas.js').ReservationDtoPagedResult} ReservationDtoPagedResult */
@@ -56,12 +56,12 @@ export const reservationsApi = {
   noShow: (id) =>
     api.post(`/api/reservations/${id}/no-show`, undefined).then((r) => r.data),
   /**
-   * GET /api/reservations/{id}/check-in
+   * GET /api/reservations/{id}/handover
    * @param {number} id
-   * @returns {Promise<CheckInChecklistDto>}
+   * @returns {Promise<HandoverChecklistDto>}
    */
-  checkIn: (id) =>
-    api.get(`/api/reservations/${id}/check-in`).then((r) => r.data),
+  handover: (id) =>
+    api.get(`/api/reservations/${id}/handover`).then((r) => r.data),
   /**
    * POST /api/reservations/{id}/assign-unit
    * @param {number} id

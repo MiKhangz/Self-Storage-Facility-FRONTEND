@@ -13,7 +13,7 @@ const ROLES = [
     { icon: 'shield', title: 'System Administrator', text: 'Accounts, roles, permissions, activity logs' },
     { icon: 'grid', title: 'Business Operations Manager', text: 'Facilities, pricing policies, system-wide reports' },
     { icon: 'building', title: 'Facility Manager', text: 'Units, contracts, staff assignment at one facility' },
-    { icon: 'key', title: 'Facility Staff', text: 'Check-in, handover, returns, on-site support' },
+    { icon: 'key', title: 'Facility Staff', text: 'Handover, check-ins, returns, on-site support' },
 ];
 
 /** A01: staff and admin sign-in. Customers are turned away to the customer site. */
@@ -54,7 +54,7 @@ export default function AdminLoginPage() {
                 </div>
                 <div>
                     <h1>Operate every facility from one place.</h1>
-                    <p>Manage units, reservations, handovers, contracts and revenue across all StorEase locations.</p>
+                    <p>Manage units, reservations, returns, contracts and revenue across all StorEase locations.</p>
                     <ul>
                         {ROLES.map((r) => (
                             <li key={r.title}><Icon name={r.icon} size={16} /><div><strong>{r.title}</strong><small>{r.text}</small></div></li>

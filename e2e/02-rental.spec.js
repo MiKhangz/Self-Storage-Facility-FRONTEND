@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 import { ACCOUNTS, PASSWORD, apiAs, loginStaff, openAdmin, uniqueEmail } from './helpers.js'
 
-// One rental from booking to check-in, each step a test. Later steps use what earlier ones made, so they run in order
+// One rental from booking to handover, each step a test. Later steps use what earlier ones made, so they run in order
 // and stop at the first failure. The customer and the staff member each have their own browser window.
 test.describe.serial('rental: book, deposit, assign, contract, check in, rent, renew, hand back', () => {
   const name = `Khách E2E ${Date.now()}`
@@ -68,10 +68,10 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
   })
 
   test('E04 staff draft the contract and the customer signs it', async () => {
-    await openAdmin(staff, 'Check-in')
+    await openAdmin(staff, 'Handover')
     await staff.getByRole('button', { name: new RegExp(name) }).click()
     await staff.getByRole('button', { name: 'Draft contract' }).click()
-    await expect(staff.getByRole('heading', { name: new RegExp(`Check-in · ${name}`) })).toBeVisible()
+    await expect(staff.getByRole('heading', { name: new RegExp(`Handover · ${name}`) })).toBeVisible()
 
     await customer.getByRole('link', { name: 'Đến Kho của tôi' }).click()
     await customer.getByRole('link', { name: 'Xem chi tiết' }).first().click()
@@ -79,21 +79,33 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await expect(customer.getByRole('button', { name: 'Ký hợp đồng' })).toBeHidden()
   })
 
-  test('E05 staff complete the check-in and the contract becomes Active', async () => {
+  test('E05 staff complete the handover and the contract becomes Active', async () => {
     // Reopen the desk so it reads the signature the customer just made.
     await openAdmin(staff, 'Reservations')
-    await openAdmin(staff, 'Check-in')
+    await openAdmin(staff, 'Handover')
     await staff.getByRole('button', { name: new RegExp(name) }).click()
     for (const step of ['Verify identity', 'Verify payment', 'Inspect unit with customer'])
       await staff.getByRole('checkbox', { name: new RegExp(step) }).check()
     await staff.getByLabel('Lock serial no.').fill('LOCK-E2E-1')
     await staff.getByLabel('Access card no.').fill('CARD-E2E-1')
-    await staff.getByRole('button', { name: 'Complete check-in' }).click()
+    await staff.getByRole('button', { name: 'Complete handover' }).click()
 
-    await expect(staff.getByRole('heading', { name: /Check-in complete/ })).toBeVisible()
+    await expect(staff.getByRole('heading', { name: /Handover complete/ })).toBeVisible()
     const contracts = await staffApi.get(`/api/contracts?page=1&pageSize=100`)
     contract = contracts.items.find((c) => c.reservationId === reservationId)
     expect(contract.status).toBe('Active')
+  })
+
+  test('E05b staff check the customer in for a visit and out again', async () => {
+    await staff.getByRole('tab', { name: /Active rentals/ }).click()
+    await staff.getByRole('button', { name: new RegExp(name) }).click()
+    await staff.getByRole('button', { name: 'Check in', exact: true }).click()
+    await expect(staff.getByText(/Inside since/)).toBeVisible()
+    await staff.getByRole('button', { name: 'Check out', exact: true }).click()
+    await expect.poll(async () => {
+      const visits = (await staffApi.get(`/api/check-ins?contractId=${contract.contractId}&page=1&pageSize=5`)).items
+      return visits.length === 1 && !!visits[0].checkOutAt
+    }).toBe(true)
   })
 
   test('E06 the billing run issues rent and the customer pays it online', async ({ baseURL }) => {
@@ -134,7 +146,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await customer.getByRole('button', { name: /Gửi yêu cầu trả kho/ }).click()
     await expect(customer.getByRole('button', { name: /Gửi yêu cầu trả kho/ })).toBeHidden()
 
-    await openAdmin(staff, 'Handovers')
+    await openAdmin(staff, 'Returns')
     await staff.getByRole('row', { name: new RegExp(name) }).click()
     await staff.getByRole('button', { name: 'Approve & book inspection' }).click()
     await staff.getByRole('tab', { name: /Approved/ }).click()
@@ -145,7 +157,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     const ops = await (await browser.newContext()).newPage()
     ops.on('dialog', (d) => d.accept())
     await loginStaff(ops, ACCOUNTS.ops)
-    await openAdmin(ops, 'Handovers')
+    await openAdmin(ops, 'Returns')
     await ops.getByRole('tab', { name: /Inspected/ }).click()
     await ops.getByRole('row', { name: new RegExp(name) }).click()
     await ops.getByRole('button', { name: 'Settle deposit & close' }).click()

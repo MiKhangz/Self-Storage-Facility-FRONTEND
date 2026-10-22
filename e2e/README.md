@@ -28,8 +28,8 @@ Settings you can override: `E2E_BACKEND_DIR`, `E2E_DB_CONNECTION`, `E2E_API_PORT
 | Test | Flow |
 |---|---|
 | E01 | Register and sign in |
-| E02–E05 | Book a unit, pay the deposit, staff assign a unit, draft the contract, customer signs, check-in |
-| E06–E08 | Rent billed and paid online, renewal approved by the manager, handover inspected and the deposit settled |
+| E02–E05b | Book a unit, pay the deposit, staff assign a unit, draft the contract, customer signs, handover, then a visit check-in and check-out |
+| E06–E08 | Rent billed and paid online, renewal approved by the manager, the unit returned, inspected and the deposit settled |
 | E09–E10 | Walk-in booking at the desk; unpaid rent → overdue case → lock-out → cash payment restores access |
 | E11–E12 | Admin opens a facility with a floor and a unit; admin creates staff, a manager changes only their own facility |
 | E13–E15 | Customer cancels a fresh booking; staff cancel one from Reservations; Business Ops pay the refund by bank transfer and the customer sees it paid back |

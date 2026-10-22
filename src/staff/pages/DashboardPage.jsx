@@ -58,7 +58,7 @@ export default function DashboardPage() {
             <div className="sa-stats">
                 <Stat icon="grid" label="Occupancy rate" value={`${occupancy(allUnits)}%`} note={`${allUnits.length} units`} />
                 <Stat icon="card" label={`Revenue (${new Date().toLocaleString('en', { month: 'short' })})`} value={compactVnd(paidInMonth(month))} note="paid on invoices issued this month" />
-                <Stat icon="file" label="Active contracts" value={active.length} note={`${allContracts.filter((c) => c.status === 'Draft').length} drafts awaiting check-in`} />
+                <Stat icon="file" label="Active contracts" value={active.length} note={`${allContracts.filter((c) => c.status === 'Draft').length} drafts awaiting handover`} />
                 <Stat icon="clock" tone="bad" label="Overdue payments" value={overdue.length} note={formatVnd(overdue.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} />
             </div>
 
@@ -93,7 +93,7 @@ export default function DashboardPage() {
 
             <div className="sa-grid-2">
                 <section className="se-panel">
-                    <div className="sa-card-title"><h2>Today&apos;s schedule</h2><Link to="/admin/check-in" className="se-link">Open check-in desk <Icon name="arrow" size={14} /></Link></div>
+                    <div className="sa-card-title"><h2>Today&apos;s schedule</h2><Link to="/admin/handover" className="se-link">Open handover desk <Icon name="arrow" size={14} /></Link></div>
                     <div className="se-table-wrap">
                         <table className="se-table">
                             <thead><tr><th>Time</th><th>Type</th><th>Reference</th><th>Staff</th><th>Status</th></tr></thead>

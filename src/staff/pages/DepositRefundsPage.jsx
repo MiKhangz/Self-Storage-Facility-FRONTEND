@@ -10,7 +10,7 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
 
-const SOURCE = { Cancellation: 'Booking cancelled', Handover: 'Unit handed back' };
+const SOURCE = { Cancellation: 'Booking cancelled', Return: 'Unit handed back' };
 
 /** Business Operations record how the deposit went back; the customer sees it as paid on their Payments page. */
 function PayPanel({ refund, onClose }) {
@@ -51,7 +51,7 @@ function PayPanel({ refund, onClose }) {
     );
 }
 
-/** Deposits owed back after a cancelled booking or a settled handover, until someone pays them. */
+/** Deposits owed back after a cancelled booking or a settled return, until someone pays them. */
 export default function DepositRefundsPage() {
     const [search, setSearch] = useState('');
     const [status, setStatus] = useState('Pending');
@@ -65,7 +65,7 @@ export default function DepositRefundsPage() {
 
     return (
         <>
-            <PageHeader title="Deposit refunds" subtitle="Deposits owed back after a cancellation or a handover, until they are paid" />
+            <PageHeader title="Deposit refunds" subtitle="Deposits owed back after a cancellation or a return, until they are paid" />
             <div className="sa-stats">
                 <Stat icon="clock" tone="warn" label="Waiting to be paid" value={pending.length} note={formatVnd(pending.reduce((s, r) => s + r.amount, 0))} />
                 <Stat icon="check" label="Paid (in this list)" value={all.filter((r) => r.status === 'Paid').length} />

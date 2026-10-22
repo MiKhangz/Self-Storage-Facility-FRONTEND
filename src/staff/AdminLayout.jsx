@@ -3,7 +3,7 @@ import { useAuth } from '../features/auth/AuthContext';
 import { Roles } from '../features/auth/roles';
 import Icon from '../customer/components/Icon.jsx';
 import { initials } from '../customer/layout/CustomerLayout.jsx';
-import { humanize, useHandovers, useReservations, useTickets } from './queries.js';
+import { humanize, useReturns, useReservations, useTickets } from './queries.js';
 import '../customer/layout/CustomerLayout.css';
 import './Admin.css';
 
@@ -17,8 +17,8 @@ const NAV = [
             { to: '/admin/facilities', icon: 'building', label: 'Facilities', roles: OPS },
             { to: '/admin/units', icon: 'box', label: 'Storage Units', roles: OPS },
             { to: '/admin/reservations', icon: 'calendar', label: 'Reservations', roles: [FS, FM, ADMIN], badge: 'reservations' },
-            { to: '/admin/check-in', icon: 'key', label: 'Check-in', roles: [FS, FM] },
-            { to: '/admin/handovers', icon: 'arrowLeft', label: 'Handovers', roles: [FS, FM, BOM], badge: 'handovers' },
+            { to: '/admin/handover', icon: 'key', label: 'Handover', roles: [FS, FM] },
+            { to: '/admin/returns', icon: 'arrowLeft', label: 'Returns', roles: [FS, FM, BOM], badge: 'returns' },
             { to: '/admin/staff', icon: 'clock', label: 'Staff & Shifts', roles: [FM, ADMIN] },
             { to: '/admin/contracts', icon: 'file', label: 'Customers & Contracts', roles: OPS },
             { to: '/admin/payments', icon: 'card', label: 'Payments', roles: [FS, FM, BOM] },
@@ -50,11 +50,11 @@ export default function AdminLayout() {
     const canOperate = [FS, FM, ADMIN].includes(role);
     // Sidebar counters: work waiting in each queue.
     const reservations = useReservations({ status: 'Pending' });
-    const handovers = useHandovers({ status: 'Requested' });
+    const returns = useReturns({ status: 'Requested' });
     const tickets = useTickets({ status: 'New' });
     const counts = canOperate ? {
         reservations: reservations.data?.length,
-        handovers: handovers.data?.length,
+        returns: returns.data?.length,
         tickets: tickets.data?.length,
     } : {};
 

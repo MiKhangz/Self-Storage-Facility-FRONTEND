@@ -8,7 +8,7 @@ import PayInvoiceButton from '../account/PayInvoiceButton.jsx';
 import BookingStepper from './BookingStepper.jsx';
 import CancelBooking from './CancelBooking.jsx';
 
-const STATUS_LABEL = { Pending: 'Đang chờ xếp kho', Confirmed: 'Chờ nhận kho', CheckedIn: 'Đã nhận kho', Cancelled: 'Đã hủy', Expired: 'Đã hết hạn', Rejected: 'Bị từ chối' };
+const STATUS_LABEL = { Pending: 'Đang chờ xếp kho', Confirmed: 'Chờ nhận kho', HandedOver: 'Đã nhận kho', Cancelled: 'Đã hủy', Expired: 'Đã hết hạn', Rejected: 'Bị từ chối' };
 
 /** U08: the saved reservation, re-read from the API so a refresh still shows it. */
 export default function BookingConfirmedPage() {

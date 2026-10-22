@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { handoversApi } from '../../api/generated';
+import { returnsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import { formatDate, formatVnd, todayIso } from '../components/format.js';
@@ -27,12 +27,15 @@ const MOVE_OUT_BADGE = {
 };
 
 /** U15: ask to end a rental — date, checklist and where to refund the deposit. */
-export default function HandoverPage() {
+/** Days the customer has to empty the unit after asking to return it (ReturnService.MoveOutDays). */
+const MOVE_OUT_DAYS = 15;
+
+export default function ReturnPage() {
     const [params] = useSearchParams();
     const queryClient = useQueryClient();
     const contracts = useMyContracts();
     const reservations = useMyReservations();
-    const requests = useQuery({ queryKey: ['handovers'], queryFn: () => handoversApi.list({ page: 1, pageSize: 50 }) });
+    const requests = useQuery({ queryKey: ['returns'], queryFn: () => returnsApi.list({ page: 1, pageSize: 50 }) });
 
     const active = (contracts.data?.items ?? []).filter((c) => c.status === 'Active');
     const [picked, setPicked] = useState('');
@@ -41,23 +44,26 @@ export default function HandoverPage() {
     const open = requests.data?.items?.find((m) => m.contractId === contract?.contractId && m.status !== 'Cancelled');
 
     const terms = useTerms();
-    // No notice period any more (SR-04): any date from today; before the end date costs a share of the deposit.
+    // No notice period (SR-04): any date from today; before the end date costs a share of the deposit.
+    // The unit must be empty within MOVE_OUT_DAYS of the request, or access is locked.
     const earliest = todayIso();
-    const [form, setForm] = useState({ plannedHandoverDate: '', reason: '', refundMethod: 'BankTransfer', refundAccount: '' });
+    const deadline = new Date(Date.parse(earliest) + MOVE_OUT_DAYS * 86_400_000).toISOString().slice(0, 10);
+    const latest = contract?.endDate && contract.endDate < deadline ? contract.endDate : deadline;
+    const [form, setForm] = useState({ plannedReturnDate: '', reason: '', refundMethod: 'BankTransfer', refundAccount: '' });
     const [checked, setChecked] = useState(CHECKS.map(() => false));
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const needsAccount = form.refundMethod === 'BankTransfer';
-    const ready = form.plannedHandoverDate && checked.every(Boolean) && (!needsAccount || form.refundAccount.trim());
+    const ready = form.plannedReturnDate && checked.every(Boolean) && (!needsAccount || form.refundAccount.trim());
 
     const submit = useMutation({
-        mutationFn: () => handoversApi.create({
+        mutationFn: () => returnsApi.create({
             contractId: contract.contractId,
-            plannedHandoverDate: form.plannedHandoverDate,
+            plannedReturnDate: form.plannedReturnDate,
             reason: form.reason.trim() || null,
             refundMethod: form.refundMethod,
             refundAccount: needsAccount ? form.refundAccount.trim() : null,
         }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['handovers'] }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['returns'] }),
     });
 
     if (contracts.isLoading) return <p className="se-empty">Đang tải…</p>;
@@ -94,9 +100,11 @@ export default function HandoverPage() {
 
                     {open ? (
                         <div className="se-alert info">
-                            Bạn đã yêu cầu trả kho ngày {formatDate(open.plannedHandoverDate)}. Trạng thái:{' '}
+                            Bạn đã yêu cầu trả kho ngày {formatDate(open.plannedReturnDate)}. Trạng thái:{' '}
                             <span className={`se-badge ${MOVE_OUT_BADGE[open.status]?.[0] ?? ''}`}>{MOVE_OUT_BADGE[open.status]?.[1] ?? open.status}</span>
                             {open.inspectionSlot ? ` · lịch kiểm tra ${formatDate(open.inspectionSlot)}` : ''}
+                            {open.moveOutDeadline ? ` · hạn dọn kho ${formatDate(open.moveOutDeadline)}` : ''}
+                            {open.accessLockedAt && <strong> · Đã quá hạn dọn kho, quyền ra vào đã bị khoá.</strong>}
                         </div>
                     ) : (
                         <form className="se-form" onSubmit={(e) => { e.preventDefault(); if (ready) submit.mutate(); }}>
@@ -104,8 +112,9 @@ export default function HandoverPage() {
                             <div className="se-panel-grid">
                                 <label><span className="se-label">Ngày dự kiến trả kho</span>
                                     <div className="se-field"><Icon name="calendar" />
-                                        <input type="date" min={earliest} max={contract.endDate} value={form.plannedHandoverDate} onChange={(e) => set({ plannedHandoverDate: e.target.value })} required />
+                                        <input type="date" min={earliest} max={latest} value={form.plannedReturnDate} onChange={(e) => set({ plannedReturnDate: e.target.value })} required />
                                     </div>
+                                    <p className="se-hint">Bạn có {MOVE_OUT_DAYS} ngày để dọn kho, hạn chót {formatDate(deadline)}. Sau hạn này quyền ra vào kho sẽ bị khoá.</p>
                                     <p className="se-hint">{terms.data ? earlyReturnText(terms.data) : ''}</p>
                                 </label>
                                 <label><span className="se-label">Lý do (không bắt buộc)</span>

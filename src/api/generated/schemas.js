@@ -69,7 +69,7 @@
 /** @typedef {"Success"|"Failure"} ActivityResult */
 
 /**
- * @typedef {Object} ApproveHandoverRequest
+ * @typedef {Object} ApproveReturnRequest
  * @property {string} [inspectionSlot] date-time
  */
 
@@ -95,6 +95,7 @@
  * @property {number} [casesClearedOut] int32
  * @property {number} [remindersSent] int32
  * @property {number} [remindersFailed] int32
+ * @property {number} [returnsLockedOut] int32
  */
 
 /**
@@ -127,38 +128,23 @@
  */
 
 /**
- * @typedef {Object} CheckInChecklistDto
- * @property {number} [reservationId] int32
- * @property {(string|null)} [reservationCode]
- * @property {(string|null)} [customerName]
- * @property {(string|null)} [customerPhone]
- * @property {(string|null)} [citizenId]
- * @property {(string|null)} [unitCode]
- * @property {(number|null)} [contractId] int32
- * @property {(Array<CheckInItemDto>|null)} [items]
- * @property {boolean} [readyForCheckIn]
- */
-
-/**
- * @typedef {Object} CheckInDetailDto
+ * @typedef {Object} CheckInDto
  * @property {number} [checkInId] int32
- * @property {number} [reservationId] int32
- * @property {(number|null)} [contractId] int32
+ * @property {number} [contractId] int32
+ * @property {(string|null)} [contractNumber]
+ * @property {(string|null)} [customerName]
  * @property {number} [storageUnitId] int32
  * @property {(string|null)} [unitCode]
- * @property {number} [staffId] int32
- * @property {(string|null)} [staffName]
- * @property {string} [checkInTime] date-time
- * @property {(string|null)} [lockSerial]
- * @property {(string|null)} [cardNumber]
- * @property {(string|null)} [conditionNote]
- * @property {CheckInStatus} [status]
- * @property {(Array<CheckInPhotoDto>|null)} [photos]
+ * @property {number} [recordedBy] int32
+ * @property {(string|null)} [recordedByName]
+ * @property {string} [checkInAt] date-time
+ * @property {(string|null)} [checkOutAt] date-time
+ * @property {(string|null)} [note]
  */
 
 /**
- * @typedef {Object} CheckInDetailDtoPagedResult
- * @property {(Array<CheckInDetailDto>|null)} [items]
+ * @typedef {Object} CheckInDtoPagedResult
+ * @property {(Array<CheckInDto>|null)} [items]
  * @property {number} [page] int32
  * @property {number} [pageSize] int32
  * @property {number} [totalCount] int32
@@ -166,39 +152,10 @@
  */
 
 /**
- * @typedef {Object} CheckInDto
- * @property {number} [checkInId] int32
- * @property {number} [reservationId] int32
+ * @typedef {Object} CheckInRequest
  * @property {number} [contractId] int32
- * @property {number} [storageUnitId] int32
- * @property {(string|null)} [unitCode]
- * @property {string} [checkInTime] date-time
- * @property {(string|null)} [lockSerial]
- * @property {(string|null)} [cardNumber]
- * @property {(string|null)} [conditionNote]
- * @property {CheckInStatus} [status]
- * @property {(string|null)} [accessCode]
+ * @property {(string|null)} [note]
  */
-
-/**
- * @typedef {Object} CheckInItemDto
- * @property {(string|null)} [key]
- * @property {(string|null)} [label]
- * @property {boolean} [done]
- * @property {(string|null)} [detail]
- */
-
-/**
- * @typedef {Object} CheckInPhotoDto
- * @property {number} [checkInPhotoId] int32
- * @property {number} [checkInId] int32
- * @property {(string|null)} [fileName]
- * @property {(string|null)} [contentType]
- * @property {number} [sizeBytes] int32
- * @property {string} [uploadedAt] date-time
- */
-
-/** @typedef {"Scheduled"|"InProgress"|"Completed"|"Cancelled"} CheckInStatus */
 
 /** @typedef {"Good"|"MinorDamage"|"MajorDamage"} ConditionResult */
 
@@ -229,16 +186,7 @@
  * @property {number} [totalPages] int32
  */
 
-/** @typedef {"Draft"|"Active"|"PendingHandover"|"Closed"|"Overdue"|"Suspended"|"Terminated"} ContractStatus */
-
-/**
- * @typedef {Object} CreateCheckInRequest
- * @property {number} [reservationId] int32
- * @property {number} [contractId] int32
- * @property {(string|null)} [lockSerial]
- * @property {(string|null)} [cardNumber]
- * @property {(string|null)} [conditionNote]
- */
+/** @typedef {"Draft"|"Active"|"PendingReturn"|"Closed"|"Overdue"|"Suspended"|"Terminated"} ContractStatus */
 
 /**
  * @typedef {Object} CreateContractRequest
@@ -247,20 +195,12 @@
  */
 
 /**
- * @typedef {Object} CreateHandoverInspectionRequest
- * @property {ConditionResult} [conditionResult]
- * @property {number} [cleaningFee] double
- * @property {number} [repairCharge] double
- * @property {number} [otherDeduction] double
- */
-
-/**
  * @typedef {Object} CreateHandoverRequest
+ * @property {number} [reservationId] int32
  * @property {number} [contractId] int32
- * @property {string} [plannedHandoverDate] date
- * @property {(string|null)} [reason]
- * @property {RefundMethod} [refundMethod]
- * @property {(string|null)} [refundAccount]
+ * @property {(string|null)} [lockSerial]
+ * @property {(string|null)} [cardNumber]
+ * @property {(string|null)} [conditionNote]
  */
 
 /**
@@ -298,6 +238,23 @@
  * @property {number} [unitTypeId] int32
  * @property {string} [moveInDate] date
  * @property {number} [rentalMonths] int32
+ */
+
+/**
+ * @typedef {Object} CreateReturnInspectionRequest
+ * @property {ConditionResult} [conditionResult]
+ * @property {number} [cleaningFee] double
+ * @property {number} [repairCharge] double
+ * @property {number} [otherDeduction] double
+ */
+
+/**
+ * @typedef {Object} CreateReturnRequest
+ * @property {number} [contractId] int32
+ * @property {string} [plannedReturnDate] date
+ * @property {(string|null)} [reason]
+ * @property {RefundMethod} [refundMethod]
+ * @property {(string|null)} [refundAccount]
  */
 
 /**
@@ -403,7 +360,7 @@
  * @property {(string|null)} [facilityName]
  * @property {number} [reservationId] int32
  * @property {(string|null)} [reservationCode]
- * @property {(number|null)} [handoverId] int32
+ * @property {(number|null)} [unitReturnId] int32
  */
 
 /**
@@ -415,20 +372,20 @@
  * @property {number} [totalPages] int32
  */
 
-/** @typedef {"Cancellation"|"Handover"} DepositRefundSource */
+/** @typedef {"Cancellation"|"Return"} DepositRefundSource */
 
 /** @typedef {"Pending"|"Paid"} DepositRefundStatus */
 
 /**
  * @typedef {Object} DepositSettlementDto
- * @property {number} [handoverId] int32
+ * @property {number} [unitReturnId] int32
  * @property {number} [depositAmount] double
  * @property {number} [damageDeductions] double
  * @property {number} [earlyTerminationPenalty] double
  * @property {number} [outstandingInvoices] double
  * @property {number} [refundAmount] double
  * @property {number} [shortfall] double
- * @property {HandoverStatus} [status]
+ * @property {ReturnStatus} [status]
  */
 
 /**
@@ -543,27 +500,38 @@
  */
 
 /**
- * @typedef {Object} HandoverDto
- * @property {number} [handoverId] int32
- * @property {number} [contractId] int32
- * @property {(string|null)} [contractNumber]
- * @property {number} [customerId] int32
+ * @typedef {Object} HandoverChecklistDto
+ * @property {number} [reservationId] int32
+ * @property {(string|null)} [reservationCode]
  * @property {(string|null)} [customerName]
- * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [customerPhone]
+ * @property {(string|null)} [citizenId]
  * @property {(string|null)} [unitCode]
- * @property {string} [requestedAt] date-time
- * @property {string} [plannedHandoverDate] date
- * @property {(string|null)} [reason]
- * @property {(string|null)} [inspectionSlot] date-time
- * @property {RefundMethod} [refundMethod]
- * @property {(string|null)} [refundAccount]
- * @property {HandoverStatus} [status]
- * @property {HandoverInspectionDto} [inspection]
+ * @property {(number|null)} [contractId] int32
+ * @property {(Array<HandoverItemDto>|null)} [items]
+ * @property {boolean} [readyForHandover]
  */
 
 /**
- * @typedef {Object} HandoverDtoPagedResult
- * @property {(Array<HandoverDto>|null)} [items]
+ * @typedef {Object} HandoverDetailDto
+ * @property {number} [handoverId] int32
+ * @property {number} [reservationId] int32
+ * @property {(number|null)} [contractId] int32
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {number} [staffId] int32
+ * @property {(string|null)} [staffName]
+ * @property {string} [handoverTime] date-time
+ * @property {(string|null)} [lockSerial]
+ * @property {(string|null)} [cardNumber]
+ * @property {(string|null)} [conditionNote]
+ * @property {HandoverStatus} [status]
+ * @property {(Array<HandoverPhotoDto>|null)} [photos]
+ */
+
+/**
+ * @typedef {Object} HandoverDetailDtoPagedResult
+ * @property {(Array<HandoverDetailDto>|null)} [items]
  * @property {number} [page] int32
  * @property {number} [pageSize] int32
  * @property {number} [totalCount] int32
@@ -571,20 +539,39 @@
  */
 
 /**
- * @typedef {Object} HandoverInspectionDto
- * @property {number} [handoverInspectionId] int32
- * @property {string} [inspectedAt] date-time
- * @property {ConditionResult} [conditionResult]
- * @property {number} [cleaningFee] double
- * @property {number} [repairCharge] double
- * @property {number} [otherDeduction] double
- * @property {number} [refundAmount] double
- * @property {HandoverInspectionStatus} [status]
+ * @typedef {Object} HandoverDto
+ * @property {number} [handoverId] int32
+ * @property {number} [reservationId] int32
+ * @property {number} [contractId] int32
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {string} [handoverTime] date-time
+ * @property {(string|null)} [lockSerial]
+ * @property {(string|null)} [cardNumber]
+ * @property {(string|null)} [conditionNote]
+ * @property {HandoverStatus} [status]
+ * @property {(string|null)} [accessCode]
  */
 
-/** @typedef {"Draft"|"Completed"|"Disputed"} HandoverInspectionStatus */
+/**
+ * @typedef {Object} HandoverItemDto
+ * @property {(string|null)} [key]
+ * @property {(string|null)} [label]
+ * @property {boolean} [done]
+ * @property {(string|null)} [detail]
+ */
 
-/** @typedef {"Requested"|"Approved"|"Inspected"|"Completed"|"Cancelled"} HandoverStatus */
+/**
+ * @typedef {Object} HandoverPhotoDto
+ * @property {number} [handoverPhotoId] int32
+ * @property {number} [handoverId] int32
+ * @property {(string|null)} [fileName]
+ * @property {(string|null)} [contentType]
+ * @property {number} [sizeBytes] int32
+ * @property {string} [uploadedAt] date-time
+ */
+
+/** @typedef {"Scheduled"|"InProgress"|"Completed"|"Cancelled"} HandoverStatus */
 
 /**
  * @typedef {Object} InvoiceAdjustmentRequest
@@ -961,13 +948,59 @@
  * @property {number} [totalPages] int32
  */
 
-/** @typedef {"Pending"|"Confirmed"|"CheckedIn"|"Rejected"|"Cancelled"|"Expired"} ReservationStatus */
+/** @typedef {"Pending"|"Confirmed"|"HandedOver"|"Rejected"|"Cancelled"|"Expired"} ReservationStatus */
 
 /**
  * @typedef {Object} ResetPasswordRequest
  * @property {(string|null)} [token]
  * @property {(string|null)} [newPassword]
  */
+
+/**
+ * @typedef {Object} ReturnDto
+ * @property {number} [unitReturnId] int32
+ * @property {number} [contractId] int32
+ * @property {(string|null)} [contractNumber]
+ * @property {number} [customerId] int32
+ * @property {(string|null)} [customerName]
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {string} [requestedAt] date-time
+ * @property {string} [plannedReturnDate] date
+ * @property {(string|null)} [reason]
+ * @property {(string|null)} [inspectionSlot] date-time
+ * @property {RefundMethod} [refundMethod]
+ * @property {(string|null)} [refundAccount]
+ * @property {ReturnStatus} [status]
+ * @property {string} [moveOutDeadline] date
+ * @property {(string|null)} [accessLockedAt] date-time
+ * @property {ReturnInspectionDto} [inspection]
+ */
+
+/**
+ * @typedef {Object} ReturnDtoPagedResult
+ * @property {(Array<ReturnDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/**
+ * @typedef {Object} ReturnInspectionDto
+ * @property {number} [returnInspectionId] int32
+ * @property {string} [inspectedAt] date-time
+ * @property {ConditionResult} [conditionResult]
+ * @property {number} [cleaningFee] double
+ * @property {number} [repairCharge] double
+ * @property {number} [otherDeduction] double
+ * @property {number} [refundAmount] double
+ * @property {ReturnInspectionStatus} [status]
+ */
+
+/** @typedef {"Draft"|"Completed"|"Disputed"} ReturnInspectionStatus */
+
+/** @typedef {"Requested"|"Approved"|"Inspected"|"Completed"|"Cancelled"} ReturnStatus */
 
 /**
  * @typedef {Object} RevenueMethodDto
@@ -1116,7 +1149,7 @@
 
 /** @typedef {"New"|"InProgress"|"WaitingForCustomer"|"Resolved"|"Closed"} SupportTicketStatus */
 
-/** @typedef {"CheckIn"|"Inspection"|"Maintenance"|"Reminder"|"Other"} TaskType */
+/** @typedef {"Handover"|"Inspection"|"Maintenance"|"Reminder"|"Other"} TaskType */
 
 /**
  * @typedef {Object} TicketCategoryDto
@@ -1278,36 +1311,6 @@
  * @property {number} [depth] double
  * @property {number} [height] double
  * @property {boolean} [isClimateControlled]
- */
-
-/**
- * @typedef {Object} UnitVisitCheckInRequest
- * @property {number} [contractId] int32
- * @property {(string|null)} [note]
- */
-
-/**
- * @typedef {Object} UnitVisitDto
- * @property {number} [unitVisitId] int32
- * @property {number} [contractId] int32
- * @property {(string|null)} [contractNumber]
- * @property {(string|null)} [customerName]
- * @property {number} [storageUnitId] int32
- * @property {(string|null)} [unitCode]
- * @property {number} [recordedBy] int32
- * @property {(string|null)} [recordedByName]
- * @property {string} [checkInAt] date-time
- * @property {(string|null)} [checkOutAt] date-time
- * @property {(string|null)} [note]
- */
-
-/**
- * @typedef {Object} UnitVisitDtoPagedResult
- * @property {(Array<UnitVisitDto>|null)} [items]
- * @property {number} [page] int32
- * @property {number} [pageSize] int32
- * @property {number} [totalCount] int32
- * @property {number} [totalPages] int32
  */
 
 /**

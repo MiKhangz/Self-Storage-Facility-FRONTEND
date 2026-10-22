@@ -56,7 +56,7 @@ function CustomerStep({ value, onChange }) {
     );
 }
 
-/** A18: book at the front desk — the unit is assigned now and the deposit is taken in cash, ready for check-in. */
+/** A18: book at the front desk — the unit is assigned now and the deposit is taken in cash, ready for handover. */
 export default function WalkInBookingPage() {
     const queryClient = useQueryClient();
     const [who, setWho] = useState({ mode: 'existing', customer: null });
@@ -97,9 +97,9 @@ export default function WalkInBookingPage() {
                     <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
                     <h2>Reservation {r.reservationCode} — unit {r.unitCode} reserved</h2>
                     <p className="sa-muted">Move-in {formatDate(r.moveInDate)} · {r.rentalMonths} month(s). Deposit {formatVnd(r.depositAmount)} recorded as paid in cash.</p>
-                    <p className="sa-muted">Next: draft the contract and let the customer sign, then complete the check-in.</p>
+                    <p className="sa-muted">Next: draft the contract and let the customer sign, then complete the handover.</p>
                     <div className="sa-form-actions">
-                        <Link to="/admin/check-in" className="se-btn se-btn-primary">Go to check-in</Link>
+                        <Link to="/admin/handover" className="se-btn se-btn-primary">Go to handover</Link>
                         <button type="button" className="se-btn se-btn-ghost" onClick={() => book.reset()}>New walk-in</button>
                     </div>
                 </section>

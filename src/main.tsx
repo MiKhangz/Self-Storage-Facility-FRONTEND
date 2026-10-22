@@ -22,7 +22,7 @@ import UnitDetailPage from './customer/account/UnitDetailPage.jsx'
 import PaymentsPage from './customer/account/PaymentsPage.jsx'
 import SupportRequestPage from './customer/support/SupportRequestPage.jsx'
 import TicketDetailPage from './customer/support/TicketDetailPage.jsx'
-import HandoverPage from './customer/account/HandoverPage.jsx'
+import ReturnPage from './customer/account/ReturnPage.jsx'
 import ProfilePage from './customer/account/ProfilePage.jsx'
 import VnPayReturnPage from './customer/account/VnPayReturnPage.jsx'
 // Backup admin portal (src/staff); Thiện's src/admin screens are kept but no longer routed.
@@ -32,14 +32,14 @@ import DashboardPage from './staff/pages/DashboardPage.jsx'
 import FacilitiesPage from './staff/pages/FacilitiesPage.jsx'
 import UnitsPage from './staff/pages/UnitsPage.jsx'
 import ReservationsPage from './staff/pages/ReservationsPage.jsx'
-import CheckInPage from './staff/pages/CheckInPage.jsx'
+import HandoverPage from './staff/pages/HandoverPage.jsx'
 import ContractsPage from './staff/pages/ContractsPage.jsx'
 import PricingPage from './staff/pages/PricingPage.jsx'
 import TicketsPage from './staff/pages/TicketsPage.jsx'
 import UsersPage from './staff/pages/UsersPage.jsx'
 import TicketDetailPageAdmin from './staff/pages/TicketDetailPage.jsx'
 import RecordPaymentPage from './staff/pages/RecordPaymentPage.jsx'
-import HandoversPage from './staff/pages/HandoversPage.jsx'
+import ReturnsPage from './staff/pages/ReturnsPage.jsx'
 import CustomerPage from './staff/pages/CustomerPage.jsx'
 import FacilityDetailPage from './staff/pages/FacilityDetailPage.jsx'
 import ReportsPage from './staff/pages/ReportsPage.jsx'
@@ -77,7 +77,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/facilities" element={<FacilitiesPage />} />
               <Route path="/admin/units" element={<UnitsPage />} />
               <Route path="/admin/reservations" element={<ReservationsPage />} />
-              <Route path="/admin/check-in" element={<CheckInPage />} />
+              <Route path="/admin/handover" element={<HandoverPage />} />
               <Route path="/admin/contracts" element={<ContractsPage />} />
               <Route path="/admin/pricing" element={<PricingPage />} />
               <Route path="/admin/tickets" element={<TicketsPage />} />
@@ -85,7 +85,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/users/invite" element={<InviteUserPage />} />
               <Route path="/admin/tickets/:ticketId" element={<TicketDetailPageAdmin />} />
               <Route path="/admin/payments" element={<RecordPaymentPage />} />
-              <Route path="/admin/handovers" element={<HandoversPage />} />
+              <Route path="/admin/returns" element={<ReturnsPage />} />
               <Route path="/admin/customers/:customerId" element={<CustomerPage />} />
               <Route path="/admin/facilities/new" element={<AddFacilityPage />} />
               <Route path="/admin/facilities/:facilityId" element={<FacilityDetailPage />} />
@@ -120,7 +120,7 @@ createRoot(document.getElementById('root')!).render(
                   <Route path="/support/new" element={<SupportRequestPage />} />
                   <Route path="/support/requests" element={<SupportRequestPage />} />
                   <Route path="/support/requests/:ticketId" element={<TicketDetailPage />} />
-                  <Route path="/handover" element={<HandoverPage />} />
+                  <Route path="/return" element={<ReturnPage />} />
                   <Route path="/profile" element={<ProfilePage />} />
                 </Route>
               </Route>

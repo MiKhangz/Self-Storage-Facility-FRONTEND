@@ -145,7 +145,7 @@ export default function UnitDetailPage() {
                 </div>
                 <div className="se-title-actions">
                     <Link to={`/support/new?contractId=${contractId}`} className="se-btn se-btn-ghost"><Icon name="shield" size={16} /> Báo sự cố</Link>
-                    {active && <Link to={`/handover?contractId=${contractId}`} className="se-btn se-btn-danger">Yêu cầu trả kho</Link>}
+                    {active && <Link to={`/return?contractId=${contractId}`} className="se-btn se-btn-danger">Yêu cầu trả kho</Link>}
                 </div>
             </div>
 

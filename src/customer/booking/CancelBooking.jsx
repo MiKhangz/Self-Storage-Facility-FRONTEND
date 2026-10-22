@@ -7,7 +7,7 @@ import { useTerms } from '../components/terms.js';
 const time = (d) => d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
 
 /**
- * The customer cancels a booking that has not been checked in. A paid deposit comes back only inside the free
+ * The customer cancels a booking that has not been handed over. A paid deposit comes back only inside the free
  * window after booking (the policy's cancelFreeHours); the page says which before they confirm.
  */
 export default function CancelBooking({ reservation }) {

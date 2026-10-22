@@ -60,7 +60,7 @@ function LoginAdmin() {
                 <div className="hero-section">
                     <h1 className="hero-title">Operate every facility from one place.</h1>
                     <p className="hero-desc">
-                        Manage units, reservations, handovers, contracts and revenue across all StoreEase locations.
+                        Manage units, reservations, returns, contracts and revenue across all StoreEase locations.
                     </p>
                 </div>
 
@@ -94,7 +94,7 @@ function LoginAdmin() {
                         <div className="role-icon"><img className="portal-logo" src={Key} alt="KeyLogo" /></div>
                         <div className="role-details">
                             <h3>Facility Staff</h3>
-                            <p>Check-in, handover, returns, on-site support</p>
+                            <p>Handover, check-ins, returns, on-site support</p>
                         </div>
                     </div>
                 </div>

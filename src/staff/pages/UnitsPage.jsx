@@ -10,7 +10,7 @@ import { Filters, PageHeader, SearchFilter, SelectFilter, Status, TableState, ma
 import { humanize, useContracts, useFacilities, useSizePrices, useUnitTypes, useUnits } from '../queries.js';
 
 const STATUSES = ['Available', 'Reserved', 'Occupied', 'Maintenance', 'Retired'];
-const LIVE = ['Draft', 'Active', 'PendingHandover', 'Overdue', 'Suspended'];
+const LIVE = ['Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended'];
 
 /** Edit a unit (managers and admins). Floor and size can change only while it is Available, as the API requires. */
 function UnitEditor({ unit }) {

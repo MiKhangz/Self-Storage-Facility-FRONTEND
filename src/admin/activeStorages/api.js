@@ -25,20 +25,20 @@ const pageAll = async (path, query = {}) => {
   return items
 }
 
-// GET /api/reservations?status=CheckedIn — authenticated; facility staff/manager are facility-scoped.
+// GET /api/reservations?status=HandedOver — authenticated; facility staff/manager are facility-scoped.
 export async function listActiveRentals({ facilityId = '', search = '', page = 1, pageSize = 20 } = {}) {
-  const query = new URLSearchParams({ status: 'CheckedIn', page: String(page), pageSize: String(pageSize) })
+  const query = new URLSearchParams({ status: 'HandedOver', page: String(page), pageSize: String(pageSize) })
   if (facilityId) query.set('facilityId', facilityId)
   if (search.trim()) query.set('search', search.trim())
   return apiRequest(`/api/reservations?${query}`)
 }
 
-// GET contract, access code, check-in evidence, identity checklist and invoices for the selected rental.
+// GET contract, access code, handover evidence, identity checklist and invoices for the selected rental.
 export async function getRentalData(rental) {
-  const [contractResult, checklistResult, checkInsResult, accessCodeResult] = await Promise.allSettled([
+  const [contractResult, checklistResult, handoversResult, accessCodeResult] = await Promise.allSettled([
     rental.contractId ? apiRequest(`/api/contracts/${rental.contractId}`) : Promise.reject(new Error('No contract is linked to this rental.')),
-    apiRequest(`/api/reservations/${rental.reservationId}/check-in`),
-    apiRequest('/api/check-ins?status=Completed&page=1&pageSize=100'),
+    apiRequest(`/api/reservations/${rental.reservationId}/handover`),
+    apiRequest('/api/handovers?status=Completed&page=1&pageSize=100'),
     rental.contractId ? apiRequest(`/api/contracts/${rental.contractId}/access-code`) : Promise.reject(new Error('No contract')),
   ])
   if (contractResult.status === 'rejected') throw contractResult.reason
@@ -47,10 +47,10 @@ export async function getRentalData(rental) {
   return {
     contract: contractResult.value,
     checklist: checklistResult.value,
-    checkIn: checkInsResult.status === 'fulfilled' ? (checkInsResult.value.items ?? []).find(row => row.reservationId === rental.reservationId) ?? null : null,
+    handover: handoversResult.status === 'fulfilled' ? (handoversResult.value.items ?? []).find(row => row.reservationId === rental.reservationId) ?? null : null,
     accessCode: accessCodeResult.status === 'fulfilled' ? accessCodeResult.value : null,
     invoices: invoices.filter(invoice => invoice.contractId === rental.contractId),
-    optionalError: checkInsResult.status === 'rejected' || accessCodeResult.status === 'rejected',
+    optionalError: handoversResult.status === 'rejected' || accessCodeResult.status === 'rejected',
   }
 }
 
@@ -87,34 +87,34 @@ export async function grantVisitAccess({ contractId, customerName, unitCode, vis
   return structuredClone(grant)
 }
 
-// POST /api/unit-visits/check-in — Facility Staff/Manager; body ContractId > 0, Note <= 200 characters.
+// POST /api/check-ins/check-in — Facility Staff/Manager; body ContractId > 0, Note <= 200 characters.
 export async function checkInVisit({ grantId, contractId, visitorName, durationMinutes }) {
   if (!(Number(contractId) > 0) || ![15, 30, 60, 120].includes(Number(durationMinutes))) throw new Error('Choose a valid contract and visit duration.')
-  const result = await apiRequest('/api/unit-visits/check-in', {
+  const result = await apiRequest('/api/check-ins/check-in', {
     method: 'POST', body: JSON.stringify({ contractId, note: `${visitorName} · ${durationMinutes} minutes`.slice(0, 200) }),
   })
-  visitMeta.set(result.unitVisitId, { visitorName, durationMinutes, expectedCheckOutAt: expectedCheckoutAt(result.checkInAt, durationMinutes) })
+  visitMeta.set(result.checkInId, { visitorName, durationMinutes, expectedCheckOutAt: expectedCheckoutAt(result.checkInAt, durationMinutes) })
   const grant = grants.get(grantId)
-  if (grant) Object.assign(grant, { status: 'On-site', unitVisitId: result.unitVisitId })
+  if (grant) Object.assign(grant, { status: 'On-site', checkInId: result.checkInId })
   return presentVisit(result)
 }
 
-// POST /api/unit-visits/{id}/check-out — Facility Staff/Manager.
+// POST /api/check-ins/{id}/check-out — Facility Staff/Manager.
 export async function checkOutVisit(visit, overtime = 0) {
-  if (!visit.unitVisitId) return missing('visit check-out')
-  const result = await apiRequest(`/api/unit-visits/${visit.unitVisitId}/check-out`, { method: 'POST' })
-  const meta = visitMeta.get(result.unitVisitId) ?? { visitorName: visit.visitorName, durationMinutes: visit.durationMinutes, expectedCheckOutAt: visit.expectedCheckOutAt }
+  if (!visit.checkInId) return missing('visit check-out')
+  const result = await apiRequest(`/api/check-ins/${visit.checkInId}/check-out`, { method: 'POST' })
+  const meta = visitMeta.get(result.checkInId) ?? { visitorName: visit.visitorName, durationMinutes: visit.durationMinutes, expectedCheckOutAt: visit.expectedCheckOutAt }
   meta.overtimeMinutes = overtime
-  visitMeta.set(result.unitVisitId, meta)
-  const grant = [...grants.values()].find(row => row.unitVisitId === result.unitVisitId)
+  visitMeta.set(result.checkInId, meta)
+  const grant = [...grants.values()].find(row => row.checkInId === result.checkInId)
   if (grant) grant.status = 'Completed'
   return presentVisit(result)
 }
 
-// GET /api/unit-visits?contractId=... — authenticated; staff sees visits within assigned facilities.
+// GET /api/check-ins?contractId=... — authenticated; staff sees visits within assigned facilities.
 export async function listVisitHistory(contractId) {
   const query = contractId ? { contractId: String(contractId) } : {}
-  return (await pageAll('/api/unit-visits', query)).map(presentVisit)
+  return (await pageAll('/api/check-ins', query)).map(presentVisit)
 }
 
 export async function listVisitActivity() {
@@ -126,7 +126,7 @@ export async function listVisitActivity() {
 // TODO backend: visit duration/extension fields and extension endpoint do not exist; preview is held in memory.
 export async function extendVisit(visit, minutes) {
   if (!USE_MOCK_ACTIVE_STORAGE) return missing('visit extension')
-  const meta = visitMeta.get(visit.unitVisitId) ?? {
+  const meta = visitMeta.get(visit.checkInId) ?? {
     visitorName: visit.visitorName ?? visit.customerName,
     durationMinutes: visit.durationMinutes ?? 15,
     expectedCheckOutAt: visit.expectedCheckOutAt ?? expectedCheckoutAt(visit.checkInAt, visit.durationMinutes ?? 15),
@@ -134,7 +134,7 @@ export async function extendVisit(visit, minutes) {
   if (!canExtendVisit({ expectedCheckOutAt: meta.expectedCheckOutAt, durationMinutes: meta.durationMinutes, extendByMinutes: minutes })) throw new Error('Extension is unavailable after overtime or beyond the four-hour visit limit.')
   meta.durationMinutes += minutes
   meta.expectedCheckOutAt = expectedCheckoutAt(visit.checkInAt, meta.durationMinutes)
-  visitMeta.set(visit.unitVisitId, meta)
+  visitMeta.set(visit.checkInId, meta)
   return { ...visit, ...meta }
 }
 
@@ -147,11 +147,11 @@ export async function listAccessLogs({ storageUnitId, customerId, page = 1, page
 }
 
 function presentVisit(visit) {
-  const meta = visitMeta.get(visit.unitVisitId) ?? {}
+  const meta = visitMeta.get(visit.checkInId) ?? {}
   const durationMinutes = meta.durationMinutes ?? 15
   return {
     ...visit,
-    id: String(visit.unitVisitId),
+    id: String(visit.checkInId),
     status: visit.checkOutAt ? 'Completed' : 'On-site',
     visitorName: meta.visitorName ?? visit.customerName,
     staffName: visit.recordedByName,

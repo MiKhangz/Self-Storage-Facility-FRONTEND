@@ -31,7 +31,7 @@ test.describe.serial('front desk: walk-in, then overdue rent', () => {
     await staff.getByRole('button', { name: 'Confirm booking & take deposit' }).click()
     await expect(staff.getByRole('heading', { name: 'Walk-in booked' })).toBeVisible()
 
-    await staff.getByRole('link', { name: 'Go to check-in' }).click()
+    await staff.getByRole('link', { name: 'Go to handover' }).click()
     await staff.getByRole('button', { name: new RegExp(name) }).click()
     await staff.getByRole('button', { name: 'Draft contract' }).click()
     await staff.getByRole('button', { name: 'Customer signed on paper' }).click()
@@ -39,8 +39,8 @@ test.describe.serial('front desk: walk-in, then overdue rent', () => {
       await staff.getByRole('checkbox', { name: new RegExp(step) }).check()
     await staff.getByLabel('Lock serial no.').fill('LOCK-WALKIN')
     await staff.getByLabel('Access card no.').fill('CARD-WALKIN')
-    await staff.getByRole('button', { name: 'Complete check-in' }).click()
-    await expect(staff.getByRole('heading', { name: /Check-in complete/ })).toBeVisible()
+    await staff.getByRole('button', { name: 'Complete handover' }).click()
+    await expect(staff.getByRole('heading', { name: /Handover complete/ })).toBeVisible()
 
     contract = (await staffApi.get('/api/contracts?status=Active&page=1&pageSize=100')).items.find((c) => c.customerName === name)
     expect(contract).toBeTruthy()

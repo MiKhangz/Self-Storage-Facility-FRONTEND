@@ -14,14 +14,14 @@ import { useReservations, useUnits } from '../queries.js';
 const TABS = [
     { status: 'Pending', label: 'Pending assignment' },
     { status: 'Confirmed', label: 'Confirmed' },
-    { status: 'CheckedIn', label: 'Checked-in' },
+    { status: 'HandedOver', label: 'Handed over' },
     { status: 'Cancelled', label: 'Cancelled' },
     { status: 'Expired', label: 'Expired' },
 ];
 
 const waitingForUnit = (r) => r.status === 'Pending' || (r.status === 'Confirmed' && !r.storageUnitId);
 
-/** Staff end a booking before check-in: cancel (deposit refunded) or, after the move-in date, a no-show (deposit kept). */
+/** Staff end a booking before handover: cancel (deposit refunded) or, after the move-in date, a no-show (deposit kept). */
 function CloseBooking({ reservation }) {
     const queryClient = useQueryClient();
     const [reason, setReason] = useState('');
@@ -81,7 +81,7 @@ function AssignPanel({ reservation, onClose }) {
             onClose();
         },
     });
-    // Pending, or Confirmed again after its check-in was cancelled (no unit any more).
+    // Pending, or Confirmed again after its handover was cancelled (no unit any more).
     const pending = waitingForUnit(reservation);
 
     return (
@@ -135,7 +135,7 @@ export default function ReservationsPage() {
 
     return (
         <>
-            <PageHeader title="Reservations" subtitle="Review online bookings, assign a suitable unit and schedule check-in">
+            <PageHeader title="Reservations" subtitle="Review online bookings, assign a suitable unit and schedule handover">
                 {canAssign && <Link to="/admin/walk-in" className="se-btn se-btn-primary"><Icon name="box" size={16} /> New walk-in booking</Link>}
             </PageHeader>
             <div className="se-tabs se-tabs-line" role="tablist">

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { handoversApi } from '../../api/generated';
+import { returnsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
@@ -8,12 +8,12 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
-import { humanize, useHandovers } from '../queries.js';
+import { humanize, useReturns } from '../queries.js';
 
 const TABS = ['Requested', 'Approved', 'Inspected', 'Completed', 'Cancelled'];
 const CONDITIONS = ['Good', 'MinorDamage', 'MajorDamage'];
 
-/** 09:00 on the planned day, or the next full hour when that has already passed (a same-day handover). */
+/** 09:00 on the planned day, or the next full hour when that has already passed (a same-day return). */
 function firstSlot(plannedDate) {
     const nine = new Date(`${plannedDate}T09:00`);
     if (nine > new Date()) return `${plannedDate}T09:00`;
@@ -24,8 +24,8 @@ function firstSlot(plannedDate) {
 }
 
 function Approve({ request, onDone }) {
-    const [slot, setSlot] = useState(() => firstSlot(request.plannedHandoverDate));
-    const approve = useMutation({ mutationFn: () => handoversApi.approve(request.handoverId, { inspectionSlot: slot }), onSuccess: onDone });
+    const [slot, setSlot] = useState(() => firstSlot(request.plannedReturnDate));
+    const approve = useMutation({ mutationFn: () => returnsApi.approve(request.unitReturnId, { inspectionSlot: slot }), onSuccess: onDone });
     return (
         <>
             <label><span className="se-label">Inspection appointment</span>
@@ -39,7 +39,7 @@ function Approve({ request, onDone }) {
 function Inspect({ request, onDone }) {
     const [form, setForm] = useState({ conditionResult: 'Good', cleaningFee: 0, repairCharge: 0, otherDeduction: 0 });
     const set = (k) => (e) => setForm({ ...form, [k]: k === 'conditionResult' ? e.target.value : Math.max(0, Number(e.target.value)) });
-    const inspect = useMutation({ mutationFn: () => handoversApi.inspection(request.handoverId, form), onSuccess: onDone });
+    const inspect = useMutation({ mutationFn: () => returnsApi.inspection(request.unitReturnId, form), onSuccess: onDone });
     return (
         <>
             <span className="se-label">Unit condition</span>
@@ -61,7 +61,7 @@ function Inspect({ request, onDone }) {
 function Settle({ request, onDone }) {
     // Refresh only when they close the result: refetching makes the request Completed, which would unmount this
     // breakdown (refund and any shortfall the customer still owes) before anyone reads it.
-    const settle = useMutation({ mutationFn: () => handoversApi.settleDeposit(request.handoverId) });
+    const settle = useMutation({ mutationFn: () => returnsApi.settleDeposit(request.unitReturnId) });
     const s = settle.data;
     return (
         <>
@@ -84,24 +84,24 @@ function Settle({ request, onDone }) {
     );
 }
 
-/** A15: approve handovers, inspect returned units and settle deposits. */
-export default function HandoversPage() {
+/** A15: approve returns, inspect returned units and settle deposits. */
+export default function ReturnsPage() {
     const { session } = useAuth();
     const queryClient = useQueryClient();
     const [tab, setTab] = useState('Requested');
     const [selected, setSelected] = useState(null);
-    const handovers = useHandovers();
-    const all = handovers.data ?? [];
+    const returns = useReturns();
+    const all = returns.data ?? [];
     const shown = all.filter((m) => m.status === tab);
-    const current = all.find((m) => m.handoverId === selected);
-    const done = () => ['handovers', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+    const current = all.find((m) => m.unitReturnId === selected);
+    const done = () => ['returns', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
     const isStaff = [Roles.FacilityStaff, Roles.FacilityManager].includes(session?.role);
 
     return (
         <>
-            <PageHeader title="Handovers" subtitle="Inspect returned units, settle deposits and release units" />
+            <PageHeader title="Returns" subtitle="Inspect returned units, settle deposits and release units" />
             <div className="sa-stats">
-                <Stat icon="arrowLeft" label="Handover requests" value={all.filter((m) => m.status === 'Requested').length} />
+                <Stat icon="arrowLeft" label="Return requests" value={all.filter((m) => m.status === 'Requested').length} />
                 <Stat icon="calendar" label="Inspections booked" value={all.filter((m) => m.status === 'Approved').length} />
                 <Stat icon="card" tone="warn" label="Awaiting refund" value={all.filter((m) => m.status === 'Inspected').length} />
                 <Stat icon="check" label="Completed" value={all.filter((m) => m.status === 'Completed').length} />
@@ -116,19 +116,20 @@ export default function HandoversPage() {
             <div className={`sa-split${current ? ' open' : ''}`}>
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
-                        <thead><tr><th>Customer</th><th>Unit</th><th>Contract</th><th>Handover date</th><th>Inspection</th><th>Status</th></tr></thead>
+                        <thead><tr><th>Customer</th><th>Unit</th><th>Contract</th><th>Return date</th><th>Move out by</th><th>Inspection</th><th>Status</th></tr></thead>
                         <tbody>
                             {shown.map((m) => (
-                                <tr key={m.handoverId} className={selected === m.handoverId ? 'active' : ''} onClick={() => setSelected(m.handoverId)}>
+                                <tr key={m.unitReturnId} className={selected === m.unitReturnId ? 'active' : ''} onClick={() => setSelected(m.unitReturnId)}>
                                     <td className="strong">{m.customerName}</td>
                                     <td>{m.unitCode}</td>
                                     <td>{m.contractNumber}</td>
-                                    <td>{formatDate(m.plannedHandoverDate)}</td>
+                                    <td>{formatDate(m.plannedReturnDate)}</td>
+                                    <td>{formatDate(m.moveOutDeadline)}{m.accessLockedAt && <span className="se-badge none">Locked</span>}</td>
                                     <td>{m.inspectionSlot ? formatDateTime(m.inspectionSlot) : '—'}</td>
                                     <td><Status value={m.status} /></td>
                                 </tr>
                             ))}
-                            <TableState query={handovers} rows={shown} cols={6} empty="Nothing in this list." />
+                            <TableState query={returns} rows={shown} cols={7} empty="Nothing in this list." />
                         </tbody>
                     </table>
                 </div>
@@ -139,11 +140,13 @@ export default function HandoversPage() {
                         <p className="sa-muted">{current.customerName} · {current.contractNumber}</p>
                         <dl className="se-kv">
                             <div><dt>Requested</dt><dd>{formatDateTime(current.requestedAt)}</dd></div>
-                            <div><dt>Planned handover</dt><dd>{formatDate(current.plannedHandoverDate)}</dd></div>
+                            <div><dt>Planned return</dt><dd>{formatDate(current.plannedReturnDate)}</dd></div>
+                            <div><dt>Move out by</dt><dd>{formatDate(current.moveOutDeadline)}</dd></div>
                             <div><dt>Reason</dt><dd>{current.reason || '—'}</dd></div>
                             <div><dt>Refund to</dt><dd>{humanize(current.refundMethod)}{current.refundAccount ? ` · ${current.refundAccount}` : ''}</dd></div>
                             {current.inspection && <div><dt>Inspection</dt><dd>{humanize(current.inspection.conditionResult)} · refund {formatVnd(current.inspection.refundAmount)}</dd></div>}
                         </dl>
+                        {current.accessLockedAt && <div className="se-alert" role="alert">Past the move-out deadline: access was locked on {formatDateTime(current.accessLockedAt)}. Clear the unit out, then inspect it.</div>}
                         {current.status === 'Requested' && isStaff && <Approve request={current} onDone={done} />}
                         {current.status === 'Approved' && isStaff && <Inspect request={current} onDone={done} />}
                         {current.status === 'Inspected' && session?.role === Roles.BusinessOperationsManager && <Settle request={current} onDone={done} />}

@@ -98,7 +98,7 @@ export default function WalkInBooking({ close, created }) {
               {customers.error && <p role="alert" className="rv-warning">{customers.error} <button type="button" onClick={customers.reload}>Retry</button></p>}
               {customerSearch.trim().length >= 2 && !customers.loading && !customers.error && !selectedCustomer && <div className="walk-in-customer-results">{(customers.data?.items ?? []).map(item => <button type="button" key={item.userId} onClick={() => { setSelectedCustomer(item); setVerifiedId(false); setCustomerSearch('') }}><strong>{item.fullName}</strong><small>{item.phoneNumber} · {item.email}</small></button>)}{!(customers.data?.items ?? []).length && <p>No matching customers.</p>}</div>}
               {selectedCustomer && <><div className="walk-in-fields"><label>Full name<input readOnly value={selectedCustomer.fullName} /></label><label>Phone number<input readOnly value={selectedCustomer.phoneNumber} /></label><label>Email<input readOnly value={selectedCustomer.email} /></label><label>Citizen ID (CCCD)<input readOnly value={selectedCustomer.citizenId || 'Not on file'} /></label></div><button className="walk-in-change-customer" type="button" onClick={() => { setSelectedCustomer(null); setVerifiedId(false) }}>Choose another customer</button></>}
-              {selectedCustomer && !selectedCustomer.citizenId && <p className="walk-in-inline-warning">This customer has no citizen ID on file. Add it to their profile before walk-in check-in.</p>}
+              {selectedCustomer && !selectedCustomer.citizenId && <p className="walk-in-inline-warning">This customer has no citizen ID on file. Add it to their profile before walk-in handover.</p>}
             </> : <div className="walk-in-fields">
               <label>Full name *<input required maxLength="100" value={form.fullName} onChange={event => update('fullName', event.target.value)} /></label>
               <label>Phone number *<input required type="tel" maxLength="20" value={form.phoneNumber} onChange={event => update('phoneNumber', event.target.value)} /></label>
@@ -132,7 +132,7 @@ export default function WalkInBooking({ close, created }) {
               <label className="walk-in-deposit-check"><input type="checkbox" checked={depositReceived} onChange={event => setDepositReceived(event.target.checked)} /><span><strong>Have received the deposit</strong></span></label>
               <p className="walk-in-inline-warning">The current walk-in API records the deposit as cash. It does not record the full quote amount or the other payment methods.</p>
             </section>}
-            <footer className="walk-in-footer walk-in-bottom"><button type="button" disabled={busy} onClick={() => setStep(1)}>← Back</button><button className="primary" type="submit" disabled={busy || !customerReady || !quoteReady || !depositReceived}>{busy ? 'Creating booking…' : 'Create booking & start handover'}</button></footer>
+            <footer className="walk-in-footer walk-in-bottom"><button type="button" disabled={busy} onClick={() => setStep(1)}>← Back</button><button className="primary" type="submit" disabled={busy || !customerReady || !quoteReady || !depositReceived}>{busy ? 'Creating booking…' : 'Create booking & start return'}</button></footer>
           </>}
         </div>
         {step === 2 && <aside className="walk-in-summary">

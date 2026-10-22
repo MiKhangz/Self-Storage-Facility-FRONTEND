@@ -47,12 +47,12 @@ export function widenDateRange(range) {
 }
 
 const controllerNouns = {
-  AccessCodes: 'access code', Billing: 'billing run', CheckIns: 'check-in', Contracts: 'contract',
-  Facilities: 'facility', Floors: 'floor', Handovers: 'handover', Invoices: 'invoice',
+  AccessCodes: 'access code', Billing: 'billing run', Handovers: 'handover', Contracts: 'contract',
+  Facilities: 'facility', Floors: 'floor', Returns: 'return', Invoices: 'invoice',
   MaintenanceOrders: 'maintenance order', OverdueCases: 'overdue case', Payments: 'payment',
   PricingPolicies: 'pricing policy', Profile: 'profile', Renewals: 'renewal', Reservations: 'reservation',
   Shifts: 'shift', Staff: 'staff account', StaffTasks: 'staff task', StorageUnits: 'storage unit',
-  SupportTickets: 'support ticket', TicketQueue: 'ticket', UnitTypes: 'unit type', UnitVisits: 'unit visit',
+  SupportTickets: 'support ticket', TicketQueue: 'ticket', UnitTypes: 'unit type', Visits: 'visit',
 }
 
 export function formatAction(action) {

@@ -84,7 +84,7 @@ export default function ActiveStorageAccess({ user, facilityId = '' }) {
     return accessEligibility({
       accountNotSuspended: rentalDetail.contract.status !== 'Suspended',
       idVerified: identityVerified,
-      storageStatus: selectedRental.status === 'CheckedIn' ? 'Active' : selectedRental.status,
+      storageStatus: selectedRental.status === 'HandedOver' ? 'Active' : selectedRental.status,
       paymentStatus,
     })
   }, [rentalDetail, selectedRental])
@@ -181,15 +181,15 @@ export default function ActiveStorageAccess({ user, facilityId = '' }) {
             <section><h2>Information</h2><dl>
               <div><dt>Account status</dt><dd>{rentalDetail.contract.status === 'Suspended' ? 'Suspended' : 'Not suspended'}</dd></div>
               <div><dt>Identification verified</dt><dd>{rentalDetail.checklist.items.find(item => item.key === 'identity')?.done ? 'Verified' : 'Not verified'}</dd></div>
-              <div><dt>Storage status</dt><dd>{selectedRental.status === 'CheckedIn' ? 'Active' : selectedRental.status}</dd></div>
+              <div><dt>Storage status</dt><dd>{selectedRental.status === 'HandedOver' ? 'Active' : selectedRental.status}</dd></div>
               <div><dt>Payment status</dt><dd>{eligibility.reasons.includes('Due payments are not fully paid.') ? 'Unpaid' : 'Paid'}</dd></div>
-              <div><dt>Last check-in</dt><dd>{dateTimeLabel(rentalDetail.checkIn?.checkInTime)}</dd></div>
+              <div><dt>Last handover</dt><dd>{dateTimeLabel(rentalDetail.handover?.handoverTime)}</dd></div>
               <div><dt>Monthly rent</dt><dd>{rentalDetail.contract.monthlyRent == null ? 'N/A' : `${new Intl.NumberFormat('vi-VN').format(rentalDetail.contract.monthlyRent)} ₫`}</dd></div>
             </dl>{rentalDetail.optionalError && <p className="asa-inline-error" role="alert">Some access details could not load. <button type="button" onClick={retrySelectedRental}>Retry</button></p>}</section>
             <section><h2>Access</h2><dl>
-              <div><dt>Access card</dt><dd>{valueOrNA(rentalDetail.checkIn?.cardNumber)}</dd></div>
+              <div><dt>Access card</dt><dd>{valueOrNA(rentalDetail.handover?.cardNumber)}</dd></div>
               <div><dt>PIN</dt><dd>N/A</dd></div>
-              <div><dt>Lock</dt><dd>{valueOrNA(rentalDetail.checkIn?.lockSerial)}</dd></div>
+              <div><dt>Lock</dt><dd>{valueOrNA(rentalDetail.handover?.lockSerial)}</dd></div>
               <div><dt>Access code</dt><dd>{rentalDetail.accessCode?.isActive && new Date(rentalDetail.accessCode.expiresAt) > new Date(now) ? 'Active' : 'Disabled / N/A'}</dd></div>
               <div><dt>Code expiry</dt><dd>{dateLabel(rentalDetail.accessCode?.expiresAt)}</dd></div>
             </dl></section>
