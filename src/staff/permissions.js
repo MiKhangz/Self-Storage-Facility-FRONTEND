@@ -22,7 +22,7 @@ export const PERMISSIONS = [
     { group: 'Customers & contracts', feature: 'Export contracts', roles: [FM, ST] },
     { group: 'Money', feature: 'Record a payment', roles: [FM, ST] },
     { group: 'Money', feature: 'Settle a deposit refund', roles: [BO] },
-    { group: 'Money', feature: 'Change prices and policies', roles: [BO] },
+    { group: 'Money', feature: 'Change prices and policies', roles: [BO, SA] },
     { group: 'Operations', feature: 'Approve handovers and inspect returned units', roles: [FM, ST] },
     { group: 'Operations', feature: 'Reply to support tickets', roles: [FM, ST] },
     { group: 'Operations', feature: 'Assign support tickets', roles: [FM] },
