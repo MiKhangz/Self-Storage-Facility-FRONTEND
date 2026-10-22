@@ -126,7 +126,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await manager.context().close()
   })
 
-  test('E08 the customer hands the unit back; staff inspect and ops settle the deposit', async ({ browser }) => {
+  test('E08 the customer hands the unit back; staff inspect, ops settle and pay back the deposit', async ({ browser }) => {
     await customer.getByRole('link', { name: 'Yêu cầu trả kho' }).click()
     await customer.getByLabel('Ngày dự kiến trả kho').fill(today)
     for (const box of await customer.locator('.se-checklist').getByRole('checkbox').all()) await box.check()
@@ -152,6 +152,16 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await expect(ops.getByText('Refund', { exact: true })).toBeVisible()
 
     expect((await staffApi.get(`/api/contracts/${contract.contractId}`)).status).toBe('Closed')
+
+    // The refund now waits in Deposit Refunds until ops pay it; then the customer sees it as paid back.
+    await ops.getByRole('button', { name: 'Done' }).click()
+    await openAdmin(ops, 'Deposit Refunds')
+    await ops.getByRole('row', { name: new RegExp(name) }).click()
+    await ops.getByRole('button', { name: 'Mark as paid' }).click()
+    await expect(ops.getByRole('row', { name: new RegExp(name) })).toBeHidden()
     await ops.context().close()
+
+    await customer.getByRole('link', { name: 'Thanh toán và hóa đơn' }).click()
+    await expect(customer.getByText(/Đã hoàn/)).toBeVisible()
   })
 })

@@ -64,6 +64,8 @@ test.describe.serial('front desk: walk-in, then overdue rent', () => {
 
     // The customer pays every open invoice in cash at the desk.
     await openAdmin(staff, 'Payments')
+    // Wait for the list to load before counting, or an empty first render ends the loop at once.
+    await expect(staff.getByRole('row', { name: new RegExp(name) }).first()).toBeVisible()
     while (await staff.getByRole('row', { name: new RegExp(name) }).count()) {
       await staff.getByRole('row', { name: new RegExp(name) }).first().click()
       await staff.getByRole('button', { name: /^Record / }).click()
