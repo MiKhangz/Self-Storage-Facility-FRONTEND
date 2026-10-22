@@ -8,6 +8,7 @@ import { api } from '../axiosClient.js'
 /** @typedef {import('./schemas.js').RegisterResponse} RegisterResponse */
 /** @typedef {import('./schemas.js').ResendVerificationRequest} ResendVerificationRequest */
 /** @typedef {import('./schemas.js').ResetPasswordRequest} ResetPasswordRequest */
+/** @typedef {import('./schemas.js').SessionResponse} SessionResponse */
 /** @typedef {import('./schemas.js').VerifyEmailRequest} VerifyEmailRequest */
 
 export const authApi = {
@@ -18,6 +19,18 @@ export const authApi = {
    */
   login: (body) =>
     api.post(`/api/auth/login`, body).then((r) => r.data),
+  /**
+   * GET /api/auth/session
+   * @returns {Promise<SessionResponse>}
+   */
+  session: () =>
+    api.get(`/api/auth/session`).then((r) => r.data),
+  /**
+   * POST /api/auth/logout
+   * @returns {Promise<void>}
+   */
+  logout: () =>
+    api.post(`/api/auth/logout`, undefined).then((r) => r.data),
   /**
    * POST /api/auth/register
    * @param {RegisterRequest} body

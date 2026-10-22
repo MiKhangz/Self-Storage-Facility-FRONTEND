@@ -1030,6 +1030,14 @@
  */
 
 /**
+ * @typedef {Object} SessionResponse
+ * @property {number} [userId] int32
+ * @property {(string|null)} [fullName]
+ * @property {(string|null)} [role]
+ * @property {string} [expiresAt] date-time
+ */
+
+/**
  * @typedef {Object} SetStaffFacilitiesRequest
  * @property {(Array<number>|null)} [facilityIds]
  */

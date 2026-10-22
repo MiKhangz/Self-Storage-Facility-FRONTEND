@@ -8,33 +8,20 @@ export const api = axios.create({
   headers: { 'Content-Type': 'application/json' },
 })
 
-// The token lives only in memory (React state in AuthProvider), never in localStorage. The provider hands it
-// over here so requests made outside components still carry it.
-/** @type {string|null} */
-let accessToken = null
+// No token here: the API keeps it in an HttpOnly cookie that the browser sends with every same-origin /api call.
 /** @type {(() => void)|null} */
 let onUnauthorized = null
-
-/** @param {string|null} token */
-export function setAccessToken(token) {
-  accessToken = token
-}
 
 /** @param {(() => void)|null} handler */
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler
 }
 
-api.interceptors.request.use((config) => {
-  if (accessToken) config.headers.Authorization = `Bearer ${accessToken}`
-  return config
-})
-
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // A failed login is also a 401, but there is no session to end yet.
-    if (error.response?.status === 401 && accessToken) onUnauthorized?.()
+    // AuthProvider sets the handler only while someone is signed in, so a failed login does not trigger it.
+    if (error.response?.status === 401) onUnauthorized?.()
     return Promise.reject(error)
   },
 )
