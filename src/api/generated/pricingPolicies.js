@@ -48,6 +48,20 @@ export const pricingPoliciesApi = {
   update: (id, body) =>
     api.put(`/api/pricing-policies/${id}`, body).then((r) => r.data),
   /**
+   * DELETE /api/pricing-policies/{id}
+   * @param {number} id
+   * @returns {Promise<void>}
+   */
+  remove: (id) =>
+    api.delete(`/api/pricing-policies/${id}`).then((r) => r.data),
+  /**
+   * POST /api/pricing-policies/{id}/copy
+   * @param {number} id
+   * @returns {Promise<PricingPolicyDto>}
+   */
+  copy: (id) =>
+    api.post(`/api/pricing-policies/${id}/copy`, undefined).then((r) => r.data),
+  /**
    * POST /api/pricing-policies/{id}/activate
    * @param {number} id
    * @returns {Promise<PricingPolicyDto>}
@@ -84,6 +98,6 @@ export const pricingPoliciesApi = {
    * @param {number} feeTypeId
    * @returns {Promise<void>}
    */
-  remove: (feeTypeId) =>
+  removeFeeTypes: (feeTypeId) =>
     api.delete(`/api/fee-types/${feeTypeId}`).then((r) => r.data),
 }
