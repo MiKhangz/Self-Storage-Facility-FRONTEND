@@ -19,6 +19,7 @@
 /* Page title row used by every account page */
 .se-account-title { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 20px; }
 .se-account-title h1 { margin: 0 0 4px; font-size: 30px; font-weight: 800; color: var(--se-dark); }
+.se-account-section { margin: 28px 0 12px; font-size: 18px; font-weight: 700; color: var(--se-dark); }
 .se-account-title p { margin: 0; color: var(--se-muted); font-size: 15px; }
 .se-account-main h2 { margin: 28px 0 14px; font-size: 20px; font-weight: 700; color: var(--se-dark); }
 

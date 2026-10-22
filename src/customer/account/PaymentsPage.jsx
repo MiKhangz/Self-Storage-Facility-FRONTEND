@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { depositRefundsApi } from '../../api/generated';
 import Icon from '../components/Icon.jsx';
 import { formatDate, formatVnd } from '../components/format.js';
 import PayInvoiceButton from './PayInvoiceButton.jsx';
@@ -10,6 +12,37 @@ const TABS = [
     { key: 'unpaid', label: 'Chưa thanh toán', match: (i) => OPEN_INVOICE.includes(i.status) },
     { key: 'paid', label: 'Đã thanh toán', match: (i) => i.status === 'Paid' },
 ];
+
+/** Deposits StorEase owes back, so the customer can see whether theirs has been paid yet. */
+function DepositRefunds() {
+    const refunds = useQuery({ queryKey: ['deposit-refunds', 'mine'], queryFn: () => depositRefundsApi.list({ page: 1, pageSize: 50 }) });
+    const list = refunds.data?.items ?? [];
+    if (!list.length) return null;
+    return (
+        <>
+            <h2 className="se-account-section">Tiền cọc hoàn lại</h2>
+            <div className="se-card se-table-wrap">
+                <table className="se-table se-stack">
+                    <thead><tr><th>Mã đặt kho</th><th>Lý do</th><th>Số tiền</th><th>Trạng thái</th></tr></thead>
+                    <tbody>
+                        {list.map((r) => (
+                            <tr key={r.depositRefundId}>
+                                <td className="strong se-stack-title">{r.reservationCode}</td>
+                                <td data-label="Lý do">{r.source === 'Handover' ? 'Trả kho' : 'Huỷ đặt kho'}</td>
+                                <td data-label="Số tiền" className="price">{formatVnd(r.amount)}</td>
+                                <td data-label="Trạng thái">
+                                    {r.status === 'Paid'
+                                        ? <span className="se-badge">Đã hoàn {formatDate(r.paidAt)}{r.method === 'BankTransfer' ? ' · chuyển khoản' : ' · tiền mặt'}</span>
+                                        : <span className="se-badge low">Đang chờ hoàn</span>}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </>
+    );
+}
 
 /** U14: every invoice the customer has, with online payment for the open ones. */
 export default function PaymentsPage() {
@@ -85,6 +118,8 @@ export default function PaymentsPage() {
                     </tbody>
                 </table>
             </div>
+
+            <DepositRefunds />
         </>
     );
 }
