@@ -144,7 +144,7 @@ export default function PricingPage() {
                         </div>
                         <div className="se-table-wrap">
                             <table className="se-table">
-                                <thead><tr><th>Size</th><th>Area</th><th>1 month (₫)</th><th>3+ months</th><th>6+ months</th><th>12+ months</th><th /></tr></thead>
+                                <thead><tr><th>Size</th><th>Area</th><th>1 month (₫)</th><th>3+ months (discount %)</th><th>6+ months (discount %)</th><th>12+ months (discount %)</th><th /></tr></thead>
                                 <tbody>
                                     {types.map((t) => (
                                         <PriceRow key={`${policy.pricingPolicyId}-${t.unitTypeId}`} policy={policy} type={t} editable={editable}
