@@ -78,7 +78,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
                 <div className="sa-form-actions"><button type="submit" className="se-btn sa-btn-blue" disabled={addFloor.isPending}>{addFloor.isPending ? 'Adding…' : 'Add floor'}</button></div>
             </form>
 
-            <form className="se-form sa-setup-card" onSubmit={(e) => { e.preventDefault(); addUnit.mutate(); }}>
+            <form className="se-form sa-setup-card orange" onSubmit={(e) => { e.preventDefault(); addUnit.mutate(); }}>
                 <h3>Add unit</h3>
                 <div className="se-panel-grid">
                     <Field label="Floor *">
