@@ -59,3 +59,27 @@ test('E14 staff cancel a booking from Reservations and the deposit is owed back'
   const refund = await owedRefund(baseURL, reservation.reservationId)
   expect(refund).toMatchObject({ source: 'Cancellation', status: 'Pending', customerName: name })
 })
+
+test('E15 ops pay a cancellation refund by bank transfer and the customer sees it paid back', async ({ page, browser, baseURL }) => {
+  const { email, name, reservation } = await bookedCustomer(baseURL)
+  const me = await apiAs(baseURL, email)
+  await me.post(`/api/reservations/${reservation.reservationId}/cancel`, { reason: null })
+  await me.dispose()
+  page.on('dialog', (d) => d.accept())
+
+  await loginStaff(page, ACCOUNTS.ops)
+  await openAdmin(page, 'Deposit Refunds')
+  await page.getByRole('row', { name: new RegExp(name) }).click()
+  await page.getByLabel('Paid by').selectOption('BankTransfer')
+  // A transfer cannot be recorded without the bank's reference.
+  await expect(page.getByRole('button', { name: 'Mark as paid' })).toBeDisabled()
+  await page.getByLabel(/^Transfer reference/).fill('FT2610220001')
+  await page.getByRole('button', { name: 'Mark as paid' }).click()
+  await expect(page.getByRole('row', { name: new RegExp(name) })).toBeHidden()
+
+  const customer = await (await browser.newContext()).newPage()
+  await loginCustomer(customer, email)
+  await customer.getByRole('link', { name: 'Thanh toán và hóa đơn' }).click()
+  await expect(customer.getByText(/Đã hoàn .* chuyển khoản/)).toBeVisible()
+  await customer.context().close()
+})
