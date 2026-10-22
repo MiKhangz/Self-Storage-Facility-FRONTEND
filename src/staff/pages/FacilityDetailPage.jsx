@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useLocation, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { facilitiesApi, storageUnitsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
@@ -26,7 +26,7 @@ function group(units, key) {
 const Field = ({ label, children }) => <label><span className="se-label">{label}</span><div className="se-input">{children}</div></label>;
 
 /** Floors of the facility and the forms that add a floor or a unit (facility managers and admins). */
-function FloorsAndUnits({ facilityId }) {
+function FloorsAndUnits({ facilityId, onClose }) {
     const queryClient = useQueryClient();
     const floors = useQuery({ queryKey: ['facilities', facilityId, 'floors'], queryFn: () => facilitiesApi.getFloors(facilityId) });
     const types = useUnitTypes().data ?? [];
@@ -58,11 +58,15 @@ function FloorsAndUnits({ facilityId }) {
 
     return (
         <section className="se-panel">
-            <div className="sa-card-title"><h2>Floors &amp; units</h2></div>
+            <div className="sa-card-title"><h2>Floors &amp; units</h2><button type="button" className="sa-close" onClick={onClose} aria-label="Close">×</button></div>
+            <div className="sa-floors-grid">
+            <div>
+            <h3>Floors</h3>
             <ul className="sa-people">
                 {list.map((f) => <li key={f.floorId}><span>Floor {f.floorNumber}{f.name ? ` · ${f.name}` : ''}</span><small>{f.unitCount} units</small></li>)}
                 {!list.length && <li className="sa-muted">{floors.isLoading ? 'Loading…' : 'No floors yet. Add one, then add its units.'}</li>}
             </ul>
+            </div>
 
             <form className="se-form" onSubmit={(e) => { e.preventDefault(); addFloor.mutate(); }}>
                 <h3>Add floor</h3>
@@ -97,6 +101,7 @@ function FloorsAndUnits({ facilityId }) {
                 <p className="se-hint">The rent comes from the size's price in Pricing &amp; Policies.</p>
                 <div className="sa-form-actions"><button type="submit" className="se-btn se-btn-primary" disabled={addUnit.isPending || !list.length}>{addUnit.isPending ? 'Adding…' : 'Add unit'}</button></div>
             </form>
+            </div>
         </section>
     );
 }
@@ -166,7 +171,9 @@ export default function FacilityDetailPage() {
     const sizePrice = useSizePrices();
     const role = useAuth().session?.role;
     const canSetUp = [Roles.FacilityManager, Roles.SystemAdministrator].includes(role);
-    const [editing, setEditing] = useState(false);
+    // One panel at a time under the header: 'edit' or 'floors'. A facility just created opens on floors, its next step.
+    const location = useLocation();
+    const [panel, setPanel] = useState(location.state?.setUp ? 'floors' : null);
 
     if (detail.isError) return <div className="se-alert" role="alert">{errorMessage(detail.error)}</div>;
     if (!facility) return <p className="se-empty">Loading facility…</p>;
@@ -175,10 +182,12 @@ export default function FacilityDetailPage() {
         <>
             <Link to="/admin/facilities" className="se-back"><Icon name="arrowLeft" size={16} /> Back to facilities</Link>
             <PageHeader title={<>{facility.name} <Status value={facility.status} /></>} subtitle={`${facility.address}${facility.district ? `, ${facility.district}` : ''}`}>
-                {role === Roles.SystemAdministrator && !editing && <button type="button" className="se-btn se-btn-ghost" onClick={() => setEditing(true)}><Icon name="file" size={16} /> Edit facility</button>}
+                {canSetUp && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'floors'} onClick={() => setPanel(panel === 'floors' ? null : 'floors')}><Icon name="grid" size={16} /> Floors &amp; units</button>}
+                {role === Roles.SystemAdministrator && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'edit'} onClick={() => setPanel(panel === 'edit' ? null : 'edit')}><Icon name="file" size={16} /> Edit facility</button>}
                 <Link to="/admin/units" className="se-btn se-btn-primary"><Icon name="grid" size={16} /> View units</Link>
             </PageHeader>
-            {editing && <EditFacility key={facility.facilityId} facility={facility} onClose={() => setEditing(false)} />}
+            {panel === 'edit' && <EditFacility key={facility.facilityId} facility={facility} onClose={() => setPanel(null)} />}
+            {panel === 'floors' && <FloorsAndUnits facilityId={facilityId} onClose={() => setPanel(null)} />}
             <div className="sa-stats">
                 <Stat icon="grid" label="Units rented" value={`${units.filter((u) => u.status === 'Occupied').length} / ${units.length}`} />
                 <Stat icon="grid" label="Occupancy" value={`${occupancy(units)}%`} />
@@ -227,7 +236,6 @@ export default function FacilityDetailPage() {
                             <div><dt>Total units</dt><dd>{units.length}</dd></div>
                         </dl>
                     </section>
-                    {canSetUp && <FloorsAndUnits facilityId={facilityId} />}
                     <section className="se-panel">
                         <div className="sa-card-title"><h2>Staff on duty today</h2><Link to="/admin/staff" className="se-link">Shifts <Icon name="arrow" size={14} /></Link></div>
                         <ul className="sa-people">

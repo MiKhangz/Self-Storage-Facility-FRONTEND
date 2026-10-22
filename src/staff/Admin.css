@@ -251,3 +251,6 @@
 .sa-dialog::backdrop { background: rgb(15 23 42 / 0.45); }
 .sa-role-legend dd { color: var(--se-muted); text-align: right; }
 .se-kv dd { overflow-wrap: anywhere; text-align: right; }
+.sa-floors-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px; align-items: start; }
+.sa-floors-grid h3 { margin: 0 0 12px; }
+@media (max-width: 1100px) { .sa-floors-grid { grid-template-columns: minmax(0, 1fr); } }

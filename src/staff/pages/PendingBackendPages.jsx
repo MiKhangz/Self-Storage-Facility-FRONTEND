@@ -58,7 +58,7 @@ export function AddFacilityPage() {
         mutationFn: () => facilitiesApi.create(Object.fromEntries(Object.entries(form).map(([k, v]) => [k, v.trim() || null]))),
         onSuccess: (facility) => {
             queryClient.invalidateQueries({ queryKey: ['facilities'] });
-            navigate(`/admin/facilities/${facility.facilityId}`);
+            navigate(`/admin/facilities/${facility.facilityId}`, { state: { setUp: true } });
         },
     });
     return (
