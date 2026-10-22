@@ -8,7 +8,7 @@ import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatVnd, todayIso } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
-import { PageHeader, Stat, Status } from '../components/ui.jsx';
+import { PageHeader, Stat, Status, Modal } from '../components/ui.jsx';
 import { useShifts, useSizePrices, useStaff, useTickets, useUnitTypes, useUnits } from '../queries.js';
 import { FACILITY_FIELDS } from './PendingBackendPages.jsx';
 import { occupancy } from './DashboardPage.jsx';
@@ -186,8 +186,8 @@ export default function FacilityDetailPage() {
                 {role === Roles.SystemAdministrator && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'edit'} onClick={() => setPanel(panel === 'edit' ? null : 'edit')}><Icon name="file" size={16} /> Edit facility</button>}
                 <Link to="/admin/units" className="se-btn se-btn-primary"><Icon name="grid" size={16} /> View units</Link>
             </PageHeader>
-            {panel === 'edit' && <EditFacility key={facility.facilityId} facility={facility} onClose={() => setPanel(null)} />}
-            {panel === 'floors' && <FloorsAndUnits facilityId={facilityId} onClose={() => setPanel(null)} />}
+            {panel === 'edit' && <Modal onClose={() => setPanel(null)} wide><EditFacility key={facility.facilityId} facility={facility} onClose={() => setPanel(null)} /></Modal>}
+            {panel === 'floors' && <Modal onClose={() => setPanel(null)} wide><FloorsAndUnits facilityId={facilityId} onClose={() => setPanel(null)} /></Modal>}
             <div className="sa-stats">
                 <Stat icon="grid" label="Units rented" value={`${units.filter((u) => u.status === 'Occupied').length} / ${units.length}`} />
                 <Stat icon="grid" label="Occupancy" value={`${occupancy(units)}%`} />

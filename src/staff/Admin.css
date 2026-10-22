@@ -247,8 +247,15 @@
 /* Full-width forms with three fields a row, and the help dialog on the users page. */
 .sa-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 @media (max-width: 900px) { .sa-grid-3 { grid-template-columns: minmax(0, 1fr); } }
-.sa-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; border: 1px solid var(--se-line); display: grid; gap: 14px; }
-.sa-dialog::backdrop { background: rgb(15 23 42 / 0.45); }
+.sa-dialog { display: grid; gap: 14px; }
+/* Pop-up: the panel inside keeps its own look; the dialog only centres it over a dimmed page. */
+.sa-modal { padding: 0; border: 0; background: transparent; width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; border-radius: 16px; }
+.sa-modal.wide { width: min(1100px, calc(100vw - 32px)); }
+.sa-modal > .se-panel { margin: 0; box-shadow: 0 24px 64px rgb(15 23 42 / 0.35); }
+.sa-modal::backdrop { background: rgb(15 23 42 / 0.55); }
+@keyframes sa-pop { from { opacity: 0; transform: translateY(12px) scale(0.98); } }
+.sa-modal[open] { animation: sa-pop 160ms ease-out; }
+@media (prefers-reduced-motion: reduce) { .sa-modal[open] { animation: none; } }
 .sa-role-legend dd { color: var(--se-muted); text-align: right; }
 .se-kv dd { overflow-wrap: anywhere; text-align: right; }
 .sa-floors-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px; align-items: start; }

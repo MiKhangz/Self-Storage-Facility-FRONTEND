@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { staffApi } from '../../api/generated';
@@ -8,7 +8,7 @@ import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
-import { Filters, PageHeader, SearchFilter, SelectFilter, Status, TableState, matches } from '../components/ui.jsx';
+import { Filters, Modal, PageHeader, SearchFilter, SelectFilter, Status, TableState, matches } from '../components/ui.jsx';
 import { PERMISSIONS, ROLE_INFO } from '../permissions.js';
 import { humanize, useFacilities, useStaff } from '../queries.js';
 
@@ -40,13 +40,12 @@ export function PermissionMatrix({ highlight, search = '' }) {
 
 /** The roles and what each may do, opened from a help button so the users table keeps the full width. */
 function PermissionHelp({ onClose }) {
-    const ref = useRef(null);
     const [search, setSearch] = useState('');
-    useEffect(() => { ref.current?.showModal(); }, []);
     return (
-        <dialog ref={ref} className="se-panel sa-dialog" onClose={onClose} aria-labelledby="perm-help-title">
+        <Modal onClose={onClose}>
+        <section className="se-panel sa-dialog" aria-labelledby="perm-help-title">
             <div className="sa-card-title"><h2 id="perm-help-title">Who can do what?</h2>
-                <button type="button" className="sa-close" onClick={() => ref.current?.close()} aria-label="Close">×</button></div>
+                <button type="button" className="sa-close" onClick={onClose} aria-label="Close">×</button></div>
             <dl className="se-kv sa-role-legend">
                 {ROLE_INFO.map((r) => <div key={r.role}><dt><span className="se-badge info">{r.short}</span> {r.title}</dt><dd>{r.text}</dd></div>)}
             </dl>
@@ -54,7 +53,8 @@ function PermissionHelp({ onClose }) {
                 <div className="se-input"><Icon name="search" size={16} /><input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. refund, handover, pricing" /></div></label>
             <PermissionMatrix search={search} />
             <p className="sa-muted">Enforced by the API: a role without a tick gets “not allowed” even if it finds the screen.</p>
-        </dialog>
+        </section>
+        </Modal>
     );
 }
 

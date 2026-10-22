@@ -1,6 +1,22 @@
+import { useEffect, useRef } from 'react';
 import Icon from '../../customer/components/Icon.jsx';
 import { errorMessage } from '../../api/axiosClient';
 import { TONE, humanize } from '../queries.js';
+
+/**
+ * A pop-up over a dimmed page (native <dialog>: focus stays inside, Esc closes). A click on the dimmed backdrop
+ * closes it too. `wide` fits a form laid out in columns.
+ */
+export function Modal({ onClose, wide, children }) {
+    const ref = useRef(null);
+    useEffect(() => { ref.current?.showModal(); }, []);
+    return (
+        <dialog ref={ref} className={`sa-modal${wide ? ' wide' : ''}`} onClose={onClose}
+            onClick={(e) => { if (e.target === ref.current) ref.current.close(); }}>
+            {children}
+        </dialog>
+    );
+}
 
 export function PageHeader({ title, subtitle, children }) {
     return (
