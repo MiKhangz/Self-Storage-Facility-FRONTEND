@@ -49,6 +49,7 @@
 .sa-stat small { font-size: 12px; color: var(--se-muted); }
 
 .sa-filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; align-items: center; }
+.sa-version-pick { display: grid; gap: 6px; min-width: 260px; }
 .sa-search { flex: 1; min-width: 220px; max-width: 360px; height: 40px; }
 .sa-filter select {
     height: 40px; padding: 0 10px; border: 1px solid var(--se-line); border-radius: 8px; background: #fff;

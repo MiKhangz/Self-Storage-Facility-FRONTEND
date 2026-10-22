@@ -147,14 +147,18 @@ export default function PricingPage() {
             <div className="se-alert info sa-not-wired"><Icon name="shield" size={14} /> New prices apply to new contracts and renewals only — existing contracts keep the rent agreed at signing.</div>
 
             {policy && (
+                <div className="sa-filters">
+                    <label className="sa-version-pick"><span className="se-label">Policy version</span>
+                        <div className="se-field"><select value={policy.pricingPolicyId} onChange={(e) => setPickedId(Number(e.target.value))} aria-label="Policy version">
+                            {all.map((p) => <option key={p.pricingPolicyId} value={p.pricingPolicyId}>Version {p.version} · {p.status}</option>)}
+                        </select></div>
+                    </label>
+                </div>
+            )}
+            {policy && (
                 <section className="se-panel sa-pricing">
                         <div className="sa-card-title">
                             <h2>Version {policy.version} <Status value={policy.status} /></h2>
-                            <label className="sa-filter"><span className="sr-only">Policy version</span>
-                                <select value={policy.pricingPolicyId} onChange={(e) => setPickedId(Number(e.target.value))} aria-label="Policy version">
-                                    {all.map((p) => <option key={p.pricingPolicyId} value={p.pricingPolicyId}>Version {p.version} · {p.status}</option>)}
-                                </select>
-                            </label>
                         </div>
                         {editable && <p className="sa-muted">Set the prices (Save each row), then the rental terms (Save terms), then Publish.</p>}
                         <h3 className="sa-pricing-step">1 · Prices per size</h3>
