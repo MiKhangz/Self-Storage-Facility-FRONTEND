@@ -75,6 +75,7 @@ function Settle({ request, onDone }) {
                     {s.shortfall > 0 && <div><dt>Customer still owes</dt><dd className="sa-bad">{formatVnd(s.shortfall)}</dd></div>}
                 </dl>
             )}
+            {s?.refundAmount > 0 && <p className="se-hint">The refund is now waiting in Deposit Refunds until it is paid.</p>}
             {s && <button type="button" className="se-btn se-btn-primary se-btn-block" onClick={onDone}>Done</button>}
             {settle.isError && <div className="se-alert" role="alert">{errorMessage(settle.error)}</div>}
             {!s && <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={settle.isPending}

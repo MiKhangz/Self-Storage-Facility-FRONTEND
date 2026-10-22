@@ -30,6 +30,7 @@ const NAV = [
     {
         section: 'Business', items: [
             { to: '/admin/pricing', icon: 'gem', label: 'Pricing & Policies', roles: [BOM] },
+            { to: '/admin/deposit-refunds', icon: 'card', label: 'Deposit Refunds', roles: [BOM, FM, ADMIN] },
             { to: '/admin/reports', icon: 'grid', label: 'Reports & Exports', roles: [BOM, FM, ADMIN] },
         ],
     },
