@@ -68,17 +68,17 @@ function FloorsAndUnits({ facilityId, onClose }) {
             </ul>
             </div>
 
-            <form className="se-form" onSubmit={(e) => { e.preventDefault(); addFloor.mutate(); }}>
+            <form className="se-form sa-setup-card blue" onSubmit={(e) => { e.preventDefault(); addFloor.mutate(); }}>
                 <h3>Add floor</h3>
                 <div className="se-panel-grid">
                     <Field label="Floor number *"><input type="number" min={-5} max={200} required value={floor.floorNumber} onChange={(e) => setFloor({ ...floor, floorNumber: e.target.value })} /></Field>
                     <Field label="Name"><input maxLength={50} placeholder="e.g. Tầng 1" value={floor.name} onChange={(e) => setFloor({ ...floor, name: e.target.value })} /></Field>
                 </div>
                 {addFloor.isError && <div className="se-alert" role="alert">{errorMessage(addFloor.error)}</div>}
-                <div className="sa-form-actions"><button type="submit" className="se-btn se-btn-ghost" disabled={addFloor.isPending}>{addFloor.isPending ? 'Adding…' : 'Add floor'}</button></div>
+                <div className="sa-form-actions"><button type="submit" className="se-btn sa-btn-blue" disabled={addFloor.isPending}>{addFloor.isPending ? 'Adding…' : 'Add floor'}</button></div>
             </form>
 
-            <form className="se-form" onSubmit={(e) => { e.preventDefault(); addUnit.mutate(); }}>
+            <form className="se-form sa-setup-card" onSubmit={(e) => { e.preventDefault(); addUnit.mutate(); }}>
                 <h3>Add unit</h3>
                 <div className="se-panel-grid">
                     <Field label="Floor *">

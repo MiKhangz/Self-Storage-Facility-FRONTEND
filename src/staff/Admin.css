@@ -261,3 +261,9 @@
 .sa-floors-grid { display: grid; grid-template-columns: minmax(0, 0.8fr) minmax(0, 1fr) minmax(0, 1.3fr); gap: 24px; align-items: start; }
 .sa-floors-grid h3 { margin: 0 0 12px; }
 @media (max-width: 1100px) { .sa-floors-grid { grid-template-columns: minmax(0, 1fr); } }
+/* Floors & units: each form is its own card; adding a floor is the blue one. */
+.sa-setup-card { border: 1px solid var(--se-line); border-radius: 12px; padding: 20px; }
+.sa-setup-card.blue { background: #eef4fe; border-color: #c9dbfb; }
+.sa-setup-card.blue h3 { color: #1d4fb8; }
+.sa-btn-blue { background: #2f6fe4; border-color: #2f6fe4; color: #fff; }
+.sa-btn-blue:hover:not(:disabled) { background: #1d5bd0; border-color: #1d5bd0; }
