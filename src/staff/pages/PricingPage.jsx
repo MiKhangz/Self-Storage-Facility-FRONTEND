@@ -105,21 +105,33 @@ export default function PricingPage() {
     const refresh = () => queryClient.invalidateQueries({ queryKey: ['pricing-policies'] });
 
     const newDraft = useMutation({
-        // A new version starts from the active terms; prices are then entered per unit size.
-        mutationFn: () => pricingPoliciesApi.create({
-            ...Object.fromEntries(TERM_KEYS.map((k) => [k, active?.[k] ?? 0])),
+        // A new version copies the one on screen (prices, discounts, fees, terms), so an old price comes back by copying
+        // its version and publishing it: past dates keep the version that applied. With no version yet, start blank.
+        mutationFn: () => (policy ? pricingPoliciesApi.copy(policy.pricingPolicyId) : pricingPoliciesApi.create({
+            ...Object.fromEntries(TERM_KEYS.map((k) => [k, 0])),
             effectiveFrom: todayIso(),
             effectiveTo: null,
-        }),
+        })),
         onSuccess: (p) => { setPickedId(p.pricingPolicyId); refresh(); },
     });
     const activate = useMutation({ mutationFn: () => pricingPoliciesApi.activate(policy.pricingPolicyId), onSuccess: refresh });
-    const error = newDraft.error ?? activate.error;
+    const removeDraft = useMutation({ mutationFn: () => pricingPoliciesApi.remove(policy.pricingPolicyId), onSuccess: () => { setPickedId(null); refresh(); } });
+    const error = newDraft.error ?? activate.error ?? removeDraft.error;
 
     return (
         <>
             <PageHeader title="Pricing & rental policies" subtitle={active ? `Policy version ${active.version} active since ${formatDate(active.effectiveFrom)}` : 'No active policy'}>
-                {!draft && <button type="button" className="se-btn se-btn-ghost" disabled={newDraft.isPending} onClick={() => newDraft.mutate()}><Icon name="file" size={16} /> New draft version</button>}
+                {!draft && (
+                    <button type="button" className="se-btn se-btn-ghost" disabled={newDraft.isPending} onClick={() => newDraft.mutate()}>
+                        <Icon name="file" size={16} /> {policy ? `Copy version ${policy.version} to a new draft` : 'New draft version'}
+                    </button>
+                )}
+                {editable && (
+                    <button type="button" className="se-btn se-btn-ghost" disabled={removeDraft.isPending}
+                        onClick={() => window.confirm(`Delete draft version ${policy.version}? Its prices and fees are removed; published versions are not touched.`) && removeDraft.mutate()}>
+                        Delete draft
+                    </button>
+                )}
                 {editable && (
                     <button type="button" className="se-btn se-btn-primary" disabled={activate.isPending}
                         onClick={() => window.confirm(`Publish version ${policy.version}? It replaces the active policy for new contracts and renewals.`) && activate.mutate()}>
@@ -153,7 +165,7 @@ export default function PricingPage() {
                                 </tbody>
                             </table>
                         </div>
-                        {!editable && <p className="sa-muted">Published versions are read-only. Create a draft version to change prices.</p>}
+                        {!editable && <p className="sa-muted">Published versions are read-only. To change these prices, or bring them back later, copy this version to a new draft.</p>}
                         {!!policy.fees?.length && (
                             <>
                                 <span className="se-label" style={{ marginTop: 16 }}>Extra fees</span>
