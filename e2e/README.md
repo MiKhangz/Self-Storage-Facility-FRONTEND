@@ -33,6 +33,10 @@ Settings you can override: `E2E_BACKEND_DIR`, `E2E_DB_CONNECTION`, `E2E_API_PORT
 | E09–E10 | Walk-in booking at the desk; unpaid rent → overdue case → lock-out → cash payment restores access |
 | E11–E12 | Admin opens a facility with a floor and a unit; admin creates staff, a manager changes only their own facility |
 
+`e2e/test-flows.drawio` draws the E02–E08 chain as swimlanes (Customer, Facility Staff, Facility Manager, Business Ops,
+System): which screen and button each role uses, what the backend stores, and where it then appears for the next role.
+Open it in draw.io (app.diagrams.net or the VS Code Draw.io extension).
+
 ## Writing a test
 
 - Sign in with `loginCustomer` / `loginStaff` from `helpers.js`. The token lives in memory, so after signing in move with
