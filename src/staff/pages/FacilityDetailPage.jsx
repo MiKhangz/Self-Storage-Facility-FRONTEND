@@ -102,7 +102,7 @@ function FloorsAndUnits({ facilityId }) {
 }
 
 /** Admin-only: change the facility's details and manager, or take it offline. */
-function EditFacility({ facility }) {
+function EditFacility({ facility, onClose }) {
     const queryClient = useQueryClient();
     const managers = useStaff({ role: Roles.FacilityManager }).data ?? [];
     const [form, setForm] = useState(() => ({
@@ -122,9 +122,9 @@ function EditFacility({ facility }) {
 
     return (
         <section className="se-panel">
-            <div className="sa-card-title"><h2>Edit facility</h2></div>
+            <div className="sa-card-title"><h2>Edit facility</h2><button type="button" className="sa-close" onClick={onClose} aria-label="Close">×</button></div>
             <form className="se-form" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
-                <div className="se-panel-grid">
+                <div className="se-panel-grid sa-grid-3">
                     {FACILITY_FIELDS.map(([key, label, required]) => (
                         <Field key={key} label={`${label}${required ? ' *' : ''}`}>
                             <input value={form[key]} required={required} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
@@ -166,6 +166,7 @@ export default function FacilityDetailPage() {
     const sizePrice = useSizePrices();
     const role = useAuth().session?.role;
     const canSetUp = [Roles.FacilityManager, Roles.SystemAdministrator].includes(role);
+    const [editing, setEditing] = useState(false);
 
     if (detail.isError) return <div className="se-alert" role="alert">{errorMessage(detail.error)}</div>;
     if (!facility) return <p className="se-empty">Loading facility…</p>;
@@ -174,8 +175,10 @@ export default function FacilityDetailPage() {
         <>
             <Link to="/admin/facilities" className="se-back"><Icon name="arrowLeft" size={16} /> Back to facilities</Link>
             <PageHeader title={<>{facility.name} <Status value={facility.status} /></>} subtitle={`${facility.address}${facility.district ? `, ${facility.district}` : ''}`}>
+                {role === Roles.SystemAdministrator && !editing && <button type="button" className="se-btn se-btn-ghost" onClick={() => setEditing(true)}><Icon name="file" size={16} /> Edit facility</button>}
                 <Link to="/admin/units" className="se-btn se-btn-primary"><Icon name="grid" size={16} /> View units</Link>
             </PageHeader>
+            {editing && <EditFacility key={facility.facilityId} facility={facility} onClose={() => setEditing(false)} />}
             <div className="sa-stats">
                 <Stat icon="grid" label="Units rented" value={`${units.filter((u) => u.status === 'Occupied').length} / ${units.length}`} />
                 <Stat icon="grid" label="Occupancy" value={`${occupancy(units)}%`} />
@@ -224,7 +227,6 @@ export default function FacilityDetailPage() {
                             <div><dt>Total units</dt><dd>{units.length}</dd></div>
                         </dl>
                     </section>
-                    {role === Roles.SystemAdministrator && <EditFacility key={facility.facilityId} facility={facility} />}
                     {canSetUp && <FloorsAndUnits facilityId={facilityId} />}
                     <section className="se-panel">
                         <div className="sa-card-title"><h2>Staff on duty today</h2><Link to="/admin/staff" className="se-link">Shifts <Icon name="arrow" size={14} /></Link></div>

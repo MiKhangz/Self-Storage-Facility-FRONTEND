@@ -179,7 +179,7 @@
 /* A08 pricing */
 .sa-num { width: 110px; height: 36px; padding: 0 8px; border: 1px solid var(--se-line); border-radius: 6px; font-family: inherit; font-size: 14px; }
 .sa-num:focus { border-color: var(--se-primary); outline: 0; }
-.sa-terms { display: grid; gap: 16px; }
+.sa-terms { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
 /* Long column titles ("3+ months (discount %)") wrap, so the whole price table fits without scrolling. */
 .sa-pricing .se-table th { white-space: normal; }
 .sa-pricing .sa-pricing-step { margin: 22px 0 10px; font-size: 15px; font-weight: 700; color: var(--se-dark); }
@@ -243,3 +243,11 @@
 .sa-grid-flip .se-form { display: grid; gap: 12px; }
 .sa-grid-flip h2 { margin: 0 0 4px; font-size: 18px; color: var(--se-dark); }
 .sa-steps { margin-top: 16px; }
+
+/* Full-width forms with three fields a row, and the help dialog on the users page. */
+.sa-grid-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@media (max-width: 900px) { .sa-grid-3 { grid-template-columns: minmax(0, 1fr); } }
+.sa-dialog { width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; border: 1px solid var(--se-line); display: grid; gap: 14px; }
+.sa-dialog::backdrop { background: rgb(15 23 42 / 0.45); }
+.sa-role-legend dd { color: var(--se-muted); text-align: right; }
+.se-kv dd { overflow-wrap: anywhere; text-align: right; }

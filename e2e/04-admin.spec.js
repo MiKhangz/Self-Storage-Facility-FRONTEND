@@ -34,6 +34,11 @@ test('E12 an admin creates a staff account; a manager can change only their own 
 
   await loginStaff(page, ACCOUNTS.admin)
   await openAdmin(page, 'Users & Roles')
+  // The role help: searching narrows the matrix to the matching feature.
+  await page.getByRole('button', { name: 'Who can do what?' }).click()
+  await page.getByLabel('Find a feature').fill('refund')
+  await expect(page.getByRole('dialog').getByRole('row', { name: /Settle a deposit refund/ })).toBeVisible()
+  await page.getByRole('dialog').getByRole('button', { name: 'Close' }).click()
   await page.getByRole('link', { name: 'Add user' }).click()
   await page.getByLabel('Full name *').fill('Nhân viên E2E')
   await page.getByLabel('Work email *').fill(email)

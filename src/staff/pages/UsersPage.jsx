@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { staffApi } from '../../api/generated';
@@ -14,13 +14,14 @@ import { humanize, useFacilities, useStaff } from '../queries.js';
 
 const STATUSES = ['Active', 'Disabled'];
 
-export function PermissionMatrix({ highlight }) {
+export function PermissionMatrix({ highlight, search = '' }) {
+    const rows = PERMISSIONS.filter((p) => matches(search, p.feature, p.group));
     return (
         <div className="se-table-wrap">
             <table className="se-table sa-matrix">
                 <thead><tr><th>Feature</th>{ROLE_INFO.map((r) => <th key={r.role} className={highlight === r.role ? 'hl' : ''} title={r.title}>{r.short}</th>)}</tr></thead>
                 <tbody>
-                    {PERMISSIONS.map((p) => (
+                    {rows.map((p) => (
                         <tr key={p.feature}>
                             <td>{p.feature}</td>
                             {ROLE_INFO.map((r) => (
@@ -30,9 +31,30 @@ export function PermissionMatrix({ highlight }) {
                             ))}
                         </tr>
                     ))}
+                    {!rows.length && <tr><td colSpan={ROLE_INFO.length + 1} className="sa-muted">No feature matches “{search}”.</td></tr>}
                 </tbody>
             </table>
         </div>
+    );
+}
+
+/** The roles and what each may do, opened from a help button so the users table keeps the full width. */
+function PermissionHelp({ onClose }) {
+    const ref = useRef(null);
+    const [search, setSearch] = useState('');
+    useEffect(() => { ref.current?.showModal(); }, []);
+    return (
+        <dialog ref={ref} className="se-panel sa-dialog" onClose={onClose} aria-labelledby="perm-help-title">
+            <div className="sa-card-title"><h2 id="perm-help-title">Who can do what?</h2>
+                <button type="button" className="sa-close" onClick={() => ref.current?.close()} aria-label="Close">×</button></div>
+            <dl className="se-kv sa-role-legend">
+                {ROLE_INFO.map((r) => <div key={r.role}><dt><span className="se-badge info">{r.short}</span> {r.title}</dt><dd>{r.text}</dd></div>)}
+            </dl>
+            <label><span className="se-label">Find a feature</span>
+                <div className="se-input"><Icon name="search" size={16} /><input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. refund, handover, pricing" /></div></label>
+            <PermissionMatrix search={search} />
+            <p className="sa-muted">Enforced by the API: a role without a tick gets “not allowed” even if it finds the screen.</p>
+        </dialog>
     );
 }
 
@@ -89,6 +111,7 @@ export default function UsersPage() {
     const [search, setSearch] = useState('');
     const [role, setRole] = useState('');
     const [selected, setSelected] = useState(null);
+    const [help, setHelp] = useState(false);
     const staff = useStaff();
     const all = staff.data ?? [];
     const shown = all.filter((u) => (!role || u.role === role) && matches(search, u.fullName, u.email));
@@ -99,13 +122,15 @@ export default function UsersPage() {
     return (
         <>
             <PageHeader title="Users & roles" subtitle={isAdmin ? 'Manage staff accounts, assign roles and control access by facility' : 'Assign facility staff to the facilities you manage'}>
+                <button type="button" className="se-btn se-btn-ghost" onClick={() => setHelp(true)}><Icon name="shield" size={16} /> Who can do what?</button>
                 {isAdmin && <Link to="/admin/users/invite" className="se-btn se-btn-primary"><Icon name="shield" size={16} /> Add user</Link>}
             </PageHeader>
             <Filters>
                 <SearchFilter value={search} onChange={setSearch} placeholder="Search name or email" />
                 <SelectFilter label="Role" value={role} onChange={setRole} all="All roles" options={ROLE_INFO.map((r) => ({ value: r.role, label: r.title }))} />
             </Filters>
-            <div className="sa-split open">
+            {help && <PermissionHelp onClose={() => setHelp(false)} />}
+            <div className={`sa-split${current ? ' open' : ''}`}>
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>User</th><th>Role</th><th>Facilities</th><th>Status</th><th>Created</th></tr></thead>
@@ -123,9 +148,7 @@ export default function UsersPage() {
                         </tbody>
                     </table>
                 </div>
-                {current
-                    ? <EditUser key={current.userId} user={current} managed={managed} onClose={() => setSelected(null)} />
-                    : <aside className="se-panel sa-side-panel"><h2>Permission matrix</h2><p className="sa-muted">SA · BO · FM · ST = the four staff roles, as enforced by the API.</p><PermissionMatrix /></aside>}
+                {current && <EditUser key={current.userId} user={current} managed={managed} onClose={() => setSelected(null)} />}
             </div>
         </>
     );
