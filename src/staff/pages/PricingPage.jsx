@@ -72,22 +72,25 @@ function DraftTerms({ policy }) {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pricing-policies'] }),
     });
     return (
-        <form className="sa-terms" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
-            <section className="se-panel">
-                <label><span className="se-label">Starts on</span><div className="se-input"><input type="date" value={form.effectiveFrom} onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })} required /></div></label>
-            </section>
+        <form className="sa-term-grid" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
+            <div className="sa-term-group">
+                <h3><span className="sa-stat-icon"><Icon name="calendar" size={15} /></span> Starts on</h3>
+                <label><span className="se-label">First day this version applies</span><div className="se-input"><input type="date" value={form.effectiveFrom} onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })} required /></div></label>
+            </div>
             {TERMS.map((group) => (
-                <section key={group.title} className="se-panel">
-                    <div className="sa-card-title"><h2><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {group.title}</h2></div>
+                <div key={group.title} className="sa-term-group">
+                    <h3><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {group.title}</h3>
                     {group.rows.map(([k, label, unit]) => (
                         <label key={k}><span className="se-label">{label} ({unit})</span>
                             <div className="se-input"><input type="number" min="0" step="any" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} required /></div></label>
                     ))}
-                </section>
+                </div>
             ))}
-            {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
-            {save.isSuccess && !save.isPending && <div className="se-alert info">Terms saved.</div>}
-            <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save terms'}</button>
+            <div className="sa-term-actions">
+                {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
+                {save.isSuccess && !save.isPending && <div className="se-alert info">Terms saved.</div>}
+                <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save terms'}</button>
+            </div>
         </form>
     );
 }
@@ -144,16 +147,17 @@ export default function PricingPage() {
             <div className="se-alert info sa-not-wired"><Icon name="shield" size={14} /> New prices apply to new contracts and renewals only — existing contracts keep the rent agreed at signing.</div>
 
             {policy && (
-                <div className="sa-grid-2">
-                    <section className="se-panel">
+                <section className="se-panel sa-pricing">
                         <div className="sa-card-title">
-                            <h2>Rental price table <Status value={policy.status} /></h2>
+                            <h2>Version {policy.version} <Status value={policy.status} /></h2>
                             <label className="sa-filter"><span className="sr-only">Policy version</span>
                                 <select value={policy.pricingPolicyId} onChange={(e) => setPickedId(Number(e.target.value))} aria-label="Policy version">
                                     {all.map((p) => <option key={p.pricingPolicyId} value={p.pricingPolicyId}>Version {p.version} · {p.status}</option>)}
                                 </select>
                             </label>
                         </div>
+                        {editable && <p className="sa-muted">Set the prices (Save each row), then the rental terms (Save terms), then Publish.</p>}
+                        <h3 className="sa-pricing-step">1 · Prices per size</h3>
                         <div className="se-table-wrap">
                             <table className="se-table">
                                 <thead><tr><th>Size</th><th>Area</th><th>1 month (₫)</th><th>3+ months (discount %)</th><th>6+ months (discount %)</th><th>12+ months (discount %)</th><th /></tr></thead>
@@ -172,16 +176,22 @@ export default function PricingPage() {
                                 <dl className="se-kv">{policy.fees.map((f) => <div key={f.feeTypeId}><dt>{f.name}</dt><dd>{f.isPercentage ? `${f.amount}%` : formatVnd(f.amount)}</dd></div>)}</dl>
                             </>
                         )}
-                    </section>
-                    {editable ? <DraftTerms key={policy.pricingPolicyId} policy={policy} /> : <div className="sa-terms">
-                        {TERMS.map((group) => (
-                            <section key={group.title} className="se-panel">
-                                <div className="sa-card-title"><h2><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {group.title}</h2></div>
-                                <dl className="se-kv">{group.rows.map(([k, label, unit]) => <div key={k}><dt>{label}</dt><dd>{policy[k]} {unit}</dd></div>)}</dl>
-                            </section>
-                        ))}
-                    </div>}
-                </div>
+                        <h3 className="sa-pricing-step">2 · Rental terms</h3>
+                        {editable ? <DraftTerms key={policy.pricingPolicyId} policy={policy} /> : (
+                            <div className="sa-term-grid">
+                                <div className="sa-term-group">
+                                    <h3><span className="sa-stat-icon"><Icon name="calendar" size={15} /></span> In force</h3>
+                                    <dl className="se-kv"><div><dt>From</dt><dd>{formatDate(policy.effectiveFrom)}</dd></div><div><dt>Until</dt><dd>{policy.effectiveTo ? formatDate(policy.effectiveTo) : '—'}</dd></div></dl>
+                                </div>
+                                {TERMS.map((group) => (
+                                    <div key={group.title} className="sa-term-group">
+                                        <h3><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {group.title}</h3>
+                                        <dl className="se-kv">{group.rows.map(([k, label, unit]) => <div key={k}><dt>{label}</dt><dd>{policy[k]} {unit}</dd></div>)}</dl>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                </section>
             )}
         </>
     );

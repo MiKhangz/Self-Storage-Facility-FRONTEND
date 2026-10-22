@@ -179,6 +179,14 @@
 .sa-num { width: 110px; height: 36px; padding: 0 8px; border: 1px solid var(--se-line); border-radius: 6px; font-family: inherit; font-size: 14px; }
 .sa-num:focus { border-color: var(--se-primary); outline: 0; }
 .sa-terms { display: grid; gap: 16px; }
+/* Long column titles ("3+ months (discount %)") wrap, so the whole price table fits without scrolling. */
+.sa-pricing .se-table th { white-space: normal; }
+.sa-pricing .sa-pricing-step { margin: 22px 0 10px; font-size: 15px; font-weight: 700; color: var(--se-dark); }
+.sa-term-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 24px; align-items: start; }
+.sa-term-group { display: grid; gap: 10px; padding-top: 12px; border-top: 1px solid var(--se-line); }
+.sa-term-group h3 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 14px; font-weight: 700; color: var(--se-dark); }
+.sa-term-group .se-kv { margin: 0; }
+.sa-term-actions { grid-column: 1 / -1; display: grid; gap: 10px; justify-items: end; }
 .sa-terms h2 { display: flex; align-items: center; gap: 10px; }
 
 /* A09 ticket board */
