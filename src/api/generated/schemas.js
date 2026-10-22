@@ -385,6 +385,41 @@
  */
 
 /**
+ * @typedef {Object} DepositRefundDto
+ * @property {number} [depositRefundId] int32
+ * @property {DepositRefundSource} [source]
+ * @property {number} [amount] double
+ * @property {RefundMethod} [method]
+ * @property {(string|null)} [refundAccount]
+ * @property {DepositRefundStatus} [status]
+ * @property {string} [createdAt] date-time
+ * @property {(string|null)} [paidAt] date-time
+ * @property {(string|null)} [paidByName]
+ * @property {(string|null)} [referenceNo]
+ * @property {number} [customerId] int32
+ * @property {(string|null)} [customerName]
+ * @property {(string|null)} [customerPhone]
+ * @property {number} [facilityId] int32
+ * @property {(string|null)} [facilityName]
+ * @property {number} [reservationId] int32
+ * @property {(string|null)} [reservationCode]
+ * @property {(number|null)} [handoverId] int32
+ */
+
+/**
+ * @typedef {Object} DepositRefundDtoPagedResult
+ * @property {(Array<DepositRefundDto>|null)} [items]
+ * @property {number} [page] int32
+ * @property {number} [pageSize] int32
+ * @property {number} [totalCount] int32
+ * @property {number} [totalPages] int32
+ */
+
+/** @typedef {"Cancellation"|"Handover"} DepositRefundSource */
+
+/** @typedef {"Pending"|"Paid"} DepositRefundStatus */
+
+/**
  * @typedef {Object} DepositSettlementDto
  * @property {number} [handoverId] int32
  * @property {number} [depositAmount] double
@@ -646,6 +681,12 @@
  */
 
 /** @typedef {"Open"|"Scheduled"|"InProgress"|"Done"|"Cancelled"} MaintenanceOrderStatus */
+
+/**
+ * @typedef {Object} MarkDepositRefundPaidRequest
+ * @property {RefundMethod} [method]
+ * @property {(string|null)} [referenceNo]
+ */
 
 /**
  * @typedef {Object} NotificationSettingsDto
