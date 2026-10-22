@@ -37,7 +37,8 @@ Settings you can override: `E2E_BACKEND_DIR`, `E2E_DB_CONNECTION`, `E2E_API_PORT
 
 `e2e/test-flows.drawio` draws the flows as swimlanes (Customer, Facility Staff, Facility Manager, Business Ops, System):
 which screen and button each role uses, what the backend stores, and where it then appears for the next role.
-Page 1 is the E02–E08 rental chain (ending with the deposit refund paid), page 2 the E13–E15 cancellations.
+Pages: E02–E08 rental chain (ending with the deposit refund paid) · E09–E10 walk-in and overdue · E11, E12, E16 admin
+(facility, staff, price drafts) · E13–E15 cancellations and refunds.
 Open it in draw.io (app.diagrams.net or the VS Code Draw.io extension).
 
 ## Writing a test
