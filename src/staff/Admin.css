@@ -55,7 +55,9 @@
     font-family: inherit; font-size: 14px; color: var(--se-ink);
 }
 
-.sa-grid-2 { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; align-items: start; margin-bottom: 20px; }
+.sa-grid-2 { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 20px; align-items: start; margin-bottom: 20px; }
+/* A wide table inside scrolls in its own box instead of pushing the other column off the page. */
+.sa-grid-2 > * { min-width: 0; }
 .sa-card-title { display: flex; justify-content: space-between; align-items: center; margin: 0 0 14px; }
 .sa-card-title h2 { margin: 0; font-size: 17px; font-weight: 700; color: var(--se-dark); }
 .sa-table .se-btn-sm + .se-btn-sm { margin-left: 6px; }
