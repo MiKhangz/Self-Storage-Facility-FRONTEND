@@ -17,6 +17,7 @@
  * @property {string} [issuedAt] date-time
  * @property {string} [expiresAt] date-time
  * @property {boolean} [isActive]
+ * @property {(string|null)} [code]
  */
 
 /**
@@ -140,6 +141,7 @@
  * @property {(number|null)} [openCheckInId] int32
  * @property {(string|null)} [since] date-time
  * @property {boolean} [canEnter]
+ * @property {CheckOutMethod} [leftHow]
  */
 
 /**
@@ -155,6 +157,8 @@
  * @property {string} [checkInAt] date-time
  * @property {(string|null)} [checkOutAt] date-time
  * @property {(string|null)} [note]
+ * @property {CheckOutMethod} [checkOutMethod]
+ * @property {(string|null)} [checkOutReason]
  */
 
 /**
@@ -171,6 +175,8 @@
  * @property {number} [contractId] int32
  * @property {(string|null)} [note]
  */
+
+/** @typedef {"Desk"|"MarkedByStaff"|"AutoAtClosing"} CheckOutMethod */
 
 /** @typedef {"Good"|"MinorDamage"|"MajorDamage"} ConditionResult */
 
@@ -698,6 +704,12 @@
  * @typedef {Object} MarkDepositRefundPaidRequest
  * @property {RefundMethod} [method]
  * @property {(string|null)} [referenceNo]
+ */
+
+/**
+ * @typedef {Object} MarkLeftRequest
+ * @property {string} [leftAt] date-time
+ * @property {(string|null)} [reason]
  */
 
 /**

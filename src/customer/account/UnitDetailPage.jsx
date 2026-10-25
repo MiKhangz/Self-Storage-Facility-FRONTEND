@@ -17,18 +17,18 @@ const formatTime = (iso) => new Date(iso).toLocaleString('vi-VN', { timeZone: 'A
 
 function AccessCodeCard({ contract }) {
     const queryClient = useQueryClient();
-    const [code, setCode] = useState(null);
-    const [shown, setShown] = useState(true);
+    const [issued, setIssued] = useState(null);
+    // Hidden until the customer taps "Hiện mã", so it is not on screen for anyone looking over their shoulder.
+    const [shown, setShown] = useState(false);
     const summary = useQuery({
         queryKey: ['contracts', contract.contractId, 'access-code'],
         queryFn: () => contractsApi.accessCode(contract.contractId),
         enabled: contract.status === 'Active',
     });
-    // The backend stores only a hash, so the digits exist on screen only right after a new code is issued.
     const issue = useMutation({
         mutationFn: () => contractsApi.accessCodesRequest(contract.contractId),
         onSuccess: (dto) => {
-            setCode(dto.code);
+            setIssued(dto.code);
             setShown(true);
             queryClient.invalidateQueries({ queryKey: ['contracts', contract.contractId, 'access-code'] });
         },
@@ -43,6 +43,8 @@ function AccessCodeCard({ contract }) {
         );
     }
 
+    // The current code comes back from the account; codes issued before codes were kept readable cannot.
+    const code = issued ?? summary.data?.code ?? null;
     const digits = code ? code.split('') : Array(6).fill('•');
     return (
         <section className="se-code-card">
@@ -56,8 +58,11 @@ function AccessCodeCard({ contract }) {
             </div>
             {issue.isError && <p className="se-code-note error">{errorMessage(issue.error)}</p>}
             <p className="se-code-note">
-                {code ? 'Hãy ghi lại mã này ngay, mã sẽ không hiển thị lại. ' : ''}
-                {summary.data?.isActive ? `Mã hiện tại có hiệu lực đến ${formatDate(summary.data.expiresAt)}.` : 'Chưa có mã đang dùng. Hãy cấp mã mới để mở cổng.'} Không chia sẻ mã cho người khác.
+                {summary.data?.isActive
+                    ? `Đọc mã này cho nhân viên khi vào và ra cơ sở. Mã có hiệu lực đến ${formatDate(summary.data.expiresAt)}. `
+                    : 'Chưa có mã đang dùng. Hãy cấp mã mới. '}
+                {summary.data?.isActive && !code ? 'Mã cũ không xem lại được, hãy cấp mã mới. ' : ''}
+                Không chia sẻ mã cho người khác.
             </p>
         </section>
     );

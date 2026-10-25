@@ -98,19 +98,32 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     expect(contract.status).toBe('Active')
   })
 
-  test('E05b the customer says their code at the desk, staff check them in (green) and out (red)', async () => {
+  test('E05b the customer is inside after the handover; their code checks them out and in, and staff fix a forgotten check-out', async () => {
     await openAdmin(staff, 'Check-in / out')
-    await staff.getByLabel("Customer's access code").fill(accessCode)
-    await staff.getByRole('button', { name: 'Find' }).click()
-    await staff.getByRole('button', { name: 'Check in', exact: true }).click()
     const row = staff.getByRole('row', { name: new RegExp(name) })
     await expect(row).toContainText('Inside')
-    await row.getByRole('button', { name: 'Check out' }).click()
+
+    const code = staff.getByLabel(/Customer's access code/)
+    await code.fill(accessCode)
+    await staff.getByRole('button', { name: 'Find' }).click()
+    await staff.getByRole('button', { name: 'Check out', exact: true }).click()
     await expect(row).toContainText('Out')
-    await expect.poll(async () => {
-      const visits = (await staffApi.get(`/api/check-ins?contractId=${contract.contractId}&page=1&pageSize=5`)).items
-      return visits.length === 1 && !!visits[0].checkOutAt
-    }).toBe(true)
+
+    await code.fill(accessCode)
+    await staff.getByRole('button', { name: 'Find' }).click()
+    await staff.getByRole('button', { name: 'Check in', exact: true }).click()
+    await expect(row).toContainText('Inside')
+
+    // They went home without saying their code: staff close the visit with a reason.
+    await row.getByRole('button', { name: 'Mark as left' }).click()
+    await staff.getByLabel('Reason *').fill('Forgot to check out at the desk')
+    await staff.getByRole('dialog').getByRole('button', { name: 'Mark as left' }).click()
+    await expect(row).toContainText('marked by staff')
+
+    // The renter can read their code again in their account.
+    await customer.reload()
+    await customer.getByRole('button', { name: 'Hiện mã' }).click()
+    await expect(customer.getByLabel(`Mã ra vào ${accessCode}`)).toBeVisible()
   })
 
   test('E06 the billing run issues rent and the customer pays it online', async ({ baseURL }) => {

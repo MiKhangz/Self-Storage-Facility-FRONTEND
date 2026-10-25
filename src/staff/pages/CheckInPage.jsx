@@ -4,29 +4,60 @@ import { checkInsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, todayIso } from '../../customer/components/format.js';
-import { PageHeader, Stat } from '../components/ui.jsx';
+import { Modal, PageHeader, Stat } from '../components/ui.jsx';
 
 const time = (iso) => iso && new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+/** Now, as the value of a datetime-local input in Vietnam time. */
+const nowLocal = () => new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 16);
+const LEFT_HOW = { MarkedByStaff: 'marked by staff', AutoAtClosing: 'auto at closing' };
+
+/** The customer left without checking out: staff record roughly when, and why. The activity log keeps who did it. */
+function MarkLeft({ row, onClose }) {
+    const queryClient = useQueryClient();
+    const [form, setForm] = useState({ leftAt: nowLocal(), reason: '' });
+    const save = useMutation({
+        // Sent as Vietnam wall-clock time; the API converts it.
+        mutationFn: () => checkInsApi.markLeft(row.openCheckInId, { leftAt: `${form.leftAt}:00`, reason: form.reason.trim() }),
+        onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['check-ins'] }); onClose(); },
+    });
+    return (
+        <Modal onClose={onClose}>
+            <form className="se-panel sa-dialog" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
+                <div className="sa-card-title"><h2>Mark {row.customerName} as left</h2>
+                    <button type="button" className="sa-close" onClick={onClose} aria-label="Close">×</button></div>
+                <p className="sa-muted">Use this only when the customer left without checking out at the desk. Inside since {time(row.since)}.</p>
+                <label><span className="se-label">When did they leave?</span>
+                    <div className="se-input"><input type="datetime-local" required value={form.leftAt} max={nowLocal()} onChange={(e) => setForm({ ...form, leftAt: e.target.value })} /></div></label>
+                <label><span className="se-label">Reason *</span>
+                    <div className="se-input"><input required maxLength={200} placeholder="e.g. Forgot to check out at the desk" value={form.reason} onChange={(e) => setForm({ ...form, reason: e.target.value })} /></div></label>
+                {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
+                <div className="sa-form-actions">
+                    <button type="button" className="se-btn se-btn-ghost" onClick={onClose}>Cancel</button>
+                    <button type="submit" className="se-btn se-btn-primary" disabled={!form.reason.trim() || save.isPending}>{save.isPending ? 'Saving…' : 'Mark as left'}</button>
+                </div>
+            </form>
+        </Modal>
+    );
+}
 
 /**
- * SR-05: who is inside the facility right now. The customer says their access code at the desk; staff find them by
- * it and check them in (green). When they leave, staff check them out (red).
+ * SR-05: who is inside the facility right now. The customer says their access code at the desk, both coming in and
+ * going out; staff find them by it and check them in (green) or out (red). The handover checks a new renter in.
  */
 export default function CheckInPage() {
     const queryClient = useQueryClient();
     // Another desk may check someone in or out, so the board refreshes on its own.
     const board = useQuery({ queryKey: ['check-ins', 'board'], queryFn: checkInsApi.board, refetchInterval: 30_000 });
     const [code, setCode] = useState('');
+    const [marking, setMarking] = useState(null);
     const find = useMutation({ mutationFn: () => checkInsApi.find({ accessCode: code.trim() }) });
-    const refresh = () => queryClient.invalidateQueries({ queryKey: ['check-ins'] });
-    const checkIn = useMutation({
-        mutationFn: (contractId) => checkInsApi.checkIn({ contractId, note: null }),
-        onSuccess: () => { setCode(''); find.reset(); refresh(); },
-    });
-    const checkOut = useMutation({ mutationFn: (checkInId) => checkInsApi.checkOut(checkInId), onSuccess: refresh });
+    const done = { onSuccess: () => { setCode(''); find.reset(); queryClient.invalidateQueries({ queryKey: ['check-ins'] }); } };
+    const checkIn = useMutation({ mutationFn: (contractId) => checkInsApi.checkIn({ contractId, note: null }), ...done });
+    const checkOut = useMutation({ mutationFn: (checkInId) => checkInsApi.checkOut(checkInId), ...done });
 
     const rows = board.data ?? [];
     const found = find.data && rows.find((r) => r.contractId === find.data.contractId);
+    const busy = checkIn.isPending || checkOut.isPending;
     const error = checkIn.error ?? checkOut.error;
 
     return (
@@ -40,7 +71,7 @@ export default function CheckInPage() {
 
             <section className="se-panel sa-checkin-find">
                 <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) find.mutate(); }}>
-                    <label><span className="se-label">Customer's access code</span>
+                    <label><span className="se-label">Customer's access code (coming in or going out)</span>
                         <div className="se-input"><Icon name="key" size={16} />
                             <input inputMode="numeric" autoComplete="off" maxLength={20} placeholder="Ask the customer for their code" value={code}
                                 onChange={(e) => { setCode(e.target.value); find.reset(); }} /></div></label>
@@ -49,19 +80,19 @@ export default function CheckInPage() {
                 {find.isError && <div className="se-alert" role="alert">{errorMessage(find.error)}</div>}
                 {found && (
                     <div className={`sa-found ${found.inside ? 'in' : 'out'}`}>
-                        <span><strong>{found.customerName}</strong><small>Unit {found.unitCode} · {found.contractNumber}</small></span>
+                        <span><strong>{found.customerName}</strong>
+                            <small>Unit {found.unitCode} · {found.inside ? `inside since ${time(found.since)}` : 'not inside'}</small></span>
                         {found.inside
-                            ? <span className="sa-muted">Already inside since {time(found.since)}</span>
-                            : <button type="button" className="se-btn sa-btn-green" disabled={checkIn.isPending} onClick={() => checkIn.mutate(found.contractId)}>
-                                {checkIn.isPending ? 'Checking in…' : 'Check in'}</button>}
+                            ? <button type="button" className="se-btn sa-btn-red" disabled={busy} onClick={() => checkOut.mutate(found.openCheckInId)}>{checkOut.isPending ? 'Checking out…' : 'Check out'}</button>
+                            : <button type="button" className="se-btn sa-btn-green" disabled={busy} onClick={() => checkIn.mutate(found.contractId)}>{checkIn.isPending ? 'Checking in…' : 'Check in'}</button>}
                     </div>
                 )}
+                {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
             </section>
 
-            {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
             <section className="se-card se-table-wrap">
                 <table className="se-table sa-table">
-                    <thead><tr><th>Status</th><th>Customer</th><th>Unit</th><th>Facility</th><th>Since</th><th aria-label="Action" /></tr></thead>
+                    <thead><tr><th>Status</th><th>Customer</th><th>Unit</th><th>Facility</th><th>Since</th><th aria-label="Fix a mistake" /></tr></thead>
                     <tbody>
                         {rows.map((r) => (
                             <tr key={r.contractId} className={found?.contractId === r.contractId ? 'active' : ''}>
@@ -69,10 +100,12 @@ export default function CheckInPage() {
                                 <td className="strong">{r.customerName}<div className="sa-muted">{r.customerPhone}</div></td>
                                 <td>{r.unitCode}</td>
                                 <td>{r.facilityName}</td>
-                                <td>{r.since ? time(r.since) : '—'}{!r.canEnter && <div className="sa-muted">No working code</div>}</td>
+                                <td>{r.since ? time(r.since) : '—'}
+                                    {LEFT_HOW[r.leftHow] && <div className="sa-muted">Left · {LEFT_HOW[r.leftHow]}</div>}
+                                    {!r.canEnter && <div className="sa-muted">No working code</div>}</td>
                                 <td>{r.inside && (
-                                    <button type="button" className="se-btn sa-btn-red se-btn-sm" disabled={checkOut.isPending}
-                                        onClick={() => checkOut.mutate(r.openCheckInId)}>Check out</button>
+                                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setMarking(r)}
+                                        title="The customer already left without checking out">Mark as left</button>
                                 )}</td>
                             </tr>
                         ))}
@@ -80,6 +113,7 @@ export default function CheckInPage() {
                     </tbody>
                 </table>
             </section>
+            {marking && <MarkLeft row={marking} onClose={() => setMarking(null)} />}
         </>
     );
 }

@@ -6,6 +6,7 @@ import { api } from '../axiosClient.js'
 /** @typedef {import('./schemas.js').CheckInDtoPagedResult} CheckInDtoPagedResult */
 /** @typedef {import('./schemas.js').CheckInRequest} CheckInRequest */
 /** @typedef {import('./schemas.js').FindByAccessCodeRequest} FindByAccessCodeRequest */
+/** @typedef {import('./schemas.js').MarkLeftRequest} MarkLeftRequest */
 
 export const checkInsApi = {
   /**
@@ -22,6 +23,14 @@ export const checkInsApi = {
    */
   checkOut: (id) =>
     api.post(`/api/check-ins/${id}/check-out`, undefined).then((r) => r.data),
+  /**
+   * POST /api/check-ins/{id}/mark-left
+   * @param {number} id
+   * @param {MarkLeftRequest} body
+   * @returns {Promise<CheckInDto>}
+   */
+  markLeft: (id, body) =>
+    api.post(`/api/check-ins/${id}/mark-left`, body).then((r) => r.data),
   /**
    * GET /api/check-ins
    * @param {{ contractId?: number, page?: number, pageSize?: number }} [params] query string
