@@ -33,10 +33,11 @@ test.describe.serial('front desk: walk-in, then overdue rent', () => {
 
     await staff.getByRole('link', { name: 'Go to handover' }).click()
     await staff.getByRole('button', { name: new RegExp(name) }).click()
+    for (const step of ['Verify identity', 'Verify payment'])
+      await staff.getByRole('checkbox', { name: new RegExp(step) }).check()
+    await staff.getByRole('button', { name: 'Customer likes it' }).click()
     await staff.getByRole('button', { name: 'Draft contract' }).click()
     await staff.getByRole('button', { name: 'Customer signed on paper' }).click()
-    for (const step of ['Verify identity', 'Verify payment', 'Inspect unit with customer'])
-      await staff.getByRole('checkbox', { name: new RegExp(step) }).check()
     await staff.getByLabel('Lock serial no.').fill('LOCK-WALKIN')
     await staff.getByLabel('Access card no.').fill('CARD-WALKIN')
     await staff.getByRole('button', { name: 'Complete handover' }).click()

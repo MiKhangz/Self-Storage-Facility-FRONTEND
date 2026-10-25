@@ -33,6 +33,7 @@ import FacilitiesPage from './staff/pages/FacilitiesPage.jsx'
 import UnitsPage from './staff/pages/UnitsPage.jsx'
 import ReservationsPage from './staff/pages/ReservationsPage.jsx'
 import HandoverPage from './staff/pages/HandoverPage.jsx'
+import CheckInPage from './staff/pages/CheckInPage.jsx'
 import ContractsPage from './staff/pages/ContractsPage.jsx'
 import PricingPage from './staff/pages/PricingPage.jsx'
 import TicketsPage from './staff/pages/TicketsPage.jsx'
@@ -78,6 +79,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/units" element={<UnitsPage />} />
               <Route path="/admin/reservations" element={<ReservationsPage />} />
               <Route path="/admin/handover" element={<HandoverPage />} />
+              <Route path="/admin/check-in" element={<CheckInPage />} />
               <Route path="/admin/contracts" element={<ContractsPage />} />
               <Route path="/admin/pricing" element={<PricingPage />} />
               <Route path="/admin/tickets" element={<TicketsPage />} />

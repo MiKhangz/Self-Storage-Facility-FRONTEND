@@ -18,6 +18,7 @@ export const PERMISSIONS = [
     { group: 'Units & facilities', feature: 'Edit unit sizes', roles: [BO] },
     { group: 'Customers & contracts', feature: 'Assign units to reservations', roles: [FM, ST] },
     { group: 'Customers & contracts', feature: 'Handover', roles: [FM, ST] },
+    { group: 'Customers & contracts', feature: 'Check customers in and out', roles: [FM, ST] },
     { group: 'Customers & contracts', feature: 'Terminate a contract', roles: [FM] },
     { group: 'Customers & contracts', feature: 'Export contracts', roles: [FM, ST] },
     { group: 'Money', feature: 'Record a payment', roles: [FM, ST] },

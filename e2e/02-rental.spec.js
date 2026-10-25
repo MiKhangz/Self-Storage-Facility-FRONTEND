@@ -7,7 +7,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
   const name = `Khách E2E ${Date.now()}`
   const email = uniqueEmail('rental')
   const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' })
-  let customer, staff, staffApi, reservationCode, reservationId, contract
+  let customer, staff, staffApi, reservationCode, reservationId, contract, accessCode
 
   test.beforeAll(async ({ browser, baseURL }) => {
     customer = await (await browser.newContext()).newPage()
@@ -67,41 +67,46 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await expect.poll(async () => (await staffApi.get(`/api/reservations/${reservationId}`)).status).toBe('Confirmed')
   })
 
-  test('E04 staff draft the contract and the customer signs it', async () => {
+  test('E04 at the handover the customer sees the unit, likes it and signs the paper contract', async () => {
     await openAdmin(staff, 'Handover')
     await staff.getByRole('button', { name: new RegExp(name) }).click()
-    await staff.getByRole('button', { name: 'Draft contract' }).click()
     await expect(staff.getByRole('heading', { name: new RegExp(`Handover · ${name}`) })).toBeVisible()
+    for (const step of ['Verify identity', 'Verify payment'])
+      await staff.getByRole('checkbox', { name: new RegExp(step) }).check()
+    // Nothing is signed before the customer has seen the unit.
+    await expect(staff.getByRole('button', { name: 'Draft contract' })).toBeHidden()
+    await staff.getByRole('button', { name: 'Customer likes it' }).click()
+    await staff.getByRole('button', { name: 'Draft contract' }).click()
+    await staff.getByRole('button', { name: 'Customer signed on paper' }).click()
+    await expect(staff.getByText(/signed \d/)).toBeVisible()
 
+    // The customer sees the signed contract in their account.
     await customer.getByRole('link', { name: 'Đến Kho của tôi' }).click()
     await customer.getByRole('link', { name: 'Xem chi tiết' }).first().click()
-    await customer.getByRole('button', { name: 'Ký hợp đồng' }).click()
     await expect(customer.getByRole('button', { name: 'Ký hợp đồng' })).toBeHidden()
   })
 
   test('E05 staff complete the handover and the contract becomes Active', async () => {
-    // Reopen the desk so it reads the signature the customer just made.
-    await openAdmin(staff, 'Reservations')
-    await openAdmin(staff, 'Handover')
-    await staff.getByRole('button', { name: new RegExp(name) }).click()
-    for (const step of ['Verify identity', 'Verify payment', 'Inspect unit with customer'])
-      await staff.getByRole('checkbox', { name: new RegExp(step) }).check()
     await staff.getByLabel('Lock serial no.').fill('LOCK-E2E-1')
     await staff.getByLabel('Access card no.').fill('CARD-E2E-1')
     await staff.getByRole('button', { name: 'Complete handover' }).click()
 
     await expect(staff.getByRole('heading', { name: /Handover complete/ })).toBeVisible()
+    accessCode = (await staff.locator('.se-code-digits').innerText()).replace(/\D/g, '')
     const contracts = await staffApi.get(`/api/contracts?page=1&pageSize=100`)
     contract = contracts.items.find((c) => c.reservationId === reservationId)
     expect(contract.status).toBe('Active')
   })
 
-  test('E05b staff check the customer in for a visit and out again', async () => {
-    await staff.getByRole('tab', { name: /Active rentals/ }).click()
-    await staff.getByRole('button', { name: new RegExp(name) }).click()
+  test('E05b the customer says their code at the desk, staff check them in (green) and out (red)', async () => {
+    await openAdmin(staff, 'Check-in / out')
+    await staff.getByLabel("Customer's access code").fill(accessCode)
+    await staff.getByRole('button', { name: 'Find' }).click()
     await staff.getByRole('button', { name: 'Check in', exact: true }).click()
-    await expect(staff.getByText(/Inside since/)).toBeVisible()
-    await staff.getByRole('button', { name: 'Check out', exact: true }).click()
+    const row = staff.getByRole('row', { name: new RegExp(name) })
+    await expect(row).toContainText('Inside')
+    await row.getByRole('button', { name: 'Check out' }).click()
+    await expect(row).toContainText('Out')
     await expect.poll(async () => {
       const visits = (await staffApi.get(`/api/check-ins?contractId=${contract.contractId}&page=1&pageSize=5`)).items
       return visits.length === 1 && !!visits[0].checkOutAt

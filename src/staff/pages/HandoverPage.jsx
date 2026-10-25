@@ -1,29 +1,115 @@
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { accessCodesApi, handoversApi, contractsApi, checkInsApi } from '../../api/generated';
+import { accessCodesApi, handoversApi, contractsApi, reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
-import { formatDate, rentalEndDate, todayIso } from '../../customer/components/format.js';
+import { formatDate, todayIso } from '../../customer/components/format.js';
 import { PageHeader, Stat, Status } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useUnits } from '../queries.js';
 
-/** The physical checks the Figma lists before keys change hands; staff tick each one. */
+/** Checked at the desk before anyone walks to the unit. */
 const CHECKS = [
     { key: 'identity', title: 'Verify identity', text: 'Citizen ID (CCCD) matches the renter name' },
     { key: 'payment', title: 'Verify payment', text: 'The deposit is paid (handover is refused until it is)' },
-    { key: 'inspect', title: 'Inspect unit with customer', text: 'Agree the condition before handing over' },
 ];
+
+/** Staff walk the customer to the unit. They like it, want another of the same size, or call the booking off. */
+function ViewUnit({ reservation, viewed, onViewed }) {
+    const queryClient = useQueryClient();
+    const [picking, setPicking] = useState(false);
+    const [unitId, setUnitId] = useState('');
+    const others = (useUnits({ facilityId: reservation.facilityId, unitTypeId: reservation.unitTypeId, status: 'Available' }).data ?? [])
+        .filter((u) => u.storageUnitId !== reservation.storageUnitId);
+    const refresh = () => ['reservations', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+    const swap = useMutation({
+        mutationFn: () => reservationsApi.changeUnit(reservation.reservationId, { storageUnitId: Number(unitId) }),
+        onSuccess: () => { setPicking(false); setUnitId(''); refresh(); },
+    });
+    const cancel = useMutation({
+        mutationFn: () => reservationsApi.cancel(reservation.reservationId, { reason: 'Customer did not take a unit at the handover' }),
+        onSuccess: refresh,
+    });
+    const error = swap.error ?? cancel.error;
+
+    return (
+        <li className={viewed ? 'done' : ''}>
+            <span><strong>Show the customer unit {reservation.unitCode}</strong>
+                <small>{viewed ? 'The customer likes the unit.' : 'Walk them to the unit. Sign nothing until they are happy with it.'}</small></span>
+            {!viewed && !picking && (
+                <div className="sa-form-actions">
+                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={cancel.isPending}
+                        onClick={() => window.confirm('Cancel this booking? The unit is freed and the full deposit is owed back to the customer.') && cancel.mutate()}>
+                        Cancel booking
+                    </button>
+                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setPicking(true)}>Show another unit</button>
+                    <button type="button" className="se-btn se-btn-primary se-btn-sm" onClick={onViewed}>Customer likes it</button>
+                </div>
+            )}
+            {picking && (
+                <div className="sa-inline-form">
+                    <label><span className="se-label">Another free {reservation.unitTypeName} unit</span>
+                        <div className="se-input"><select value={unitId} onChange={(e) => setUnitId(e.target.value)}>
+                            <option value="">{others.length ? 'Choose a unit' : 'No other free unit of this size'}</option>
+                            {others.map((u) => <option key={u.storageUnitId} value={u.storageUnitId}>{u.unitCode}{u.floorName ? ` · ${u.floorName}` : ''}{u.zone ? ` · zone ${u.zone}` : ''}</option>)}
+                        </select></div></label>
+                    <p className="se-hint">If the contract was already signed, it must be signed again for the new unit.</p>
+                    <div className="sa-form-actions">
+                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setPicking(false)}>Back</button>
+                        <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={!unitId || swap.isPending} onClick={() => swap.mutate()}>
+                            {swap.isPending ? 'Switching…' : 'Switch to this unit'}
+                        </button>
+                    </div>
+                </div>
+            )}
+            {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
+        </li>
+    );
+}
+
+/** The contract is drafted once the customer likes the unit, then signed on paper in front of staff. */
+function SignContract({ reservation, contract, locked }) {
+    const queryClient = useQueryClient();
+    const [paymentDay, setPaymentDay] = useState(Math.min(Number(reservation.moveInDate.slice(8, 10)), 28));
+    const refresh = () => queryClient.invalidateQueries({ queryKey: ['contracts'] });
+    const draft = useMutation({ mutationFn: () => contractsApi.create({ reservationId: reservation.reservationId, paymentDay }), onSuccess: refresh });
+    const sign = useMutation({ mutationFn: () => contractsApi.signAtDesk(contract.contractId), onSuccess: refresh });
+    const error = draft.error ?? sign.error;
+
+    return (
+        <li className={contract?.signedAt ? 'done' : ''}>
+            <span><strong>Customer signs the contract</strong>
+                <small>{locked ? 'After the customer has seen and accepted the unit.'
+                    : contract?.signedAt ? `${contract.contractNumber} signed ${formatDate(contract.signedAt)}`
+                    : contract ? `Print ${contract.contractNumber}; the customer signs the paper copy in front of you.`
+                    : 'Draft the contract for this unit, then print it for signing.'}</small></span>
+            {!locked && !contract && (
+                <div className="sa-inline-form">
+                    <label><span className="se-label">Rent due on day of month (1–28)</span>
+                        <div className="se-input"><input type="number" min={1} max={28} value={paymentDay} onChange={(e) => setPaymentDay(Number(e.target.value))} /></div></label>
+                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={draft.isPending || !(paymentDay >= 1 && paymentDay <= 28)} onClick={() => draft.mutate()}>
+                        {draft.isPending ? 'Drafting…' : 'Draft contract'}
+                    </button>
+                </div>
+            )}
+            {!locked && contract && !contract.signedAt && (
+                <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={sign.isPending}
+                    onClick={() => window.confirm('Confirm the customer signed the paper contract in front of you?') && sign.mutate()}>
+                    Customer signed on paper
+                </button>
+            )}
+            {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
+        </li>
+    );
+}
 
 function HandoverWizard({ reservation, contract, onDone }) {
     const queryClient = useQueryClient();
     const [ticks, setTicks] = useState({});
+    // Seeing the unit is a conversation, not a record: it lives here, and switching units resets it.
+    const [viewedUnit, setViewedUnit] = useState(null);
+    const viewed = viewedUnit === reservation.storageUnitId;
     const [form, setForm] = useState({ lockSerial: '', cardNumber: '', conditionNote: '' });
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
-    // A walk-in customer may have no password yet: staff record that they signed the paper contract here.
-    const signAtDesk = useMutation({
-        mutationFn: () => contractsApi.signAtDesk(contract.contractId),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
-    });
     const handover = useMutation({
         mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, ...form }),
     });
@@ -46,13 +132,14 @@ function HandoverWizard({ reservation, contract, onDone }) {
         );
     }
 
-    const allTicked = CHECKS.every((c) => ticks[c.key]);
-    const ready = allTicked && form.lockSerial.trim() && form.cardNumber.trim() && contract.signedAt;
+    const checked = CHECKS.every((c) => ticks[c.key]);
+    const signed = !!contract?.signedAt;
+    const ready = checked && viewed && signed && form.lockSerial.trim() && form.cardNumber.trim();
     return (
         <div className="se-panel">
             <div className="sa-card-title">
                 <h2>Handover · {reservation.customerName} → Unit {reservation.unitCode}</h2>
-                <span className="sa-muted">{reservation.reservationCode} · {contract.contractNumber}</span>
+                <span className="sa-muted">{reservation.reservationCode}{contract ? ` · ${contract.contractNumber}` : ''}</span>
             </div>
             <ol className="sa-steps">
                 {CHECKS.map((c) => (
@@ -61,16 +148,8 @@ function HandoverWizard({ reservation, contract, onDone }) {
                             <span><strong>{c.title}</strong><small>{c.text}</small></span></label>
                     </li>
                 ))}
-                <li className={contract.signedAt ? 'done' : ''}>
-                    <span><strong>Customer signs the contract</strong><small>{contract.signedAt ? `Signed ${formatDate(contract.signedAt)}` : 'The customer signs from My Storage, or on paper here at the desk'}</small></span>
-                    {!contract.signedAt && (
-                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={signAtDesk.isPending}
-                            onClick={() => window.confirm('Confirm the customer signed the paper contract in front of you?') && signAtDesk.mutate()}>
-                            Customer signed on paper
-                        </button>
-                    )}
-                    {signAtDesk.isError && <div className="se-alert" role="alert">{errorMessage(signAtDesk.error)}</div>}
-                </li>
+                <ViewUnit reservation={reservation} viewed={viewed} onViewed={() => setViewedUnit(reservation.storageUnitId)} />
+                <SignContract reservation={reservation} contract={contract} locked={!viewed} />
                 <li>
                     <span><strong>Hand over disc lock &amp; access card</strong><small>Record the serial numbers given to the customer</small></span>
                     <div className="se-panel-grid">
@@ -91,36 +170,13 @@ function HandoverWizard({ reservation, contract, onDone }) {
     );
 }
 
-/** Drafts the contract a handover needs, at the active policy's rent. */
-function DraftContract({ reservation }) {
-    const queryClient = useQueryClient();
-    const [paymentDay, setPaymentDay] = useState(Math.min(Number(reservation.moveInDate.slice(8, 10)), 28));
-    const draft = useMutation({
-        mutationFn: () => contractsApi.create({ reservationId: reservation.reservationId, paymentDay }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
-    });
-    return (
-        <>
-            <p>This reservation has no contract yet. Draft one; the customer then signs it from My Storage.</p>
-            <label><span className="se-label">Rent due on day of month (1–28)</span>
-                <div className="se-input"><input type="number" min={1} max={28} value={paymentDay} onChange={(e) => setPaymentDay(Number(e.target.value))} /></div>
-            </label>
-            {draft.isError && <div className="se-alert" role="alert">{errorMessage(draft.error)}</div>}
-            <div className="sa-form-actions">
-                <button type="button" className="se-btn se-btn-primary" disabled={draft.isPending || !(paymentDay >= 1 && paymentDay <= 28)} onClick={() => draft.mutate()}>
-                    {draft.isPending ? 'Drafting…' : 'Draft contract'}
-                </button>
-            </div>
-        </>
-    );
-}
-
 function HandoverDesk() {
     const today = todayIso();
     const reservations = useReservations({ status: 'Confirmed' });
     const drafts = useContracts({ status: 'Draft' });
     const [selected, setSelected] = useState(null);
-    const queue = [...(reservations.data ?? [])].sort((a, b) => a.moveInDate.localeCompare(b.moveInDate));
+    // A Confirmed booking without a unit (its handover was undone) is assigned on Reservations first.
+    const queue = [...(reservations.data ?? [])].filter((r) => r.storageUnitId).sort((a, b) => a.moveInDate.localeCompare(b.moveInDate));
     const current = queue.find((r) => r.reservationId === selected) ?? queue[0];
     const contract = current && (drafts.data ?? []).find((c) => c.reservationId === current.reservationId);
 
@@ -139,14 +195,7 @@ function HandoverDesk() {
                 </div>
             </section>
             <div>
-                {current && contract && <HandoverWizard key={current.reservationId} reservation={current} contract={contract} onDone={() => setSelected(null)} />}
-                {current && !contract && !drafts.isLoading && (
-                    <div className="se-panel">
-                        <h2>{current.customerName} → Unit {current.unitCode}</h2>
-                        <p className="sa-muted">{current.reservationCode} · {formatDate(current.moveInDate)} → {formatDate(rentalEndDate(current.moveInDate, current.rentalMonths))}</p>
-                        <DraftContract key={current.reservationId} reservation={current} />
-                    </div>
-                )}
+                {current && !drafts.isLoading && <HandoverWizard key={current.reservationId} reservation={current} contract={contract} onDone={() => setSelected(null)} />}
             </div>
         </div>
     );
@@ -170,40 +219,6 @@ function CancelHandover({ contractId }) {
                 Cancel handover
             </button>
         </>
-    );
-}
-
-const visitTime = (iso) => new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
-
-/** SR-05: record the customer entering and leaving their unit during the rental. */
-function Visits({ contractId }) {
-    const queryClient = useQueryClient();
-    const [note, setNote] = useState('');
-    const visits = useQuery({ queryKey: ['check-ins', contractId], queryFn: () => checkInsApi.list({ contractId, page: 1, pageSize: 5 }) });
-    const open = visits.data?.items?.find((v) => !v.checkOutAt);
-    const done = { onSuccess: () => { setNote(''); queryClient.invalidateQueries({ queryKey: ['check-ins', contractId] }); } };
-    const checkIn = useMutation({ mutationFn: () => checkInsApi.checkIn({ contractId, note: note.trim() || null }), ...done });
-    const checkOut = useMutation({ mutationFn: () => checkInsApi.checkOut(open.checkInId), ...done });
-    const error = checkIn.error ?? checkOut.error;
-    return (
-        <div>
-            <h3>Check-in / check-out</h3>
-            {open ? (
-                <p className="sa-muted">Inside since {visitTime(open.checkInAt)}{open.note ? ` · ${open.note}` : ''}</p>
-            ) : (
-                <label><span className="se-label">Note (optional)</span>
-                    <div className="se-input"><input value={note} maxLength={200} onChange={(e) => setNote(e.target.value)} /></div></label>
-            )}
-            {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
-            {open
-                ? <button type="button" className="se-btn se-btn-primary" disabled={checkOut.isPending} onClick={() => checkOut.mutate()}>Check out</button>
-                : <button type="button" className="se-btn se-btn-primary" disabled={checkIn.isPending} onClick={() => checkIn.mutate()}>Check in</button>}
-            <ul className="sa-people">
-                {(visits.data?.items ?? []).filter((v) => v.checkOutAt).map((v) => (
-                    <li key={v.checkInId}><span>{visitTime(v.checkInAt)} → {visitTime(v.checkOutAt)}</span><small>{v.recordedByName}</small></li>
-                ))}
-            </ul>
-        </div>
     );
 }
 
@@ -270,7 +285,6 @@ function ActiveRentals() {
                     </div>
                     {code.data?.isActive && <RevokeCode key={code.data.accessCodeId} contractId={current.contractId} accessCodeId={code.data.accessCodeId} />}
                     <CancelHandover key={current.contractId} contractId={current.contractId} />
-                    <Visits key={`visits-${current.contractId}`} contractId={current.contractId} />
                 </section>
             )}
         </div>

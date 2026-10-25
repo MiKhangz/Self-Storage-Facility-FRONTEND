@@ -70,4 +70,12 @@ export const reservationsApi = {
    */
   assignUnit: (id, body) =>
     api.post(`/api/reservations/${id}/assign-unit`, body).then((r) => r.data),
+  /**
+   * POST /api/reservations/{id}/change-unit
+   * @param {number} id
+   * @param {AssignUnitRequest} body
+   * @returns {Promise<ReservationDto>}
+   */
+  changeUnit: (id, body) =>
+    api.post(`/api/reservations/${id}/change-unit`, body).then((r) => r.data),
 }

@@ -128,6 +128,21 @@
  */
 
 /**
+ * @typedef {Object} CheckInBoardRowDto
+ * @property {number} [contractId] int32
+ * @property {(string|null)} [contractNumber]
+ * @property {(string|null)} [customerName]
+ * @property {(string|null)} [customerPhone]
+ * @property {number} [storageUnitId] int32
+ * @property {(string|null)} [unitCode]
+ * @property {(string|null)} [facilityName]
+ * @property {boolean} [inside]
+ * @property {(number|null)} [openCheckInId] int32
+ * @property {(string|null)} [since] date-time
+ * @property {boolean} [canEnter]
+ */
+
+/**
  * @typedef {Object} CheckInDto
  * @property {number} [checkInId] int32
  * @property {number} [contractId] int32
@@ -479,6 +494,11 @@
  * @property {(string|null)} [name]
  * @property {number} [amount] double
  * @property {boolean} [isPercentage]
+ */
+
+/**
+ * @typedef {Object} FindByAccessCodeRequest
+ * @property {(string|null)} [accessCode]
  */
 
 /**
