@@ -12,6 +12,19 @@ export const api = axios.create({
 /** @type {(() => void)|null} */
 let onUnauthorized = null
 
+/**
+ * Which side of the site a path belongs to. Each side has its own session cookie, so a customer tab and a staff tab
+ * in one browser stay signed in as different people.
+ * @param {string} path
+ * @returns {'staff'|'customer'}
+ */
+export const portalOf = (path) => (path.startsWith('/admin') ? 'staff' : 'customer')
+
+api.interceptors.request.use((config) => {
+  config.headers['X-Portal'] = portalOf(window.location.pathname)
+  return config
+})
+
 /** @param {(() => void)|null} handler */
 export function setUnauthorizedHandler(handler) {
   onUnauthorized = handler

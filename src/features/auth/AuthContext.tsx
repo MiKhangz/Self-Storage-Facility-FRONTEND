@@ -1,6 +1,7 @@
-import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useQueryClient } from '@tanstack/react-query'
-import { setUnauthorizedHandler } from '../../api/axiosClient'
+import { useLocation } from 'react-router-dom'
+import { portalOf, setUnauthorizedHandler } from '../../api/axiosClient'
 import { authApi } from '../../api/generated'
 import type { Role } from './roles'
 
@@ -23,6 +24,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [restoring, setRestoring] = useState(true)
   const queryClient = useQueryClient()
+  // The customer site and the staff portal are signed in separately; moving between them swaps the session.
+  const portal = portalOf(useLocation().pathname)
+  const shownPortal = useRef(portal)
 
   const readSession = useCallback(async () => {
     const s = await authApi.session()
@@ -46,8 +50,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [queryClient, readSession])
 
   useEffect(() => {
-    readSession().then(setSession, () => setSession(null)).finally(() => setRestoring(false))
-  }, [readSession])
+    let current = true
+    setRestoring(true)
+    setSession(null)
+    // On a real switch, drop the other side's data and refetch what is on screen (clear() would strand the new
+    // page's queries, already started); on first load there is nothing to drop.
+    if (shownPortal.current !== portal) queryClient.resetQueries()
+    shownPortal.current = portal
+    readSession().then((s) => { if (current) setSession(s) }, () => {}).finally(() => { if (current) setRestoring(false) })
+    return () => { current = false }
+  }, [portal, readSession, queryClient])
 
   // Only a signed-in user can be signed out by a 401; a failed login or the restore check is just a 401.
   useEffect(() => {
