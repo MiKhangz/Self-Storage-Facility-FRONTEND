@@ -72,11 +72,13 @@ function OrderPanel({ order, canWrite, onClose }) {
             {canWrite && LIVE.includes(order.status) && (
                 <>
                     {waiting && (
-                        <div className="sa-form-actions">
+                        <>
                             <label><span className="se-label">Schedule for</span><div className="se-input"><input type="datetime-local" value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} /></div></label>
-                            <button type="button" className="se-btn se-btn-ghost" disabled={!scheduledAt || move.isPending} onClick={() => move.mutate('Scheduled')}>Schedule</button>
-                            <button type="button" className="se-btn se-btn-primary" disabled={move.isPending} onClick={() => move.mutate('InProgress')}>Start work</button>
-                        </div>
+                            <div className="sa-form-actions">
+                                <button type="button" className="se-btn se-btn-ghost" disabled={!scheduledAt || move.isPending} onClick={() => move.mutate('Scheduled')}>Schedule</button>
+                                <button type="button" className="se-btn se-btn-primary" disabled={move.isPending} onClick={() => move.mutate('InProgress')}>Start work</button>
+                            </div>
+                        </>
                     )}
                     {order.status === 'InProgress' && (
                         <>
