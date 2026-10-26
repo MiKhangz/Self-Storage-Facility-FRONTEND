@@ -15,7 +15,8 @@ const toUtc = (local) => (local ? new Date(local).toISOString() : null);
 
 function NewOrder({ onClose }) {
     const queryClient = useQueryClient();
-    const units = useUnits().data ?? [];
+    // A unit a customer holds is worked on only from their support ticket (the API refuses it here).
+    const units = (useUnits().data ?? []).filter((u) => ['Available', 'Maintenance'].includes(u.status));
     const facilityName = Object.fromEntries((useFacilities().data ?? []).map((f) => [f.facilityId, f.name]));
     const [form, setForm] = useState({ storageUnitId: '', description: '', scheduledAt: '' });
     const set = (key) => (e) => setForm({ ...form, [key]: e.target.value });
@@ -32,7 +33,8 @@ function NewOrder({ onClose }) {
                 <select value={form.storageUnitId} onChange={set('storageUnitId')} required>
                     <option value="">Choose a unit</option>
                     {units.map((u) => <option key={u.storageUnitId} value={u.storageUnitId}>{u.unitCode} · {facilityName[u.facilityId] ?? ''} · {humanize(u.status)}</option>)}
-                </select></div></label>
+                </select></div>
+                <p className="se-hint">Only free units are listed. For a customer's unit, order the work from their support ticket.</p></label>
             <label><span className="se-label">What needs doing *</span><textarea className="se-textarea" rows={3} maxLength={300} value={form.description} onChange={set('description')} required /></label>
             <label><span className="se-label">Planned for (optional)</span><div className="se-input"><input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')} /></div></label>
             {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}

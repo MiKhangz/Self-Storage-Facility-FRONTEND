@@ -1,14 +1,14 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { supportTicketsApi, ticketQueueApi } from '../../api/generated';
+import { maintenanceOrdersApi, supportTicketsApi, ticketQueueApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { formatDateTime } from '../../customer/support/support.js';
-import { PageHeader, Status } from '../components/ui.jsx';
+import { Modal, PageHeader, Status } from '../components/ui.jsx';
 import { humanize } from '../queries.js';
 import '../../customer/support/Support.css';
 
@@ -16,6 +16,39 @@ import '../../customer/support/Support.css';
 const NEXT = { New: ['InProgress'], InProgress: ['WaitingForCustomer', 'Resolved'], WaitingForCustomer: ['InProgress', 'Resolved'], Resolved: ['InProgress'] };
 
 /** A20: one ticket from the staff side — conversation, internal notes, status and assignment. */
+/** The customer reported a problem with their unit: staff open the repair from here, the only way onto a rented unit. */
+function OrderRepair({ ticket }) {
+    const queryClient = useQueryClient();
+    const [open, setOpen] = useState(false);
+    const [description, setDescription] = useState(ticket.subject ?? '');
+    const create = useMutation({
+        mutationFn: () => maintenanceOrdersApi.create({ ticketId: ticket.ticketId, description: description.trim() }),
+        onSuccess: () => { ['maintenance-orders', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })); setOpen(false); },
+    });
+    return (
+        <>
+            {create.isSuccess && <div className="se-alert info" role="status">Maintenance order created for unit {ticket.unitCode}.</div>}
+            <button type="button" className="se-btn se-btn-ghost se-btn-block" onClick={() => setOpen(true)}>Order maintenance for {ticket.unitCode}</button>
+            {open && (
+                <Modal onClose={() => setOpen(false)}>
+                    <form className="se-panel sa-dialog" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
+                        <div className="sa-card-title"><h2>Maintenance for unit {ticket.unitCode}</h2>
+                            <button type="button" className="sa-close" onClick={() => setOpen(false)} aria-label="Close">×</button></div>
+                        <p className="sa-muted">From {ticket.customerName}'s ticket {ticket.ticketCode}. The unit stays theirs while the work is done.</p>
+                        <label><span className="se-label">What needs doing *</span>
+                            <textarea className="se-textarea" rows={3} maxLength={300} required value={description} onChange={(e) => setDescription(e.target.value)} /></label>
+                        {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
+                        <div className="sa-form-actions">
+                            <button type="button" className="se-btn se-btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+                            <button type="submit" className="se-btn se-btn-primary" disabled={!description.trim() || create.isPending}>{create.isPending ? 'Creating…' : 'Create order'}</button>
+                        </div>
+                    </form>
+                </Modal>
+            )}
+        </>
+    );
+}
+
 export default function TicketDetailPage() {
     const ticketId = Number(useParams().ticketId);
     const { session } = useAuth();
@@ -39,6 +72,7 @@ export default function TicketDetailPage() {
     const t = ticket.data;
     const closed = t.status === 'Closed';
     const isManager = session?.role === Roles.FacilityManager;
+    const canOrderWork = [Roles.FacilityStaff, Roles.FacilityManager].includes(session?.role) && t.storageUnitId && !closed;
     const error = send.error ?? move.error ?? assign.error;
 
     return (
@@ -95,6 +129,7 @@ export default function TicketDetailPage() {
                         <div><dt>Due</dt><dd>{t.dueDate ? formatDateTime(t.dueDate) : '—'}</dd></div>
                     </dl>
                     {isManager && !closed && <button type="button" className="se-btn se-btn-outline se-btn-block" disabled={assign.isPending} onClick={() => assign.mutate()}>Assign to me</button>}
+                    {canOrderWork && <OrderRepair ticket={t} />}
                 </aside>
             </div>
         </>
