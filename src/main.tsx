@@ -54,7 +54,10 @@ import DepositRefundsPage from './staff/pages/DepositRefundsPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
-  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: false } },
+  // Another person's change (a new booking, a check-in at another desk) shows up within 15 s, or as soon as this
+  // tab is looked at again. Hidden tabs do not poll.
+  // shortcut: polling, not push; switch to a SignalR hub if 15 s ever feels slow or the request count matters.
+  defaultOptions: { queries: { retry: false, refetchOnWindowFocus: true, refetchInterval: 15_000 } },
 })
 
 /** Customer pages that need a signed-in Storage Customer; anyone else is sent to /login and brought back. */

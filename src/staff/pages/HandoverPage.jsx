@@ -102,8 +102,7 @@ function SignContract({ reservation, contract, locked }) {
     );
 }
 
-function HandoverWizard({ reservation, contract, onDone }) {
-    const queryClient = useQueryClient();
+function HandoverWizard({ reservation, contract, onCompleted }) {
     const [ticks, setTicks] = useState({});
     // Seeing the unit is a conversation, not a record: it lives here, and switching units resets it.
     const [viewedUnit, setViewedUnit] = useState(null);
@@ -115,25 +114,8 @@ function HandoverWizard({ reservation, contract, onDone }) {
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const handover = useMutation({
         mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, lockSerial: reservation.unitCode, ...form }),
+        onSuccess: onCompleted,
     });
-    // Refresh only after staff move on: refetching drops this reservation from the queue, which would unmount
-    // the one-time access code before anyone reads it.
-    const next = () => {
-        ['reservations', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
-        onDone();
-    };
-
-    if (handover.data) {
-        return (
-            <div className="se-panel sa-checkin-done">
-                <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
-                <h2>Handover complete — unit {handover.data.unitCode} is now occupied</h2>
-                <p className="sa-muted">Give the customer this access code. It is shown once only.</p>
-                <div className="se-code-digits dark">{(handover.data.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
-                <button type="button" className="se-btn se-btn-primary" onClick={next}>Next handover</button>
-            </div>
-        );
-    }
 
     const checked = CHECKS.every((c) => ticks[c.key]);
     const signed = !!contract?.signedAt;
@@ -185,6 +167,10 @@ function HandoverDesk() {
     const reservations = useReservations({ status: 'Confirmed' });
     const drafts = useContracts({ status: 'Draft' });
     const [selected, setSelected] = useState(null);
+    // Held here, not in the wizard: the lists refresh on their own and drop the handed-over booking from the queue,
+    // which would otherwise close this screen before staff read the code out.
+    const [done, setDone] = useState(null);
+    const queryClient = useQueryClient();
     // A Confirmed booking without a unit (its handover was undone) is assigned on Reservations first.
     const queue = [...(reservations.data ?? [])].filter((r) => r.storageUnitId).sort((a, b) => a.moveInDate.localeCompare(b.moveInDate));
     const current = queue.find((r) => r.reservationId === selected) ?? queue[0];
@@ -205,7 +191,19 @@ function HandoverDesk() {
                 </div>
             </section>
             <div>
-                {current && !drafts.isLoading && <HandoverWizard key={current.reservationId} reservation={current} contract={contract} onDone={() => setSelected(null)} />}
+                {done ? (
+                    <div className="se-panel sa-checkin-done">
+                        <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
+                        <h2>Handover complete — unit {done.unitCode} is now occupied</h2>
+                        <p className="sa-muted">Give the customer this access code. They are now checked in, and can see the code again in their account.</p>
+                        <div className="se-code-digits dark">{(done.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
+                        <button type="button" className="se-btn se-btn-primary" onClick={() => {
+                            ['reservations', 'contracts', 'storage-units', 'check-ins'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+                            setDone(null);
+                            setSelected(null);
+                        }}>Next handover</button>
+                    </div>
+                ) : current && !drafts.isLoading && <HandoverWizard key={current.reservationId} reservation={current} contract={contract} onCompleted={setDone} />}
             </div>
         </div>
     );
