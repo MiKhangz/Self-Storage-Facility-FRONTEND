@@ -101,7 +101,8 @@
 /* List + side panel layout (A04, A05, ...) */
 .sa-split { display: grid; grid-template-columns: 1fr; gap: 16px; align-items: start; }
 .sa-split.open { grid-template-columns: minmax(0, 1fr) 340px; }
-.sa-side-panel { position: sticky; top: 16px; display: grid; gap: 12px; }
+/* minmax(0): a long option in a dropdown must not stretch the panel past the page. */
+.sa-side-panel { position: sticky; top: 16px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
 .sa-side-panel .sa-card-title { margin: 0; }
 .sa-side-panel h2 { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .sa-side-panel .se-kv { margin: 0; }
