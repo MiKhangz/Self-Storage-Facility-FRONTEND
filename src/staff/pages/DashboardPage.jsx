@@ -54,6 +54,12 @@ export default function DashboardPage() {
             <PageHeader title={`Hello, ${firstName}`} subtitle={`${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' })} · All facilities`}>
                 <Link to="/admin/reports" className="se-btn se-btn-primary"><Icon name="file" size={16} /> Reports</Link>
             </PageHeader>
+            {(facilities.data ?? []).some((f) => !f.staffed) && (
+                <div className="se-alert" role="alert">
+                    No staff assigned at {(facilities.data ?? []).filter((f) => !f.staffed).map((f) => f.name).join(', ')}.
+                    Customers can't see or book it until a manager or staff member is assigned in <Link to="/admin/users" className="se-link">Users &amp; roles</Link>.
+                </div>
+            )}
 
             <div className="sa-stats">
                 <Stat icon="grid" label="Occupancy rate" value={`${occupancy(allUnits)}%`} note={`${allUnits.length} units`} />

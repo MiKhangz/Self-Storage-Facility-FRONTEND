@@ -33,8 +33,19 @@ test('E11 an admin opens a facility with a floor and a unit, and customers can s
   await page.getByRole('button', { name: 'Save floor' }).click()
   await expect(page.locator('.sa-floor-row').filter({ hasText: 'Floor 1' })).toContainText('Open')
 
+  // Nobody works there yet, so customers do not see it.
   const visitor = await (await browser.newContext()).newPage()
   await visitor.goto('/locations')
+  await expect(visitor.getByRole('heading', { level: 1 })).toBeVisible()
+  await expect(visitor.getByText(facility)).toHaveCount(0)
+
+  // Once it has a manager, they do.
+  await page.keyboard.press('Escape')
+  await page.getByRole('button', { name: 'Edit facility' }).click()
+  await page.getByLabel('Manager').selectOption({ label: 'Quản lý Demo · manager@storease.vn' })
+  await page.getByRole('button', { name: 'Save facility' }).click()
+  await expect(page.getByRole('status')).toContainText('Facility saved')
+  await visitor.reload()
   await expect(visitor.getByText(facility).first()).toBeVisible()
   await visitor.context().close()
 })

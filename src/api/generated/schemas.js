@@ -448,6 +448,7 @@
  * @property {(string|null)} [phone]
  * @property {(string|null)} [openingHours]
  * @property {number} [availableUnits] int32
+ * @property {boolean} [staffed]
  */
 
 /**

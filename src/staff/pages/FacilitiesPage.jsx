@@ -44,7 +44,8 @@ export default function FacilitiesPage() {
                             const pct = occupancy(mine);
                             return (
                                 <tr key={f.facilityId}>
-                                    <td className="strong"><Link to={`/admin/facilities/${f.facilityId}`}>{f.name}</Link><div className="sa-muted">{f.code}</div></td>
+                                    <td className="strong"><Link to={`/admin/facilities/${f.facilityId}`}>{f.name}</Link><div className="sa-muted">{f.code}</div>
+                                        {!f.staffed && <span className="se-badge none" title="Customers can't see or book it until someone is assigned">No staff assigned</span>}</td>
                                     <td>{f.address}{f.district ? `, ${f.district}` : ''}</td>
                                     <td>{mine.length}</td>
                                     <td><div className="sa-inline-bar"><div className="se-progress flat"><span style={{ width: `${pct}%` }} className={pct >= 90 ? 'hot' : ''} /></div>{pct}%</div></td>

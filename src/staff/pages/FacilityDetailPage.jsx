@@ -303,6 +303,7 @@ export default function FacilityDetailPage() {
                     {canSetUp && (
                         <section className="se-panel">
                             <div className="sa-card-title"><h2>Staff at this facility <span className="se-count">{team.length}</span></h2><Link to="/admin/users" className="se-link">Users &amp; roles <Icon name="arrow" size={14} /></Link></div>
+                            {!team.length && <div className="se-alert" role="alert">Nobody works here yet, so customers can't see or book this facility. Assign a manager or staff on Users &amp; roles.</div>}
                             <ul className="sa-people">
                                 {team.map((u) => (
                                     <li key={u.userId}>
