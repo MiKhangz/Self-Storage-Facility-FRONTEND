@@ -157,11 +157,11 @@ function HandoverWizard({ reservation, contract, onDone }) {
                     <span><strong>Hand over the disc lock and keys</strong><small>Give the customer the lock named after their unit</small></span>
                     <div>
                         <div><span className="se-label">Lock name</span>
-                            <div className={`sa-lock ${lockGiven ? 'given' : ''}`}>
-                                <span><Icon name="key" size={16} /> {reservation.unitCode}</span>
+                            <div className="sa-lock-row">
+                                <div className={`sa-lock ${lockGiven ? 'given' : ''}`}><Icon name="key" size={16} /> {reservation.unitCode}</div>
                                 {lockGiven
-                                    ? <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setLockFor(null)}>Undo</button>
-                                    : <button type="button" className="se-btn se-btn-primary se-btn-sm" onClick={() => setLockFor(reservation.storageUnitId)}>Confirm lock given</button>}
+                                    ? <button type="button" className="se-btn se-btn-ghost" onClick={() => setLockFor(null)}>Undo</button>
+                                    : <button type="button" className="se-btn se-btn-primary" onClick={() => setLockFor(reservation.storageUnitId)}>Confirm lock given</button>}
                             </div>
                             {lockGiven && <small className="sa-muted">Lock {reservation.unitCode} given to the customer.</small>}
                         </div>
