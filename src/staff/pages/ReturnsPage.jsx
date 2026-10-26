@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { returnsApi } from '../../api/generated';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { handoversApi, returnsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
@@ -94,6 +94,9 @@ export default function ReturnsPage() {
     const all = returns.data ?? [];
     const shown = all.filter((m) => m.status === tab);
     const current = all.find((m) => m.unitReturnId === selected);
+    // What staff noted when the unit was handed over, to compare with how it comes back.
+    const handovers = useQuery({ queryKey: ['handovers', 'Completed'], queryFn: () => handoversApi.list({ status: 'Completed', page: 1, pageSize: 100 }) });
+    const handedOver = current && handovers.data?.items?.find((h) => h.contractId === current.contractId);
     const done = () => ['returns', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
     const isStaff = [Roles.FacilityStaff, Roles.FacilityManager].includes(session?.role);
 
@@ -143,6 +146,7 @@ export default function ReturnsPage() {
                             <div><dt>Planned return</dt><dd>{formatDate(current.plannedReturnDate)}</dd></div>
                             <div><dt>Move out by</dt><dd>{formatDate(current.moveOutDeadline)}</dd></div>
                             <div><dt>Reason</dt><dd>{current.reason || '—'}</dd></div>
+                            <div><dt>Condition at handover</dt><dd>{handedOver?.conditionNote || 'No note taken'}{handedOver ? ` · ${formatDate(handedOver.handoverTime)}` : ''}</dd></div>
                             <div><dt>Refund to</dt><dd>{humanize(current.refundMethod)}{current.refundAccount ? ` · ${current.refundAccount}` : ''}</dd></div>
                             {current.inspection && <div><dt>Inspection</dt><dd>{humanize(current.inspection.conditionResult)} · refund {formatVnd(current.inspection.refundAmount)}</dd></div>}
                         </dl>

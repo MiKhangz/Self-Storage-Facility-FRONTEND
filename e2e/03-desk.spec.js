@@ -39,7 +39,6 @@ test.describe.serial('front desk: walk-in, then overdue rent', () => {
     await staff.getByRole('button', { name: 'Draft contract' }).click()
     await staff.getByRole('button', { name: 'Customer signed on paper' }).click()
     await staff.getByRole('button', { name: 'Confirm lock given' }).click()
-    await staff.getByLabel('Access card no.').fill('CARD-WALKIN')
     await staff.getByRole('button', { name: 'Complete handover' }).click()
     await expect(staff.getByRole('heading', { name: /Handover complete/ })).toBeVisible()
 

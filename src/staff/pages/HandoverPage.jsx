@@ -111,7 +111,7 @@ function HandoverWizard({ reservation, contract, onDone }) {
     // Each unit's disc lock is named after the unit, so staff confirm they gave that one; a unit switch resets it.
     const [lockFor, setLockFor] = useState(null);
     const lockGiven = lockFor === reservation.storageUnitId;
-    const [form, setForm] = useState({ cardNumber: '', conditionNote: '' });
+    const [form, setForm] = useState({ conditionNote: '' });
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const handover = useMutation({
         mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, lockSerial: reservation.unitCode, ...form }),
@@ -137,7 +137,7 @@ function HandoverWizard({ reservation, contract, onDone }) {
 
     const checked = CHECKS.every((c) => ticks[c.key]);
     const signed = !!contract?.signedAt;
-    const ready = checked && viewed && signed && lockGiven && form.cardNumber.trim();
+    const ready = checked && viewed && signed && lockGiven;
     return (
         <div className="se-panel">
             <div className="sa-card-title">
@@ -154,8 +154,8 @@ function HandoverWizard({ reservation, contract, onDone }) {
                 <ViewUnit reservation={reservation} viewed={viewed} onViewed={() => setViewedUnit(reservation.storageUnitId)} />
                 <SignContract reservation={reservation} contract={contract} locked={!viewed} />
                 <li>
-                    <span><strong>Hand over disc lock &amp; access card</strong><small>Give the customer the lock named after their unit, and record the card number</small></span>
-                    <div className="se-panel-grid">
+                    <span><strong>Hand over the disc lock and keys</strong><small>Give the customer the lock named after their unit</small></span>
+                    <div>
                         <div><span className="se-label">Lock name</span>
                             <div className={`sa-lock ${lockGiven ? 'given' : ''}`}>
                                 <span><Icon name="key" size={16} /> {reservation.unitCode}</span>
@@ -165,9 +165,8 @@ function HandoverWizard({ reservation, contract, onDone }) {
                             </div>
                             {lockGiven && <small className="sa-muted">Lock {reservation.unitCode} given to the customer.</small>}
                         </div>
-                        <label><span className="se-label">Access card no.</span><div className="se-input"><input value={form.cardNumber} maxLength={30} onChange={(e) => set({ cardNumber: e.target.value })} /></div></label>
                     </div>
-                    <label><span className="se-label">Condition note (optional)</span><textarea className="se-textarea" rows={2} maxLength={300} value={form.conditionNote} onChange={(e) => set({ conditionNote: e.target.value })} /></label>
+                    <label><span className="se-label">Condition note (optional, shown again at the return inspection)</span><textarea className="se-textarea" rows={2} maxLength={300} value={form.conditionNote} onChange={(e) => set({ conditionNote: e.target.value })} /></label>
                 </li>
             </ol>
             {handover.isError && <div className="se-alert" role="alert">{errorMessage(handover.error)}</div>}
