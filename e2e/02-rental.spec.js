@@ -123,6 +123,15 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await customer.reload()
     await customer.getByRole('button', { name: 'Hiện mã' }).click()
     await expect(customer.getByLabel(`Mã ra vào ${accessCode}`)).toBeVisible()
+
+    // A renter reports a problem with their unit (needs the ticket categories every database is given).
+    await customer.getByRole('link', { name: 'Báo sự cố' }).click()
+    await customer.getByRole('radiogroup', { name: 'Loại vấn đề' }).getByRole('radio', { name: 'Hư hỏng / sửa chữa' }).click()
+    await customer.getByLabel('Tiêu đề').fill('Trần bị dột')
+    await customer.getByLabel('Mô tả chi tiết').fill('Nước nhỏ giọt từ trần kho.')
+    await customer.getByRole('button', { name: /Gửi yêu cầu/ }).click()
+    await expect(customer).toHaveURL(/\/support\/requests\/\d+$/)
+    await customer.goto('/my-storage')
   })
 
   test('E06 the billing run issues rent and the customer pays it online', async ({ baseURL }) => {
