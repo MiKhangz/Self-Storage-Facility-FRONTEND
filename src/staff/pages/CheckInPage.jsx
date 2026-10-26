@@ -25,7 +25,7 @@ function MarkLeft({ row, onClose }) {
             <form className="se-panel sa-dialog" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
                 <div className="sa-card-title"><h2>Mark {row.customerName} as left</h2>
                     <button type="button" className="sa-close" onClick={onClose} aria-label="Close">×</button></div>
-                <p className="sa-muted">Use this only when the customer left without checking out at the desk. Inside since {time(row.since)}.</p>
+                <p className="sa-muted">Use this only when the customer left without checking out at the desk. Inside since {time(row.since)}. Their code is replaced, as after any visit.</p>
                 <label><span className="se-label">When did they leave?</span>
                     <div className="se-input"><input type="datetime-local" required value={form.leftAt} max={nowLocal()} onChange={(e) => setForm({ ...form, leftAt: e.target.value })} /></div></label>
                 <label><span className="se-label">Reason *</span>
@@ -71,7 +71,7 @@ export default function CheckInPage() {
 
             <section className="se-panel sa-checkin-find">
                 <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) find.mutate(); }}>
-                    <label><span className="se-label">Customer's access code (coming in or going out)</span>
+                    <label><span className="se-label">Customer's access code (coming in or going out; it changes after each visit)</span>
                         <div className="se-input"><Icon name="key" size={16} />
                             <input inputMode="numeric" autoComplete="off" maxLength={20} placeholder="Ask the customer for their code" value={code}
                                 onChange={(e) => { setCode(e.target.value); find.reset(); }} /></div></label>

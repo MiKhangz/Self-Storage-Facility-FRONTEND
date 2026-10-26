@@ -97,32 +97,40 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     expect(contract.status).toBe('Active')
   })
 
-  test('E05b the customer is inside after the handover; their code checks them out and in, and staff fix a forgotten check-out', async () => {
+  test('E05b the customer is inside after the handover; each visit ends with a new code, and staff fix a forgotten check-out', async () => {
     await openAdmin(staff, 'Check-in / out')
     const row = staff.getByRole('row', { name: new RegExp(name) })
     await expect(row).toContainText('Inside')
-
     const code = staff.getByLabel(/Customer's access code/)
-    await code.fill(accessCode)
-    await staff.getByRole('button', { name: 'Find' }).click()
+    const find = async (pin) => { await code.fill(pin); await staff.getByRole('button', { name: 'Find' }).click() }
+
+    await find(accessCode)
     await staff.getByRole('button', { name: 'Check out', exact: true }).click()
     await expect(row).toContainText('Out')
 
-    await code.fill(accessCode)
-    await staff.getByRole('button', { name: 'Find' }).click()
+    // The code died with the visit: someone who overheard it gets nowhere.
+    await find(accessCode)
+    await expect(staff.getByRole('alert')).toContainText('No working access code matches')
+
+    // The renter reads the new code in their account.
+    await customer.reload()
+    await customer.getByRole('button', { name: 'Hiện mã' }).click()
+    const shown = customer.getByLabel(/^Mã ra vào \d{6}$/)
+    await expect(shown).toBeVisible()
+    const fresh = (await shown.getAttribute('aria-label')).replace(/\D/g, '')
+    expect(fresh).not.toBe(accessCode)
+
+    await find(fresh)
     await staff.getByRole('button', { name: 'Check in', exact: true }).click()
     await expect(row).toContainText('Inside')
 
-    // They went home without saying their code: staff close the visit with a reason.
+    // They went home without saying their code: staff close the visit with a reason (the code changes again).
     await row.getByRole('button', { name: 'Mark as left' }).click()
     await staff.getByLabel('Reason *').fill('Forgot to check out at the desk')
     await staff.getByRole('dialog').getByRole('button', { name: 'Mark as left' }).click()
     await expect(row).toContainText('marked by staff')
-
-    // The renter can read their code again in their account.
-    await customer.reload()
-    await customer.getByRole('button', { name: 'Hiện mã' }).click()
-    await expect(customer.getByLabel(`Mã ra vào ${accessCode}`)).toBeVisible()
+    await find(fresh)
+    await expect(staff.getByRole('alert')).toContainText('No working access code matches')
 
     // A renter reports a problem with their unit (needs the ticket categories every database is given).
     await customer.getByRole('link', { name: 'Báo sự cố' }).click()

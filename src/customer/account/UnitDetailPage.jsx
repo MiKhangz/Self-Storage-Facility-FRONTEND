@@ -59,7 +59,7 @@ function AccessCodeCard({ contract }) {
             {issue.isError && <p className="se-code-note error">{errorMessage(issue.error)}</p>}
             <p className="se-code-note">
                 {summary.data?.isActive
-                    ? `Đọc mã này cho nhân viên khi vào và ra cơ sở. Mã có hiệu lực đến ${formatDate(summary.data.expiresAt)}. `
+                    ? 'Đọc mã này cho nhân viên khi vào và ra cơ sở. Mã đổi sau mỗi lần bạn rời cơ sở, hãy xem mã mới tại đây trước mỗi lần đến. '
                     : 'Chưa có mã đang dùng. Hãy cấp mã mới. '}
                 {summary.data?.isActive && !code ? 'Mã cũ không xem lại được, hãy cấp mã mới. ' : ''}
                 Không chia sẻ mã cho người khác.

@@ -195,7 +195,7 @@ function HandoverDesk() {
                     <div className="se-panel sa-checkin-done">
                         <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
                         <h2>Handover complete — unit {done.unitCode} is now occupied</h2>
-                        <p className="sa-muted">Give the customer this access code. They are now checked in, and can see the code again in their account.</p>
+                        <p className="sa-muted">Give the customer this access code. They are now checked in. The code changes each time they leave; they find the current one in their account.</p>
                         <div className="se-code-digits dark">{(done.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
                         <button type="button" className="se-btn se-btn-primary" onClick={() => {
                             ['reservations', 'contracts', 'storage-units', 'check-ins'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
