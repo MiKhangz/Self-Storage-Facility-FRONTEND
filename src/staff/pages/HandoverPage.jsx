@@ -108,10 +108,13 @@ function HandoverWizard({ reservation, contract, onDone }) {
     // Seeing the unit is a conversation, not a record: it lives here, and switching units resets it.
     const [viewedUnit, setViewedUnit] = useState(null);
     const viewed = viewedUnit === reservation.storageUnitId;
-    const [form, setForm] = useState({ lockSerial: '', cardNumber: '', conditionNote: '' });
+    // Each unit's disc lock is named after the unit, so staff confirm they gave that one; a unit switch resets it.
+    const [lockFor, setLockFor] = useState(null);
+    const lockGiven = lockFor === reservation.storageUnitId;
+    const [form, setForm] = useState({ cardNumber: '', conditionNote: '' });
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const handover = useMutation({
-        mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, ...form }),
+        mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, lockSerial: reservation.unitCode, ...form }),
     });
     // Refresh only after staff move on: refetching drops this reservation from the queue, which would unmount
     // the one-time access code before anyone reads it.
@@ -134,7 +137,7 @@ function HandoverWizard({ reservation, contract, onDone }) {
 
     const checked = CHECKS.every((c) => ticks[c.key]);
     const signed = !!contract?.signedAt;
-    const ready = checked && viewed && signed && form.lockSerial.trim() && form.cardNumber.trim();
+    const ready = checked && viewed && signed && lockGiven && form.cardNumber.trim();
     return (
         <div className="se-panel">
             <div className="sa-card-title">
@@ -151,9 +154,17 @@ function HandoverWizard({ reservation, contract, onDone }) {
                 <ViewUnit reservation={reservation} viewed={viewed} onViewed={() => setViewedUnit(reservation.storageUnitId)} />
                 <SignContract reservation={reservation} contract={contract} locked={!viewed} />
                 <li>
-                    <span><strong>Hand over disc lock &amp; access card</strong><small>Record the serial numbers given to the customer</small></span>
+                    <span><strong>Hand over disc lock &amp; access card</strong><small>Give the customer the lock named after their unit, and record the card number</small></span>
                     <div className="se-panel-grid">
-                        <label><span className="se-label">Lock serial no.</span><div className="se-input"><input value={form.lockSerial} maxLength={30} onChange={(e) => set({ lockSerial: e.target.value })} /></div></label>
+                        <div><span className="se-label">Lock name</span>
+                            <div className={`sa-lock ${lockGiven ? 'given' : ''}`}>
+                                <span><Icon name="key" size={16} /> {reservation.unitCode}</span>
+                                {lockGiven
+                                    ? <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setLockFor(null)}>Undo</button>
+                                    : <button type="button" className="se-btn se-btn-primary se-btn-sm" onClick={() => setLockFor(reservation.storageUnitId)}>Confirm lock given</button>}
+                            </div>
+                            {lockGiven && <small className="sa-muted">Lock {reservation.unitCode} given to the customer.</small>}
+                        </div>
                         <label><span className="se-label">Access card no.</span><div className="se-input"><input value={form.cardNumber} maxLength={30} onChange={(e) => set({ cardNumber: e.target.value })} /></div></label>
                     </div>
                     <label><span className="se-label">Condition note (optional)</span><textarea className="se-textarea" rows={2} maxLength={300} value={form.conditionNote} onChange={(e) => set({ conditionNote: e.target.value })} /></label>

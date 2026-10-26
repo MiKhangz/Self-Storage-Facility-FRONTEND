@@ -289,3 +289,6 @@
 .sa-found > span:first-child { display: grid; gap: 2px; }
 .sa-found.out { background: #fff8f7; border-color: #f6d3bd; }
 .sa-found.in { background: #f1fbf5; border-color: #bfe8d0; }
+.sa-lock { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 44px; padding: 4px 4px 4px 14px; border: 1px solid var(--se-line); border-radius: 8px; font-weight: 600; }
+.sa-lock > span { display: inline-flex; align-items: center; gap: 8px; }
+.sa-lock.given { background: #f1fbf5; border-color: #bfe8d0; color: #18794e; }

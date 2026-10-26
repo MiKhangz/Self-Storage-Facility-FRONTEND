@@ -87,7 +87,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
   })
 
   test('E05 staff complete the handover and the contract becomes Active', async () => {
-    await staff.getByLabel('Lock serial no.').fill('LOCK-E2E-1')
+    await staff.getByRole('button', { name: 'Confirm lock given' }).click()
     await staff.getByLabel('Access card no.').fill('CARD-E2E-1')
     await staff.getByRole('button', { name: 'Complete handover' }).click()
 
