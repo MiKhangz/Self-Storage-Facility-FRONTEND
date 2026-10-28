@@ -294,3 +294,12 @@
 .sa-lock { flex: 1; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid var(--se-line); border-radius: 8px; font-weight: 600; }
 .sa-lock.given { background: #f1fbf5; border-color: #bfe8d0; color: #18794e; }
 .sa-contract-summary { display: grid; gap: 12px; margin-top: 8px; padding: 14px; border: 1px solid var(--se-line); border-radius: 10px; background: #fff; }
+/* Facility picker: chosen facilities as chips, picked in a searchable pop-up. */
+.sa-facility-picker { display: grid; gap: 8px; justify-items: start; }
+.sa-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.sa-chip { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 12px; border-radius: 999px; background: var(--se-primary-soft); color: var(--se-ink); font-size: 13px; font-weight: 600; }
+.sa-chip button { border: 0; background: none; cursor: pointer; font-size: 16px; line-height: 1; padding: 0 4px; color: var(--se-muted); }
+.sa-facility-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; max-height: 50vh; overflow: auto; }
+.sa-facility-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--se-line); border-radius: 10px; }
+.sa-facility-list .se-check > span { display: grid; gap: 2px; } .sa-facility-list small { color: var(--se-muted); }
+.sa-facility-list .locked { opacity: 0.55; }

@@ -8,7 +8,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { PasswordInput } from '../../customer/auth/AuthShell.jsx';
 import { PageHeader } from '../components/ui.jsx';
 import { ROLE_INFO } from '../permissions.js';
-import { useFacilities } from '../queries.js';
+import { FacilityPicker } from '../components/FacilityPicker.jsx';
 import { PermissionMatrix } from './UsersPage.jsx';
 
 // Facility roles work at specific sites; the two head-office roles see every facility.
@@ -18,7 +18,6 @@ const NEEDS_FACILITY = [Roles.FacilityManager, Roles.FacilityStaff];
 export default function InviteUserPage() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const facilities = useFacilities().data ?? [];
     const [form, setForm] = useState({ fullName: '', email: '', phoneNumber: '', password: '', role: Roles.FacilityStaff });
     const [facilityIds, setFacilityIds] = useState([]);
     const set = (k) => (e) => setForm({ ...form, [k]: e.target.value });
@@ -59,17 +58,7 @@ export default function InviteUserPage() {
                             </label>
                         ))}
                     </div>
-                    {needsFacility && (
-                        <>
-                            <span className="se-label">Assigned facilities *</span>
-                            <div className="sa-checklist">
-                                {facilities.map((f) => (
-                                    <label key={f.facilityId} className="se-check"><input type="checkbox" checked={facilityIds.includes(f.facilityId)}
-                                        onChange={() => setFacilityIds(facilityIds.includes(f.facilityId) ? facilityIds.filter((x) => x !== f.facilityId) : [...facilityIds, f.facilityId])} /><span>{f.name}</span></label>
-                                ))}
-                            </div>
-                        </>
-                    )}
+                    {needsFacility && <FacilityPicker label="Assigned facilities *" value={facilityIds} onChange={setFacilityIds} />}
                 </form>
                 <section className="se-panel">
                     <h2>What a {ROLE_INFO.find((r) => r.role === form.role)?.title} can do</h2>

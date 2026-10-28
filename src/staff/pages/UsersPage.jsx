@@ -10,7 +10,8 @@ import { formatDate } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { Filters, Modal, PageHeader, SearchFilter, SelectFilter, Status, TableState, matches } from '../components/ui.jsx';
 import { PERMISSIONS, ROLE_INFO } from '../permissions.js';
-import { humanize, useFacilities, useStaff } from '../queries.js';
+import { humanize, useStaff } from '../queries.js';
+import { FacilityPicker } from '../components/FacilityPicker.jsx';
 
 const STATUSES = ['Active', 'Disabled'];
 
@@ -61,7 +62,6 @@ function PermissionHelp({ onClose }) {
 /** `managed` is null for an admin; for a facility manager, the facility ids they may add or remove. */
 function EditUser({ user, managed, onClose }) {
     const queryClient = useQueryClient();
-    const facilities = useFacilities();
     // The API refuses to let an admin lock or demote themselves (nobody could undo it), so don't offer it.
     const self = useAuth().session?.userId === user.userId;
     const isManager = managed !== null;
@@ -75,7 +75,6 @@ function EditUser({ user, managed, onClose }) {
         },
         onSuccess: () => { queryClient.invalidateQueries({ queryKey: ['staff'] }); onClose(); },
     });
-    const toggle = (id) => setFacilityIds(facilityIds.includes(id) ? facilityIds.filter((x) => x !== id) : [...facilityIds, id]);
 
     return (
         <aside className="se-panel sa-side-panel">
@@ -92,12 +91,7 @@ function EditUser({ user, managed, onClose }) {
                 <div className="se-field"><select value={form.status} disabled={self} onChange={(e) => setForm({ ...form, status: e.target.value })}>{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
                 <p className="se-hint">{self ? 'You cannot change your own role or status.' : 'Disabled accounts cannot sign in or be assigned work.'}</p></label>
             </>)}
-            <span className="se-label">Assigned facilities</span>
-            <div className="sa-checklist">
-                {(facilities.data ?? []).map((f) => (
-                    <label key={f.facilityId} className="se-check"><input type="checkbox" checked={facilityIds.includes(f.facilityId)} disabled={isManager && (self || !managed.includes(f.facilityId))} onChange={() => toggle(f.facilityId)} /><span>{f.name}</span></label>
-                ))}
-            </div>
+            <FacilityPicker value={facilityIds} onChange={setFacilityIds} canChange={(id) => !isManager || (!self && managed.includes(id))} />
             {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
             <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={save.isPending || !form.fullName.trim() || (isManager && self)} onClick={() => save.mutate()}>{save.isPending ? 'Saving…' : 'Save changes'}</button>
         </aside>
