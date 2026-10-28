@@ -77,6 +77,18 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await expect(staff.getByRole('button', { name: 'Draft contract' })).toBeHidden()
     await staff.getByRole('button', { name: 'Customer likes it' }).click()
     await staff.getByRole('button', { name: 'Draft contract' }).click()
+
+    // The customer sees the term, price and deposit bill before signing; staff print both.
+    await expect(staff.locator('.sa-contract-summary')).toContainText('Monthly rent')
+    const [contractDoc] = await Promise.all([staff.waitForEvent('popup'), staff.getByRole('button', { name: 'Print contract' }).click()])
+    await expect(contractDoc.locator('body')).toContainText('HỢP ĐỒNG THUÊ KHO')
+    await expect(contractDoc.locator('body')).toContainText('Tiền thuê mỗi tháng')
+    await contractDoc.close()
+    const [receipt] = await Promise.all([staff.waitForEvent('popup'), staff.getByRole('button', { name: 'Print deposit receipt' }).click()])
+    await expect(receipt.locator('body')).toContainText('BIÊN LAI TIỀN CỌC')
+    await expect(receipt.locator('body')).toContainText('Đã thanh toán đủ')
+    await receipt.close()
+
     await staff.getByRole('button', { name: 'Customer signed on paper' }).click()
     await expect(staff.getByText(/signed \d/)).toBeVisible()
 

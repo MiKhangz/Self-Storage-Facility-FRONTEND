@@ -3,9 +3,10 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { accessCodesApi, handoversApi, contractsApi, reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
-import { formatDate, todayIso } from '../../customer/components/format.js';
+import { formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
 import { PageHeader, Stat, Status } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useUnits } from '../queries.js';
+import { esc, printDocument } from '../print.js';
 
 /** Checked at the desk before anyone walks to the unit. */
 const CHECKS = [
@@ -66,6 +67,44 @@ function ViewUnit({ reservation, viewed, onViewed }) {
     );
 }
 
+const dateTime = (iso) => iso && new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+/** The paper contract the customer signs at the desk: who, which unit, for how long, at what price. */
+function contractHtml(reservation, contract, customer) {
+    const row = (label, value) => `<tr><td>${esc(label)}</td><td>${esc(value)}</td></tr>`;
+    return `<h1>HỢP ĐỒNG THUÊ KHO</h1><p class="sub">Số ${esc(contract.contractNumber)} · StorEase ${esc(reservation.facilityName)}</p>
+        <h2>1. Bên thuê</h2><table>${row('Họ và tên', contract.customerName)}${row('Số điện thoại', customer?.customerPhone)}${row('Số CCCD', customer?.citizenId)}</table>
+        <h2>2. Kho thuê</h2><table>${row('Cơ sở', reservation.facilityName)}${row('Mã kho', contract.unitCode)}${row('Loại kho', reservation.unitTypeName)}</table>
+        <h2>3. Thời hạn và giá thuê</h2><table>
+            ${row('Ngày bắt đầu', formatDate(contract.startDate))}${row('Ngày kết thúc', formatDate(contract.endDate))}
+            ${row('Thời hạn', `${reservation.rentalMonths} tháng`)}${row('Tiền thuê mỗi tháng', formatVnd(contract.monthlyRent))}
+            ${row('Tiền cọc', formatVnd(contract.depositAmount))}${row('Hạn đóng tiền thuê', `Ngày ${contract.paymentDay} hằng tháng`)}</table>
+        <h2>4. Điều khoản chính</h2><ol>
+            <li>Hóa đơn tiền thuê được gửi trước hạn đóng; trễ hạn có thể bị tính phí trễ hạn và tạm khóa quyền ra vào theo chính sách giá đang áp dụng cho hợp đồng.</li>
+            <li>Mỗi lần ra vào cơ sở, bên thuê đọc mã ra vào cho nhân viên. Mã đổi sau mỗi lần ra về và luôn xem được trong tài khoản.</li>
+            <li>Khi trả kho, bên thuê có tối đa 15 ngày kể từ ngày yêu cầu để dọn kho; sau hạn này quyền ra vào bị khóa.</li>
+            <li>Tiền cọc được hoàn sau khi kiểm tra kho lúc trả, trừ chi phí hư hỏng, hóa đơn còn nợ và phí trả kho trước hạn (nếu có).</li>
+        </ol>
+        <div class="sign"><div><p>BÊN THUÊ</p>${esc(contract.customerName)}</div><div><p>ĐẠI DIỆN STOREASE</p>&nbsp;</div></div>`;
+}
+
+const METHOD_VI = { Cash: 'Tiền mặt', BankTransfer: 'Chuyển khoản', Gateway: 'Thanh toán online', Card: 'Thẻ' };
+
+/** The bill for the deposit: what was paid, when and how. */
+function receiptHtml(reservation, deposit) {
+    const paid = (deposit.payments ?? []).filter((p) => p.status === 'Succeeded');
+    const lines = paid.map((p) => `<tr><td>${esc(dateTime(p.paidAt) ?? '—')}</td><td>${esc(formatVnd(p.amount))} · ${esc(METHOD_VI[p.method] ?? p.method)}${p.referenceNo ? ` · ${esc(p.referenceNo)}` : ''}</td></tr>`).join('');
+    return `<h1>BIÊN LAI TIỀN CỌC</h1><p class="sub">Số ${esc(deposit.invoiceNumber)} · StorEase ${esc(reservation.facilityName)}</p>
+        <table><tr><td>Khách hàng</td><td>${esc(reservation.customerName)}</td></tr><tr><td>Đơn đặt kho</td><td>${esc(reservation.reservationCode)}</td></tr>
+            <tr><td>Kho</td><td>${esc(reservation.unitCode)} · ${esc(reservation.unitTypeName)}</td></tr>
+            <tr><td>Số tiền cọc</td><td>${esc(formatVnd(deposit.totalAmount))}</td></tr>
+            <tr><td>Đã thanh toán</td><td class="total">${esc(formatVnd(deposit.paidAmount))}</td></tr>
+            <tr><td>Trạng thái</td><td>${deposit.status === 'Paid' ? 'Đã thanh toán đủ' : 'Chưa thanh toán đủ'}</td></tr></table>
+        ${lines ? `<h2>Các lần thanh toán</h2><table>${lines}</table>` : ''}
+        <p>Tiền cọc được hoàn lại khi trả kho, sau khi kiểm tra tình trạng kho.</p>
+        <div class="sign"><div><p>KHÁCH HÀNG</p>${esc(reservation.customerName)}</div><div><p>NHÂN VIÊN THU</p>&nbsp;</div></div>`;
+}
+
 /** The contract is drafted once the customer likes the unit, then signed on paper in front of staff. */
 function SignContract({ reservation, contract, locked }) {
     const queryClient = useQueryClient();
@@ -74,13 +113,18 @@ function SignContract({ reservation, contract, locked }) {
     const draft = useMutation({ mutationFn: () => contractsApi.create({ reservationId: reservation.reservationId, paymentDay }), onSuccess: refresh });
     const sign = useMutation({ mutationFn: () => contractsApi.signAtDesk(contract.contractId), onSuccess: refresh });
     const error = draft.error ?? sign.error;
+    // Phone and citizen ID for the paper contract; the deposit invoice is the bill the customer takes home.
+    const customer = useQuery({ queryKey: ['reservations', reservation.reservationId, 'handover'], queryFn: () => reservationsApi.handover(reservation.reservationId), enabled: !!contract }).data;
+    const deposit = (useInvoices().data ?? []).find((i) => i.reservationId === reservation.reservationId && !i.contractId);
+    const [blocked, setBlocked] = useState(false);
+    const print = (title, html) => setBlocked(!printDocument(title, html));
 
     return (
         <li className={contract?.signedAt ? 'done' : ''}>
             <span><strong>Customer signs the contract</strong>
                 <small>{locked ? 'After the customer has seen and accepted the unit.'
                     : contract?.signedAt ? `${contract.contractNumber} signed ${formatDate(contract.signedAt)}`
-                    : contract ? `Print ${contract.contractNumber}; the customer signs the paper copy in front of you.`
+                    : contract ? `Go through the terms below with the customer, print ${contract.contractNumber} and let them sign the paper copy.`
                     : 'Draft the contract for this unit, then print it for signing.'}</small></span>
             {!locked && !contract && (
                 <div className="sa-inline-form">
@@ -91,11 +135,30 @@ function SignContract({ reservation, contract, locked }) {
                     </button>
                 </div>
             )}
-            {!locked && contract && !contract.signedAt && (
-                <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={sign.isPending}
-                    onClick={() => window.confirm('Confirm the customer signed the paper contract in front of you?') && sign.mutate()}>
-                    Customer signed on paper
-                </button>
+            {!locked && contract && (
+                <div className="sa-contract-summary">
+                    <dl className="se-kv">
+                        <div><dt>Unit</dt><dd>{contract.unitCode} · {reservation.unitTypeName}</dd></div>
+                        <div><dt>Term</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)} ({reservation.rentalMonths} months)</dd></div>
+                        <div><dt>Monthly rent</dt><dd>{formatVnd(contract.monthlyRent)}</dd></div>
+                        <div><dt>Deposit</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
+                        <div><dt>Rent due</dt><dd>Day {contract.paymentDay} of each month</dd></div>
+                        <div><dt>Deposit bill</dt><dd>{deposit ? `${deposit.invoiceNumber} · ${deposit.status === 'Paid' ? 'paid' : 'not paid'} ${formatVnd(deposit.paidAmount)}` : 'No deposit was due'}</dd></div>
+                    </dl>
+                    <div className="sa-form-actions">
+                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => print(contract.contractNumber, contractHtml(reservation, contract, customer))}>
+                            <Icon name="file" size={14} /> Print contract</button>
+                        {deposit && <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => print(deposit.invoiceNumber, receiptHtml(reservation, deposit))}>
+                            <Icon name="card" size={14} /> Print deposit receipt</button>}
+                        {!contract.signedAt && (
+                            <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={sign.isPending}
+                                onClick={() => window.confirm('Confirm the customer signed the paper contract in front of you?') && sign.mutate()}>
+                                Customer signed on paper
+                            </button>
+                        )}
+                    </div>
+                    {blocked && <div className="se-alert" role="alert">The browser blocked the print window. Allow pop-ups for this site and press Print again.</div>}
+                </div>
             )}
             {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
         </li>

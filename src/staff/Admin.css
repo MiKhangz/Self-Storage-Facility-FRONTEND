@@ -293,3 +293,4 @@
 .sa-lock-row { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
 .sa-lock { flex: 1; display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 14px; border: 1px solid var(--se-line); border-radius: 8px; font-weight: 600; }
 .sa-lock.given { background: #f1fbf5; border-color: #bfe8d0; color: #18794e; }
+.sa-contract-summary { display: grid; gap: 12px; margin-top: 8px; padding: 14px; border: 1px solid var(--se-line); border-radius: 10px; background: #fff; }
