@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { pricingPoliciesApi } from '../../api/generated';
+import { fill } from '../../i18n/I18n.jsx';
 
 /** The rental terms in force today: the same rules the backend enforces, so the site never promises others. */
 export const useTerms = () => useQuery({ queryKey: ['terms'], queryFn: () => pricingPoliciesApi.currentTerms(), staleTime: 10 * 60_000 });
@@ -17,10 +18,15 @@ export function discountLabel(terms, months, unitTypeId) {
     return percent > 0 ? `−${percent}%` : undefined;
 }
 
-/** The early-return rule (SR-04): no notice needed; before the contract's end date a share of the deposit is kept. */
-export const earlyReturnText = (t) =>
-    `Có thể trả kho bất cứ lúc nào, không cần báo trước${t.earlyTerminationPercent > 0 ? `; trả trước ngày hết hạn hợp đồng sẽ bị giữ lại ${t.earlyTerminationPercent}% tiền cọc` : ''}.`;
+/**
+ * The early-return rule (SR-04): no notice needed; before the contract's end date a share of the deposit is kept.
+ * `tr` is the screen's t(); without it the sentence stays Vietnamese.
+ */
+export const earlyReturnText = (terms, tr = fill) => (terms.earlyTerminationPercent > 0
+    ? tr('Có thể trả kho bất cứ lúc nào, không cần báo trước; trả trước ngày hết hạn hợp đồng sẽ bị giữ lại {percent}% tiền cọc.', { percent: terms.earlyTerminationPercent })
+    : tr('Có thể trả kho bất cứ lúc nào, không cần báo trước.'));
 
 /** One sentence for the late-fee rule, shared by the sizes page and the rental agreement. */
-export const lateFeeText = (t) =>
-    `Phí trễ hạn: ${t.lateFeePercentPerWeek}% tiền thuê cho mỗi tuần trễ trọn vẹn, sau ${t.graceDays} ngày ân hạn. Quyền ra vào bị tạm khóa khi trễ hạn quá ${t.suspendAfterDays} ngày.`;
+export const lateFeeText = (terms, tr = fill) =>
+    tr('Phí trễ hạn: {percent}% tiền thuê cho mỗi tuần trễ trọn vẹn, sau {grace} ngày ân hạn. Quyền ra vào bị tạm khóa khi trễ hạn quá {suspend} ngày.',
+        { percent: terms.lateFeePercentPerWeek, grace: terms.graceDays, suspend: terms.suspendAfterDays });

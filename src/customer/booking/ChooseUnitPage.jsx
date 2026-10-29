@@ -8,12 +8,14 @@ import { availability, formatDate, formatVnd, rentalEndDate, todayIso } from '..
 import { useFacilities } from '../sizes/SizesPage.jsx';
 import BookingStepper from './BookingStepper.jsx';
 import BookingSummary from './BookingSummary.jsx';
+import { useT } from '../../i18n/I18n.jsx';
 
 const PERIODS = [1, 3, 6, 12];
 
 /** U06: what, where and when. Values travel in the URL so they survive the login redirect. */
 export default function ChooseUnitPage() {
     const navigate = useNavigate();
+    const tr = useT();
     const [params] = useSearchParams();
     const [form, setForm] = useState({
         facilityId: params.get('facilityId') ?? '',
@@ -45,7 +47,7 @@ export default function ChooseUnitPage() {
         queryFn: () => unitTypesApi.quote(unitTypeId, quoteQuery),
         enabled: ready,
     });
-    const badge = availability(stock.data?.availableUnits);
+    const badge = availability(stock.data?.availableUnits, tr);
     const soldOut = stock.data?.availableUnits === 0;
 
     const next = () => {
@@ -60,15 +62,15 @@ export default function ChooseUnitPage() {
                 <div className="se-container se-booking-grid">
                     <div>
                     <section className="se-panel">
-                        <h2>1. Ở đâu và cỡ nào?</h2>
-                        <span className="se-label">Cơ sở</span>
+                        <h2>1. {tr('Ở đâu và cỡ nào?')}</h2>
+                        <span className="se-label">{tr('Cơ sở')}</span>
                         <div className="se-field"><Icon name="pin" />
-                            <select value={facilityId ?? ''} onChange={(e) => set({ facilityId: e.target.value })} aria-label="Cơ sở">
+                            <select value={facilityId ?? ''} onChange={(e) => set({ facilityId: e.target.value })} aria-label={tr('Cơ sở')}>
                                 {facilities.data?.items?.map((f) => <option key={f.facilityId} value={f.facilityId}>{f.name}</option>)}
                             </select>
                         </div>
-                        <span className="se-label">Kích thước kho</span>
-                        <div className="se-chips" role="radiogroup" aria-label="Kích thước kho">
+                        <span className="se-label">{tr('Kích thước kho')}</span>
+                        <div className="se-chips" role="radiogroup" aria-label={tr('Kích thước kho')}>
                             {types.map((t) => (
                                 <button key={t.unitTypeId} type="button" role="radio" aria-checked={t.unitTypeId === unitTypeId}
                                     className={`se-chip${t.unitTypeId === unitTypeId ? ' active' : ''}`} onClick={() => set({ unitTypeId: t.unitTypeId })}>
@@ -79,49 +81,49 @@ export default function ChooseUnitPage() {
                     </section>
 
                     <section className="se-panel">
-                        <h2>2. Khi nào và thuê bao lâu?</h2>
+                        <h2>2. {tr('Khi nào và thuê bao lâu?')}</h2>
                         <div className="se-panel-grid">
-                            <label><span className="se-label">Ngày nhận kho</span>
+                            <label><span className="se-label">{tr('Ngày nhận kho')}</span>
                                 <div className="se-field"><Icon name="calendar" />
                                     <input type="date" value={form.moveInDate} min={todayIso()} onChange={(e) => set({ moveInDate: e.target.value })} required />
                                 </div>
                             </label>
-                            <div><span className="se-label">Ngày kết thúc (tự tính)</span>
+                            <div><span className="se-label">{tr('Ngày kết thúc (tự tính)')}</span>
                                 <div className="se-field" aria-readonly="true"><Icon name="calendar" />
                                     {form.moveInDate ? formatDate(rentalEndDate(form.moveInDate, form.rentalMonths)) : '—'}
                                 </div>
                             </div>
                         </div>
-                        <span className="se-label">Thời hạn thuê</span>
-                        <div className="se-chips" role="radiogroup" aria-label="Thời hạn thuê">
+                        <span className="se-label">{tr('Thời hạn thuê')}</span>
+                        <div className="se-chips" role="radiogroup" aria-label={tr('Thời hạn thuê')}>
                             {PERIODS.map((months) => (
                                 <button key={months} type="button" role="radio" aria-checked={form.rentalMonths === months}
                                     className={`se-chip${form.rentalMonths === months ? ' active' : ''}`} onClick={() => set({ rentalMonths: months })}>
-                                    {form.rentalMonths === months && <Icon name="check" size={14} />}{months} tháng {discountLabel(terms, months, unitTypeId) && <small>{discountLabel(terms, months, unitTypeId)}</small>}
+                                    {form.rentalMonths === months && <Icon name="check" size={14} />}{tr('{months} tháng', { months })} {discountLabel(terms, months, unitTypeId) && <small>{discountLabel(terms, months, unitTypeId)}</small>}
                                 </button>
                             ))}
                         </div>
                     </section>
 
                     <section className="se-panel">
-                        <h2>3. Kho của bạn</h2>
+                        <h2>3. {tr('Kho của bạn')}</h2>
                         {type && (
                             <p className="se-booking-note">
-                                Kho {type.code} · {type.areaM2.toLocaleString('vi-VN')} m² · {[type.width, type.depth, type.height].map((n) => n.toLocaleString('vi-VN')).join(' × ')} m
+                                {tr('Kho')} {type.code} · {type.areaM2.toLocaleString('vi-VN')} m² · {[type.width, type.depth, type.height].map((n) => n.toLocaleString('vi-VN')).join(' × ')} m
                                 {badge && <> &nbsp;<span className={`se-badge ${badge.tone}`}>{badge.label}</span></>}
                             </p>
                         )}
                         <p className="se-hint">
-                            {quote.data ? <>Tiền thuê {formatVnd(quote.data.monthlyRent)} mỗi tháng khi thuê {form.rentalMonths} tháng. </> : null}
-                            Nhân viên sẽ xếp số kho cụ thể cho bạn trước ngày nhận kho.
+                            {quote.data ? <>{tr('Tiền thuê {rent} mỗi tháng khi thuê {months} tháng.', { rent: formatVnd(quote.data.monthlyRent), months: form.rentalMonths })} </> : null}
+                            {tr('Nhân viên sẽ xếp số kho cụ thể cho bạn trước ngày nhận kho.')}
                         </p>
-                        {(quote.isError || stock.isError) && <div className="se-alert" role="alert">Chưa có giá cho lựa chọn này. Hãy thử cỡ kho, cơ sở hoặc ngày khác.</div>}
+                        {(quote.isError || stock.isError) && <div className="se-alert" role="alert">{tr('Chưa có giá cho lựa chọn này. Hãy thử cỡ kho, cơ sở hoặc ngày khác.')}</div>}
                     </section>
 
                     </div>
                     <BookingSummary facility={facility} type={type} moveInDate={form.moveInDate} rentalMonths={form.rentalMonths} quote={quote}>
                         <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta" disabled={!ready || soldOut || !quote.data} onClick={next}>
-                        {soldOut ? 'Cỡ kho này đã hết, hãy chọn cỡ khác' : <>Tiếp tục <Icon name="arrow" size={16} /></>}
+                        {soldOut ? tr('Cỡ kho này đã hết, hãy chọn cỡ khác') : <>{tr('Tiếp tục')} <Icon name="arrow" size={16} /></>}
                     </button>
                     </BookingSummary>
                 </div>

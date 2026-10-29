@@ -15,7 +15,7 @@ const KEY = 'storease.lang';
 const stored = () => { try { return localStorage.getItem(KEY); } catch { return null; } };
 
 /** Fills {name} holes: t('Kho {code}', { code: 'A-101' }). */
-const fill = (text, vars) => (vars ? text.replace(/\{(\w+)\}/g, (hole, name) => (name in vars ? vars[name] : hole)) : text);
+export const fill = (text, vars) => (vars ? text.replace(/\{(\w+)\}/g, (hole, name) => (name in vars ? vars[name] : hole)) : text);
 
 export function LanguageProvider({ children }) {
     const [chosen, setChosen] = useState(stored);
