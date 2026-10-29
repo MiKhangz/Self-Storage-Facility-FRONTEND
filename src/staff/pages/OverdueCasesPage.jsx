@@ -9,11 +9,13 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const STAGES = ['Reminder', 'LateFee', 'Suspended', 'ClearOut'];
 
 /** TH-01: unpaid rent past its due date — Reminder → LateFee → Suspended → ClearOut. Paying in full closes a case. */
 export default function OverdueCasesPage() {
+    const tr = useT();
     const queryClient = useQueryClient();
     const [search, setSearch] = useState('');
     const [stage, setStage] = useState('');
@@ -40,21 +42,21 @@ export default function OverdueCasesPage() {
 
     return (
         <>
-            <PageHeader title="Overdue cases" subtitle="Rent past its due date, from the first reminder to clear-out" />
+            <PageHeader title={tr('Overdue cases')} subtitle="Rent past its due date, from the first reminder to clear-out" />
             <div className="sa-stats">
                 <Stat icon="clock" label="Open cases" value={all.filter((c) => !c.resolvedAt).length} />
                 <Stat icon="card" tone="bad" label="Outstanding" value={formatVnd(all.reduce((s, c) => s + (c.outstanding ?? 0), 0))} />
                 <Stat icon="shield" tone="warn" label="Locked out" value={all.filter((c) => c.stage === 'Suspended' || c.stage === 'ClearOut').length} />
             </div>
             <Filters>
-                <SearchFilter value={search} onChange={setSearch} placeholder="Search customer, contract, unit or invoice" />
+                <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search customer, contract, unit or invoice')} />
                 <SelectFilter label="Stage" value={stage} onChange={setStage} all="All stages" options={STAGES.map((s) => ({ value: s, label: humanize(s) }))} />
-                <label className="se-check"><input type="checkbox" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} /><span>Open cases only</span></label>
+                <label className="se-check"><input type="checkbox" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} /><span>{tr('Open cases only')}</span></label>
             </Filters>
             <div className={`sa-split${current ? ' open' : ''}`}>
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
-                        <thead><tr><th>Customer</th><th>Unit</th><th>Invoice</th><th>Outstanding</th><th>Days overdue</th><th>Late fee</th><th>Stage</th></tr></thead>
+                        <thead><tr><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Invoice')}</th><th>{tr('Outstanding')}</th><th>{tr('Days overdue')}</th><th>{tr('Late fee')}</th><th>{tr('Stage')}</th></tr></thead>
                         <tbody>
                             {shown.map((c) => (
                                 <tr key={c.overdueCaseId} className={selected === c.overdueCaseId ? 'active' : ''} onClick={() => { setSelected(c.overdueCaseId); act.reset(); }}>
@@ -74,29 +76,29 @@ export default function OverdueCasesPage() {
                 {current && (
                     <aside className="se-panel sa-side-panel">
                         <div className="sa-card-title"><h2>{current.customerName}</h2>
-                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label="Close"><Icon name="arrowLeft" size={16} /></button></div>
-                        <p className="sa-muted"><Link to={`/admin/customers/${current.customerId}`} className="se-link">Customer profile</Link> · Unit {current.unitCode} · {current.contractNumber}</p>
+                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+                        <p className="sa-muted"><Link to={`/admin/customers/${current.customerId}`} className="se-link">{tr('Customer profile')}</Link> · Unit {current.unitCode} · {current.contractNumber}</p>
                         <dl className="se-kv">
-                            <div><dt>Stage</dt><dd><Status value={current.resolvedAt ? 'Resolved' : current.stage} /></dd></div>
-                            <div><dt>Overdue since</dt><dd>{formatDate(current.overdueSince)} · {current.daysOverdue} days</dd></div>
-                            <div><dt>Invoice</dt><dd>{current.invoiceId ? <Link to={`/admin/payments?invoiceId=${current.invoiceId}`} className="se-link">{current.invoiceNumber}</Link> : '—'}</dd></div>
-                            <div><dt>Outstanding</dt><dd>{formatVnd(current.outstanding ?? 0)}</dd></div>
-                            <div><dt>Late fee</dt><dd>{formatVnd(current.lateFeeAmount)}</dd></div>
-                            <div><dt>Access suspended</dt><dd>{current.accessSuspendedAt ? formatDate(current.accessSuspendedAt) : 'No'}</dd></div>
-                            {current.resolvedAt && <div><dt>Resolved</dt><dd>{formatDate(current.resolvedAt)}</dd></div>}
+                            <div><dt>{tr('Stage')}</dt><dd><Status value={current.resolvedAt ? 'Resolved' : current.stage} /></dd></div>
+                            <div><dt>{tr('Overdue since')}</dt><dd>{formatDate(current.overdueSince)} · {current.daysOverdue} days</dd></div>
+                            <div><dt>{tr('Invoice')}</dt><dd>{current.invoiceId ? <Link to={`/admin/payments?invoiceId=${current.invoiceId}`} className="se-link">{current.invoiceNumber}</Link> : '—'}</dd></div>
+                            <div><dt>{tr('Outstanding')}</dt><dd>{formatVnd(current.outstanding ?? 0)}</dd></div>
+                            <div><dt>{tr('Late fee')}</dt><dd>{formatVnd(current.lateFeeAmount)}</dd></div>
+                            <div><dt>{tr('Access suspended')}</dt><dd>{current.accessSuspendedAt ? formatDate(current.accessSuspendedAt) : 'No'}</dd></div>
+                            {current.resolvedAt && <div><dt>{tr('Resolved')}</dt><dd>{formatDate(current.resolvedAt)}</dd></div>}
                         </dl>
-                        {open && <p className="se-hint">Paying the invoice in full closes the case and gives access back automatically.</p>}
+                        {open && <p className="se-hint">{tr('Paying the invoice in full closes the case and gives access back automatically.')}</p>}
                         {act.isError && <div className="se-alert" role="alert">{errorMessage(act.error)}</div>}
                         {canAct && canLockOut && (
                             <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={act.isPending}
                                 onClick={() => run('lockout', 'Lock this customer out? Their access code stops working until they pay or access is restored.')}>
-                                <Icon name="shield" size={16} /> {act.isPending ? 'Locking out…' : 'Lock out'}
+                                <Icon name="shield" size={16} /> {act.isPending ? tr('Locking out…') : tr('Lock out')}
                             </button>
                         )}
                         {canAct && canRestore && (
                             <button type="button" className="se-btn se-btn-ghost se-btn-block" disabled={act.isPending}
                                 onClick={() => run('restoreAccess', 'Restore access? The case stays open at the late-fee stage and the daily job will not lock them out again.')}>
-                                <Icon name="key" size={16} /> {act.isPending ? 'Restoring…' : 'Restore access'}
+                                <Icon name="key" size={16} /> {act.isPending ? tr('Restoring…') : tr('Restore access')}
                             </button>
                         )}
                     </aside>

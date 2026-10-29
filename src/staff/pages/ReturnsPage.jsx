@@ -9,6 +9,7 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
 import { humanize, useReturns } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const TABS = ['Requested', 'Approved', 'Inspected', 'Completed', 'Cancelled'];
 const CONDITIONS = ['Good', 'MinorDamage', 'MajorDamage'];
@@ -24,11 +25,12 @@ function firstSlot(plannedDate) {
 }
 
 function Approve({ request, onDone }) {
+    const tr = useT();
     const [slot, setSlot] = useState(() => firstSlot(request.plannedReturnDate));
     const approve = useMutation({ mutationFn: () => returnsApi.approve(request.unitReturnId, { inspectionSlot: slot }), onSuccess: onDone });
     return (
         <>
-            <label><span className="se-label">Inspection appointment</span>
+            <label><span className="se-label">{tr('Inspection appointment')}</span>
                 <div className="se-input"><input type="datetime-local" value={slot} onChange={(e) => setSlot(e.target.value)} /></div></label>
             {approve.isError && <div className="se-alert" role="alert">{errorMessage(approve.error)}</div>}
             <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!slot || approve.isPending} onClick={() => approve.mutate()}>Approve &amp; book inspection</button>
@@ -37,28 +39,30 @@ function Approve({ request, onDone }) {
 }
 
 function Inspect({ request, onDone }) {
+    const tr = useT();
     const [form, setForm] = useState({ conditionResult: 'Good', cleaningFee: 0, repairCharge: 0, otherDeduction: 0 });
     const set = (k) => (e) => setForm({ ...form, [k]: k === 'conditionResult' ? e.target.value : Math.max(0, Number(e.target.value)) });
     const inspect = useMutation({ mutationFn: () => returnsApi.inspection(request.unitReturnId, form), onSuccess: onDone });
     return (
         <>
-            <span className="se-label">Unit condition</span>
-            <div className="se-chips" role="radiogroup" aria-label="Unit condition">
+            <span className="se-label">{tr('Unit condition')}</span>
+            <div className="se-chips" role="radiogroup" aria-label={tr('Unit condition')}>
                 {CONDITIONS.map((c) => (
                     <button key={c} type="button" role="radio" aria-checked={form.conditionResult === c} className={`se-chip${form.conditionResult === c ? ' active' : ''}`}
-                        onClick={() => setForm({ ...form, conditionResult: c })}>{humanize(c)}</button>
+                        onClick={() => setForm({ ...form, conditionResult: c })}>{tr(humanize(c))}</button>
                 ))}
             </div>
             {[['cleaningFee', 'Cleaning fee'], ['repairCharge', 'Repair charge'], ['otherDeduction', 'Other deduction']].map(([k, label]) => (
                 <label key={k}><span className="se-label">{label} (₫)</span><div className="se-input"><input type="number" min="0" step="1000" value={form[k]} onChange={set(k)} /></div></label>
             ))}
             {inspect.isError && <div className="se-alert" role="alert">{errorMessage(inspect.error)}</div>}
-            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={inspect.isPending} onClick={() => inspect.mutate()}>Save inspection</button>
+            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={inspect.isPending} onClick={() => inspect.mutate()}>{tr('Save inspection')}</button>
         </>
     );
 }
 
 function Settle({ request, onDone }) {
+    const tr = useT();
     // Refresh only when they close the result: refetching makes the request Completed, which would unmount this
     // breakdown (refund and any shortfall the customer still owes) before anyone reads it.
     const settle = useMutation({ mutationFn: () => returnsApi.settleDeposit(request.unitReturnId) });
@@ -67,25 +71,26 @@ function Settle({ request, onDone }) {
         <>
             {s && (
                 <dl className="se-kv">
-                    <div><dt>Deposit</dt><dd>{formatVnd(s.depositAmount)}</dd></div>
-                    <div><dt>Damage deductions</dt><dd>− {formatVnd(s.damageDeductions)}</dd></div>
-                    {s.earlyTerminationPenalty > 0 && <div><dt>Early return penalty</dt><dd>− {formatVnd(s.earlyTerminationPenalty)}</dd></div>}
-                    <div><dt>Outstanding invoices</dt><dd>− {formatVnd(s.outstandingInvoices)}</dd></div>
-                    <div><dt><strong>Refund</strong></dt><dd>{formatVnd(s.refundAmount)}</dd></div>
-                    {s.shortfall > 0 && <div><dt>Customer still owes</dt><dd className="sa-bad">{formatVnd(s.shortfall)}</dd></div>}
+                    <div><dt>{tr('Deposit')}</dt><dd>{formatVnd(s.depositAmount)}</dd></div>
+                    <div><dt>{tr('Damage deductions')}</dt><dd>− {formatVnd(s.damageDeductions)}</dd></div>
+                    {s.earlyTerminationPenalty > 0 && <div><dt>{tr('Early return penalty')}</dt><dd>− {formatVnd(s.earlyTerminationPenalty)}</dd></div>}
+                    <div><dt>{tr('Outstanding invoices')}</dt><dd>− {formatVnd(s.outstandingInvoices)}</dd></div>
+                    <div><dt><strong>{tr('Refund')}</strong></dt><dd>{formatVnd(s.refundAmount)}</dd></div>
+                    {s.shortfall > 0 && <div><dt>{tr('Customer still owes')}</dt><dd className="sa-bad">{formatVnd(s.shortfall)}</dd></div>}
                 </dl>
             )}
-            {s?.refundAmount > 0 && <p className="se-hint">The refund is now waiting in Deposit Refunds until it is paid.</p>}
-            {s && <button type="button" className="se-btn se-btn-primary se-btn-block" onClick={onDone}>Done</button>}
+            {s?.refundAmount > 0 && <p className="se-hint">{tr('The refund is now waiting in Deposit Refunds until it is paid.')}</p>}
+            {s && <button type="button" className="se-btn se-btn-primary se-btn-block" onClick={onDone}>{tr('Done')}</button>}
             {settle.isError && <div className="se-alert" role="alert">{errorMessage(settle.error)}</div>}
             {!s && <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={settle.isPending}
-                onClick={() => window.confirm('Settle the deposit? This closes the contract and frees the unit.') && settle.mutate()}>Settle deposit &amp; close</button>}
+                onClick={() => window.confirm(tr('Settle the deposit? This closes the contract and frees the unit.')) && settle.mutate()}>Settle deposit &amp; close</button>}
         </>
     );
 }
 
 /** A15: approve returns, inspect returned units and settle deposits. */
 export default function ReturnsPage() {
+    const tr = useT();
     const { session } = useAuth();
     const queryClient = useQueryClient();
     const [tab, setTab] = useState('Requested');
@@ -102,7 +107,7 @@ export default function ReturnsPage() {
 
     return (
         <>
-            <PageHeader title="Returns" subtitle="Inspect returned units, settle deposits and release units" />
+            <PageHeader title={tr('Returns')} subtitle="Inspect returned units, settle deposits and release units" />
             <div className="sa-stats">
                 <Stat icon="arrowLeft" label="Return requests" value={all.filter((m) => m.status === 'Requested').length} />
                 <Stat icon="calendar" label="Inspections booked" value={all.filter((m) => m.status === 'Approved').length} />
@@ -112,14 +117,14 @@ export default function ReturnsPage() {
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
                     <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => { setTab(t); setSelected(null); }}>
-                        {humanize(t)} <span className="se-count">{all.filter((m) => m.status === t).length}</span>
+                        {tr(humanize(t))} <span className="se-count">{all.filter((m) => m.status === t).length}</span>
                     </button>
                 ))}
             </div>
             <div className={`sa-split${current ? ' open' : ''}`}>
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
-                        <thead><tr><th>Customer</th><th>Unit</th><th>Contract</th><th>Return date</th><th>Move out by</th><th>Inspection</th><th>Status</th></tr></thead>
+                        <thead><tr><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Contract')}</th><th>{tr('Return date')}</th><th>{tr('Move out by')}</th><th>{tr('Inspection')}</th><th>{tr('Status')}</th></tr></thead>
                         <tbody>
                             {shown.map((m) => (
                                 <tr key={m.unitReturnId} className={selected === m.unitReturnId ? 'active' : ''} onClick={() => setSelected(m.unitReturnId)}>
@@ -127,7 +132,7 @@ export default function ReturnsPage() {
                                     <td>{m.unitCode}</td>
                                     <td>{m.contractNumber}</td>
                                     <td>{formatDate(m.plannedReturnDate)}</td>
-                                    <td>{formatDate(m.moveOutDeadline)}{m.accessLockedAt && <span className="se-badge none">Locked</span>}</td>
+                                    <td>{formatDate(m.moveOutDeadline)}{m.accessLockedAt && <span className="se-badge none">{tr('Locked')}</span>}</td>
                                     <td>{m.inspectionSlot ? formatDateTime(m.inspectionSlot) : '—'}</td>
                                     <td><Status value={m.status} /></td>
                                 </tr>
@@ -139,22 +144,22 @@ export default function ReturnsPage() {
                 {current && (
                     <aside className="se-panel sa-side-panel">
                         <div className="sa-card-title"><h2>Unit {current.unitCode} <Status value={current.status} /></h2>
-                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label="Close"><Icon name="arrowLeft" size={16} /></button></div>
+                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
                         <p className="sa-muted">{current.customerName} · {current.contractNumber}</p>
                         <dl className="se-kv">
-                            <div><dt>Requested</dt><dd>{formatDateTime(current.requestedAt)}</dd></div>
-                            <div><dt>Planned return</dt><dd>{formatDate(current.plannedReturnDate)}</dd></div>
-                            <div><dt>Move out by</dt><dd>{formatDate(current.moveOutDeadline)}</dd></div>
-                            <div><dt>Reason</dt><dd>{current.reason || '—'}</dd></div>
-                            <div><dt>Condition at handover</dt><dd>{handedOver?.conditionNote || 'No note taken'}{handedOver ? ` · ${formatDate(handedOver.handoverTime)}` : ''}</dd></div>
-                            <div><dt>Refund to</dt><dd>{humanize(current.refundMethod)}{current.refundAccount ? ` · ${current.refundAccount}` : ''}</dd></div>
-                            {current.inspection && <div><dt>Inspection</dt><dd>{humanize(current.inspection.conditionResult)} · refund {formatVnd(current.inspection.refundAmount)}</dd></div>}
+                            <div><dt>{tr('Requested')}</dt><dd>{formatDateTime(current.requestedAt)}</dd></div>
+                            <div><dt>{tr('Planned return')}</dt><dd>{formatDate(current.plannedReturnDate)}</dd></div>
+                            <div><dt>{tr('Move out by')}</dt><dd>{formatDate(current.moveOutDeadline)}</dd></div>
+                            <div><dt>{tr('Reason')}</dt><dd>{current.reason || '—'}</dd></div>
+                            <div><dt>{tr('Condition at handover')}</dt><dd>{handedOver?.conditionNote || tr('No note taken')}{handedOver ? ` · ${formatDate(handedOver.handoverTime)}` : ''}</dd></div>
+                            <div><dt>{tr('Refund to')}</dt><dd>{tr(humanize(current.refundMethod))}{current.refundAccount ? ` · ${current.refundAccount}` : ''}</dd></div>
+                            {current.inspection && <div><dt>{tr('Inspection')}</dt><dd>{tr(humanize(current.inspection.conditionResult))} · refund {formatVnd(current.inspection.refundAmount)}</dd></div>}
                         </dl>
                         {current.accessLockedAt && <div className="se-alert" role="alert">Past the move-out deadline: access was locked on {formatDateTime(current.accessLockedAt)}. Clear the unit out, then inspect it.</div>}
                         {current.status === 'Requested' && isStaff && <Approve request={current} onDone={done} />}
                         {current.status === 'Approved' && isStaff && <Inspect request={current} onDone={done} />}
                         {current.status === 'Inspected' && session?.role === Roles.BusinessOperationsManager && <Settle request={current} onDone={done} />}
-                        {current.status === 'Inspected' && session?.role !== Roles.BusinessOperationsManager && <p className="sa-muted">A Business Operations Manager settles the deposit.</p>}
+                        {current.status === 'Inspected' && session?.role !== Roles.BusinessOperationsManager && <p className="sa-muted">{tr('A Business Operations Manager settles the deposit.')}</p>}
                     </aside>
                 )}
             </div>

@@ -8,12 +8,14 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Filters, PageHeader, SearchFilter, SelectFilter, Status, TableState, matches } from '../components/ui.jsx';
 import { humanize, useContracts, useFacilities, useSizePrices, useUnitTypes, useUnits } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const STATUSES = ['Available', 'Reserved', 'Occupied', 'Maintenance', 'Retired'];
 const LIVE = ['Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended'];
 
 /** Edit a unit (managers and admins). Floor and size can change only while it is Available, as the API requires. */
 function UnitEditor({ unit }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const floors = useQuery({ queryKey: ['facilities', unit.facilityId, 'floors'], queryFn: () => facilitiesApi.getFloors(unit.facilityId) });
     const types = useUnitTypes().data ?? [];
@@ -34,29 +36,29 @@ function UnitEditor({ unit }) {
     const movable = unit.status === 'Available';
     return (
         <form className="se-form" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
-            <h3>Edit unit</h3>
-            <label><span className="se-label">Floor</span><div className="se-input">
+            <h3>{tr('Edit unit')}</h3>
+            <label><span className="se-label">{tr('Floor')}</span><div className="se-input">
                 <select value={form.floorId} onChange={set('floorId')} disabled={!movable}>
                     {(floors.data ?? [{ floorId: unit.floorId, name: unit.floorName }]).map((f) => (
                         <option key={f.floorId} value={f.floorId}>{f.floorNumber != null ? `Floor ${f.floorNumber}` : ''}{f.name ? `${f.floorNumber != null ? ' · ' : ''}${f.name}` : ''}</option>
                     ))}
                 </select></div></label>
-            <label><span className="se-label">Size</span><div className="se-input">
+            <label><span className="se-label">{tr('Size')}</span><div className="se-input">
                 <select value={form.unitTypeId} onChange={set('unitTypeId')} disabled={!movable}>
                     {(types.length ? types : [{ unitTypeId: unit.unitTypeId, code: unit.unitTypeCode, areaM2: unit.areaM2 }]).map((t) => (
                         <option key={t.unitTypeId} value={t.unitTypeId}>{t.code} · {t.areaM2} m²</option>
                     ))}
                 </select></div></label>
-            {!movable && <p className="se-hint">Floor and size can change only while the unit is Available.</p>}
-            <label><span className="se-label">Unit code</span><div className="se-input"><input value={form.unitCode} onChange={set('unitCode')} required maxLength={20} pattern="[A-Za-z0-9\-]+" title="Letters, digits and dashes" /></div></label>
-            <label><span className="se-label">Zone</span><div className="se-input"><input value={form.zone} onChange={set('zone')} maxLength={10} /></div></label>
-            <label><span className="se-label">Note</span><div className="se-input"><input value={form.note} onChange={set('note')} maxLength={200} /></div></label>
+            {!movable && <p className="se-hint">{tr('Floor and size can change only while the unit is Available.')}</p>}
+            <label><span className="se-label">{tr('Unit code')}</span><div className="se-input"><input value={form.unitCode} onChange={set('unitCode')} required maxLength={20} pattern="[A-Za-z0-9\-]+" title={tr('Letters, digits and dashes')} /></div></label>
+            <label><span className="se-label">{tr('Zone')}</span><div className="se-input"><input value={form.zone} onChange={set('zone')} maxLength={10} /></div></label>
+            <label><span className="se-label">{tr('Note')}</span><div className="se-input"><input value={form.note} onChange={set('note')} maxLength={200} /></div></label>
             {[save, retire].map((m, i) => m.isError && <div key={i} className="se-alert" role="alert">{errorMessage(m.error)}</div>)}
-            {save.isSuccess && <div className="se-alert info" role="status">Unit saved.</div>}
+            {save.isSuccess && <div className="se-alert info" role="status">{tr('Unit saved.')}</div>}
             <div className="sa-form-actions">
                 {['Available', 'Retired'].includes(unit.status) && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={retire.isPending} onClick={() => retire.mutate()}>
-                        {unit.status === 'Retired' ? 'Return to service' : 'Retire unit'}
+                        {unit.status === 'Retired' ? tr('Return to service') : tr('Retire unit')}
                     </button>
                 )}
                 <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save unit'}</button>
@@ -67,6 +69,7 @@ function UnitEditor({ unit }) {
 
 /** A04: unit board — every unit, its status and who rents it. */
 export default function UnitsPage() {
+    const tr = useT();
     const [status, setStatus] = useState('');
     const [facilityId, setFacilityId] = useState('');
     const [size, setSize] = useState('');
@@ -88,17 +91,17 @@ export default function UnitsPage() {
 
     return (
         <>
-            <PageHeader title="Storage units" subtitle={`${all.length} units${facilityId ? '' : ' across all facilities'}`} />
+            <PageHeader title={tr('Storage units')} subtitle={`${all.length} units${facilityId ? '' : tr(' across all facilities')}`} />
             <div className="sa-chip-row" role="tablist">
-                <button type="button" role="tab" aria-selected={!status} className={!status ? 'active' : ''} onClick={() => setStatus('')}>All <b>{all.length}</b></button>
+                <button type="button" role="tab" aria-selected={!status} className={!status ? 'active' : ''} onClick={() => setStatus('')}>{tr('All')} <b>{all.length}</b></button>
                 {STATUSES.map((s) => (
                     <button key={s} type="button" role="tab" aria-selected={status === s} className={status === s ? 'active' : ''} onClick={() => setStatus(s)}>
-                        <i className={`dot ${s}`} />{humanize(s)} <b>{all.filter((u) => u.status === s).length}</b>
+                        <i className={`dot ${s}`} />{tr(humanize(s))} <b>{all.filter((u) => u.status === s).length}</b>
                     </button>
                 ))}
             </div>
             <Filters>
-                <SearchFilter value={search} onChange={setSearch} placeholder="Search unit code or customer" />
+                <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search unit code or customer')} />
                 <SelectFilter label="Facility" value={facilityId} onChange={setFacilityId} all="All facilities"
                     options={(facilities.data ?? []).map((f) => ({ value: f.facilityId, label: f.name }))} />
                 <SelectFilter label="Size" value={size} onChange={setSize} options={sizes} all="All sizes" />
@@ -106,7 +109,7 @@ export default function UnitsPage() {
             <div className={`sa-split${unit ? ' open' : ''}`}>
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
-                        <thead><tr><th>Unit</th><th>Size</th><th>Floor</th><th>Price / mo</th><th>Status</th><th>Customer</th><th>Contract end</th></tr></thead>
+                        <thead><tr><th>{tr('Unit')}</th><th>{tr('Size')}</th><th>{tr('Floor')}</th><th>{tr('Price / mo')}</th><th>{tr('Status')}</th><th>{tr('Customer')}</th><th>{tr('Contract end')}</th></tr></thead>
                         <tbody>
                             {shown.map((u) => {
                                 const c = contractOf[u.storageUnitId];
@@ -129,14 +132,14 @@ export default function UnitsPage() {
                 {unit && (
                     <aside className="se-panel sa-side-panel">
                         <div className="sa-card-title"><h2>Unit {unit.unitCode} <Status value={unit.status} /></h2>
-                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label="Close"><Icon name="arrowLeft" size={16} /></button></div>
+                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
                         <dl className="se-kv">
-                            <div><dt>Size</dt><dd>{unit.unitTypeName} · {unit.areaM2} m²</dd></div>
-                            <div><dt>Floor / zone</dt><dd>{unit.floorName}{unit.zone ? ` · ${unit.zone}` : ''}</dd></div>
-                            <div><dt>Monthly price</dt><dd>{formatVnd(sizePrice[unit.unitTypeId])}<small className="sa-muted"> · set per size in Pricing &amp; Policies</small></dd></div>
-                            <div><dt>Customer</dt><dd>{contract?.customerName ?? '—'}</dd></div>
-                            <div><dt>Contract</dt><dd>{contract ? `${contract.contractNumber} · ${humanize(contract.status)}` : '—'}</dd></div>
-                            {contract && <div><dt>Period</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)}</dd></div>}
+                            <div><dt>{tr('Size')}</dt><dd>{unit.unitTypeName} · {unit.areaM2} m²</dd></div>
+                            <div><dt>{tr('Floor / zone')}</dt><dd>{unit.floorName}{unit.zone ? ` · ${unit.zone}` : ''}</dd></div>
+                            <div><dt>{tr('Monthly price')}</dt><dd>{formatVnd(sizePrice[unit.unitTypeId])}<small className="sa-muted"> · set per size in Pricing &amp; Policies</small></dd></div>
+                            <div><dt>{tr('Customer')}</dt><dd>{contract?.customerName ?? '—'}</dd></div>
+                            <div><dt>{tr('Contract')}</dt><dd>{contract ? `${contract.contractNumber} · ${tr(humanize(contract.status))}` : '—'}</dd></div>
+                            {contract && <div><dt>{tr('Period')}</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)}</dd></div>}
                         </dl>
                         {canEdit && <UnitEditor key={unit.storageUnitId} unit={unit} />}
                     </aside>

@@ -19,6 +19,7 @@ export function age(iso, now = Date.now()) {
 
 /** A09: support tickets as a board by status. Closed tickets are hidden. */
 export default function TicketsPage() {
+    const tr = useT();
     const [search, setSearch] = useState('');
     const [priority, setPriority] = useState('');
     const tickets = useTickets();
@@ -26,12 +27,12 @@ export default function TicketsPage() {
 
     return (
         <>
-            <PageHeader title="Support tickets" subtitle="Requests about units, locks, access codes, payments and stored items" />
+            <PageHeader title={tr('Support tickets')} subtitle="Requests about units, locks, access codes, payments and stored items" />
             <Filters>
-                <SearchFilter value={search} onChange={setSearch} placeholder="Search ticket, customer or unit" />
+                <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search ticket, customer or unit')} />
                 <SelectFilter label="Priority" value={priority} onChange={setPriority} options={['Urgent', 'High', 'Normal', 'Low']} all="All priorities" />
             </Filters>
-            {tickets.isError && <div className="se-alert" role="alert">Tickets could not be loaded.</div>}
+            {tickets.isError && <div className="se-alert" role="alert">{tr('Tickets could not be loaded.')}</div>}
             <div className="sa-board">
                 {COLUMNS.map((col) => {
                     const cards = shown.filter((t) => t.status === col.status);

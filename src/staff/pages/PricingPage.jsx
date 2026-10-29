@@ -6,6 +6,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
 import { PageHeader, Status } from '../components/ui.jsx';
 import { useUnitTypes } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const TERMS = [
     { title: 'Deposit', icon: 'shield', rows: [['depositMonths', 'Deposit amount', 'month(s) rent']] },
@@ -23,6 +24,7 @@ const TERM_KEYS = TERMS.flatMap((t) => t.rows.map(([k]) => k));
 export const discounted = (base, pct) => Math.round(base * (1 - (pct ?? 0) / 100));
 
 function PriceRow({ policy, type, price, editable }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const initial = { basePricePerMonth: price?.basePricePerMonth ?? 0, discount3Month: price?.discount3Month ?? 5, discount6Month: price?.discount6Month ?? 10, discount12Month: price?.discount12Month ?? 10 };
     const [row, setRow] = useState(initial);
@@ -46,7 +48,7 @@ function PriceRow({ policy, type, price, editable }) {
             <td>
                 {editable && (changed || !price) && (
                     <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={save.isPending || !Number(row.basePricePerMonth)} onClick={() => save.mutate()}>
-                        {save.isPending ? 'Saving…' : 'Save'}
+                        {save.isPending ? tr('Saving…') : 'Save'}
                     </button>
                 )}
                 {save.isError && <div className="sa-bad">{errorMessage(save.error)}</div>}
@@ -58,6 +60,7 @@ function PriceRow({ policy, type, price, editable }) {
 /** A08: versioned pricing policy — unit prices, discounts and rental terms. Only a draft version can be edited. */
 /** T-03: a Draft policy's terms and start date, saved together; published versions stay read-only. */
 function DraftTerms({ policy }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const [form, setForm] = useState(() => ({
         effectiveFrom: policy.effectiveFrom,
@@ -74,8 +77,8 @@ function DraftTerms({ policy }) {
     return (
         <form className="sa-term-grid" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
             <div className="sa-term-group">
-                <h3><span className="sa-stat-icon"><Icon name="calendar" size={15} /></span> Starts on</h3>
-                <label><span className="se-label">First day this version applies</span><div className="se-input"><input type="date" value={form.effectiveFrom} onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })} required /></div></label>
+                <h3><span className="sa-stat-icon"><Icon name="calendar" size={15} /></span> {tr('Starts on')}</h3>
+                <label><span className="se-label">{tr('First day this version applies')}</span><div className="se-input"><input type="date" value={form.effectiveFrom} onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })} required /></div></label>
             </div>
             {TERMS.map((group) => (
                 <div key={group.title} className="sa-term-group">
@@ -88,7 +91,7 @@ function DraftTerms({ policy }) {
             ))}
             <div className="sa-term-actions">
                 {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
-                {save.isSuccess && !save.isPending && <div className="se-alert info">Terms saved.</div>}
+                {save.isSuccess && !save.isPending && <div className="se-alert info">{tr('Terms saved.')}</div>}
                 <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save terms'}</button>
             </div>
         </form>
@@ -96,6 +99,7 @@ function DraftTerms({ policy }) {
 }
 
 export default function PricingPage() {
+    const tr = useT();
     const queryClient = useQueryClient();
     const policies = useQuery({ queryKey: ['pricing-policies'], queryFn: () => pricingPoliciesApi.list({ page: 1, pageSize: 50 }) });
     const types = [...(useUnitTypes().data ?? [])].sort((a, b) => a.areaM2 - b.areaM2);
@@ -123,16 +127,16 @@ export default function PricingPage() {
 
     return (
         <>
-            <PageHeader title="Pricing & rental policies" subtitle={active ? `Policy version ${active.version} active since ${formatDate(active.effectiveFrom)}` : 'No active policy'}>
+            <PageHeader title={tr('Pricing & rental policies')} subtitle={active ? `Policy version ${active.version} active since ${formatDate(active.effectiveFrom)}` : tr('No active policy')}>
                 {!draft && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={newDraft.isPending} onClick={() => newDraft.mutate()}>
-                        <Icon name="file" size={16} /> {policy ? `Copy version ${policy.version} to a new draft` : 'New draft version'}
+                        <Icon name="file" size={16} /> {policy ? `Copy version ${policy.version} to a new draft` : tr('New draft version')}
                     </button>
                 )}
                 {editable && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={removeDraft.isPending}
                         onClick={() => window.confirm(`Delete draft version ${policy.version}? Its prices and fees are removed; published versions are not touched.`) && removeDraft.mutate()}>
-                        Delete draft
+                        {tr('Delete draft')}
                     </button>
                 )}
                 {editable && (
@@ -144,12 +148,12 @@ export default function PricingPage() {
             </PageHeader>
             {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
             {policies.isError && <div className="se-alert" role="alert">{errorMessage(policies.error)}</div>}
-            <div className="se-alert info sa-not-wired"><Icon name="shield" size={14} /> New prices apply to new contracts and renewals only — existing contracts keep the rent agreed at signing.</div>
+            <div className="se-alert info sa-not-wired"><Icon name="shield" size={14} /> {tr('New prices apply to new contracts and renewals only — existing contracts keep the rent agreed at signing.')}</div>
 
             {policy && (
                 <div className="sa-filters">
-                    <label className="sa-version-pick"><span className="se-label">Policy version</span>
-                        <div className="se-field"><select value={policy.pricingPolicyId} onChange={(e) => setPickedId(Number(e.target.value))} aria-label="Policy version">
+                    <label className="sa-version-pick"><span className="se-label">{tr('Policy version')}</span>
+                        <div className="se-field"><select value={policy.pricingPolicyId} onChange={(e) => setPickedId(Number(e.target.value))} aria-label={tr('Policy version')}>
                             {all.map((p) => <option key={p.pricingPolicyId} value={p.pricingPolicyId}>Version {p.version} · {p.status}</option>)}
                         </select></div>
                     </label>
@@ -161,10 +165,10 @@ export default function PricingPage() {
                             <h2>Version {policy.version} <Status value={policy.status} /></h2>
                         </div>
                         {editable && <p className="sa-muted">Set the prices (Save each row), then the rental terms (Save terms), then Publish.</p>}
-                        <h3 className="sa-pricing-step">1 · Prices per size</h3>
+                        <h3 className="sa-pricing-step">{tr('1 · Prices per size')}</h3>
                         <div className="se-table-wrap">
                             <table className="se-table">
-                                <thead><tr><th>Size</th><th>Area</th><th>1 month (₫)</th><th>3+ months (discount %)</th><th>6+ months (discount %)</th><th>12+ months (discount %)</th><th /></tr></thead>
+                                <thead><tr><th>{tr('Size')}</th><th>{tr('Area')}</th><th>1 month (₫)</th><th>3+ months (discount %)</th><th>6+ months (discount %)</th><th>12+ months (discount %)</th><th /></tr></thead>
                                 <tbody>
                                     {types.map((t) => (
                                         <PriceRow key={`${policy.pricingPolicyId}-${t.unitTypeId}`} policy={policy} type={t} editable={editable}
@@ -173,19 +177,19 @@ export default function PricingPage() {
                                 </tbody>
                             </table>
                         </div>
-                        {!editable && <p className="sa-muted">Published versions are read-only. To change these prices, or bring them back later, copy this version to a new draft.</p>}
+                        {!editable && <p className="sa-muted">{tr('Published versions are read-only. To change these prices, or bring them back later, copy this version to a new draft.')}</p>}
                         {!!policy.fees?.length && (
                             <>
-                                <span className="se-label" style={{ marginTop: 16 }}>Extra fees</span>
+                                <span className="se-label" style={{ marginTop: 16 }}>{tr('Extra fees')}</span>
                                 <dl className="se-kv">{policy.fees.map((f) => <div key={f.feeTypeId}><dt>{f.name}</dt><dd>{f.isPercentage ? `${f.amount}%` : formatVnd(f.amount)}</dd></div>)}</dl>
                             </>
                         )}
-                        <h3 className="sa-pricing-step">2 · Rental terms</h3>
+                        <h3 className="sa-pricing-step">{tr('2 · Rental terms')}</h3>
                         {editable ? <DraftTerms key={policy.pricingPolicyId} policy={policy} /> : (
                             <div className="sa-term-grid">
                                 <div className="sa-term-group">
-                                    <h3><span className="sa-stat-icon"><Icon name="calendar" size={15} /></span> In force</h3>
-                                    <dl className="se-kv"><div><dt>From</dt><dd>{formatDate(policy.effectiveFrom)}</dd></div><div><dt>Until</dt><dd>{policy.effectiveTo ? formatDate(policy.effectiveTo) : '—'}</dd></div></dl>
+                                    <h3><span className="sa-stat-icon"><Icon name="calendar" size={15} /></span> {tr('In force')}</h3>
+                                    <dl className="se-kv"><div><dt>{tr('From')}</dt><dd>{formatDate(policy.effectiveFrom)}</dd></div><div><dt>{tr('Until')}</dt><dd>{policy.effectiveTo ? formatDate(policy.effectiveTo) : '—'}</dd></div></dl>
                                 </div>
                                 {TERMS.map((group) => (
                                     <div key={group.title} className="sa-term-group">

@@ -5,6 +5,7 @@ import { api, errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatVnd, todayIso } from '../../customer/components/format.js';
 import { PageHeader, Stat, TableState, downloadFile } from '../components/ui.jsx';
+import { useT } from '../../i18n/I18n.jsx';
 
 const csvCell = (v) => `"${String(v).replace(/"/g, '""')}"`;
 const lastDayOf = (month) => { const [y, m] = month.split('-').map(Number); return `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`; };
@@ -22,6 +23,7 @@ function byFacility(rows) {
 
 /** A11 / TH-08: revenue and occupancy from the backend's report endpoints (managers see their own facilities). */
 export default function ReportsPage() {
+    const tr = useT();
     const [month, setMonth] = useState(todayIso().slice(0, 7));
     const [error, setError] = useState('');
     const period = { from: `${month}-01`, to: lastDayOf(month) };
@@ -53,16 +55,16 @@ export default function ReportsPage() {
 
     return (
         <>
-            <PageHeader title="Reports & exports" subtitle="Revenue, occupancy and collection figures by facility">
+            <PageHeader title={tr('Reports & exports')} subtitle="Revenue, occupancy and collection figures by facility">
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => downloadFile(api, '/api/contracts/export', {}, `contracts-${todayIso()}.csv`).catch((e) => setError(errorMessage(e)))}>
-                    <Icon name="file" size={16} /> Contracts CSV
+                    <Icon name="file" size={16} /> {tr('Contracts CSV')}
                 </button>
-                <button type="button" className="se-btn se-btn-primary" onClick={exportTable}><Icon name="file" size={16} /> Export report</button>
+                <button type="button" className="se-btn se-btn-primary" onClick={exportTable}><Icon name="file" size={16} /> {tr('Export report')}</button>
             </PageHeader>
             {[error, dashboard.error && errorMessage(dashboard.error), revenue.error && errorMessage(revenue.error)].filter(Boolean)
                 .map((m) => <div key={m} className="se-alert" role="alert">{m}</div>)}
             <div className="sa-filters">
-                <label><span className="se-label">Period</span><div className="se-input"><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} /></div></label>
+                <label><span className="se-label">{tr('Period')}</span><div className="se-input"><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} /></div></label>
             </div>
             <div className="sa-stats">
                 <Stat icon="check" label={`Collected (${month})`} value={formatVnd(r.collected ?? 0)} note={r.refunded ? `${formatVnd(r.refunded)} refunded` : ''} />
@@ -81,10 +83,10 @@ export default function ReportsPage() {
                     ))}
                 </div>
             </section>
-            <h2 className="sa-section-title">Detailed figures by facility</h2>
+            <h2 className="sa-section-title">{tr('Detailed figures by facility')}</h2>
             <div className="se-card se-table-wrap">
                 <table className="se-table">
-                    <thead><tr><th>Facility</th><th>Units rented</th><th>Occupancy</th><th>Collected</th><th>Refunded</th><th>Net</th></tr></thead>
+                    <thead><tr><th>{tr('Facility')}</th><th>{tr('Units rented')}</th><th>{tr('Occupancy')}</th><th>{tr('Collected')}</th><th>{tr('Refunded')}</th><th>{tr('Net')}</th></tr></thead>
                     <tbody>
                         {rows.map((x) => (
                             <tr key={x.facilityId}>
@@ -103,7 +105,7 @@ export default function ReportsPage() {
                     <h2 className="sa-section-title">Collected by payment method ({month})</h2>
                     <div className="se-card se-table-wrap">
                         <table className="se-table">
-                            <thead><tr><th>Method</th><th>Payments</th><th>Collected</th></tr></thead>
+                            <thead><tr><th>{tr('Method')}</th><th>{tr('Payments')}</th><th>{tr('Collected')}</th></tr></thead>
                             <tbody>{r.methods.map((m) => <tr key={m.method}><td className="strong">{m.method}</td><td>{m.payments}</td><td className="price">{formatVnd(m.collected)}</td></tr>)}</tbody>
                         </table>
                     </div>

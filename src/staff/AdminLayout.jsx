@@ -6,6 +6,7 @@ import { initials } from '../customer/layout/CustomerLayout.jsx';
 import { humanize, useReturns, useReservations, useTickets } from './queries.js';
 import '../customer/layout/CustomerLayout.css';
 import './Admin.css';
+import { LanguageSelect, useT } from '../i18n/I18n.jsx';
 
 const { SystemAdministrator: ADMIN, BusinessOperationsManager: BOM, FacilityManager: FM, FacilityStaff: FS } = Roles;
 const OPS = [FS, FM, ADMIN, BOM];
@@ -46,6 +47,7 @@ const NAV = [
 /** Shell for every admin screen: role-filtered sidebar, user chip, page outlet. */
 export default function AdminLayout() {
     const { session, logout } = useAuth();
+    const tr = useT();
     const navigate = useNavigate();
     const role = session?.role;
     const canOperate = [FS, FM, ADMIN].includes(role);
@@ -64,7 +66,7 @@ export default function AdminLayout() {
             <aside className="sa-side">
                 <div className="sa-brand">
                     <span className="se-brand-mark"><Icon name="box" size={18} /></span>
-                    <div><span className="se-brand-name">Stor<span>Ease</span></span><small>ADMIN PORTAL</small></div>
+                    <div><span className="se-brand-name">Stor<span>Ease</span></span><small>{tr('ADMIN PORTAL')}</small></div>
                 </div>
                 <nav>
                     {NAV.map((group) => {
@@ -72,10 +74,10 @@ export default function AdminLayout() {
                         if (!items.length) return null;
                         return (
                             <div key={group.section} className="sa-nav-group">
-                                <span className="sa-nav-title">{group.section}</span>
+                                <span className="sa-nav-title">{tr(group.section)}</span>
                                 {items.map((i) => (
                                     <NavLink key={i.to} to={i.to} end={i.end}>
-                                        <Icon name={i.icon} size={16} /><span>{i.label}</span>
+                                        <Icon name={i.icon} size={16} /><span>{tr(i.label)}</span>
                                         {!!counts[i.badge] && <span className="sa-nav-badge">{counts[i.badge]}</span>}
                                     </NavLink>
                                 ))}
@@ -85,17 +87,18 @@ export default function AdminLayout() {
                 </nav>
                 {/* A new tab keeps this admin session open; the customer site starts signed out there. */}
                 <a href="/" target="_blank" rel="noopener noreferrer" className="sa-logout">
-                    <Icon name="home" size={16} /> Customer site
+                    <Icon name="home" size={16} /> {tr('Customer site')}
                 </a>
                 <button type="button" className="sa-logout" onClick={() => { logout(); navigate('/admin/login', { replace: true }); }}>
-                    <Icon name="arrowLeft" size={16} /> Log out
+                    <Icon name="arrowLeft" size={16} /> {tr('Log out')}
                 </button>
             </aside>
             <div className="sa-main">
                 <header className="sa-top">
+                    <LanguageSelect />
                     <div className="sa-user">
                         <span className="se-avatar">{initials(session?.fullName)}</span>
-                        <div><strong>{session?.fullName}</strong><small>{humanize(role)}</small></div>
+                        <div><strong>{session?.fullName}</strong><small>{tr(humanize(role))}</small></div>
                     </div>
                 </header>
                 <main className="sa-content"><Outlet /></main>

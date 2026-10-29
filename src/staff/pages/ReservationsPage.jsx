@@ -10,6 +10,7 @@ import { formatDate, formatVnd, rentalEndDate, todayIso } from '../../customer/c
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Status, TableState } from '../components/ui.jsx';
 import { useReservations, useUnits } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const TABS = [
     { status: 'Pending', label: 'Pending assignment' },
@@ -23,6 +24,7 @@ const waitingForUnit = (r) => r.status === 'Pending' || (r.status === 'Confirmed
 
 /** Staff end a booking before handover: cancel (deposit refunded) or, after the move-in date, a no-show (deposit kept). */
 function CloseBooking({ reservation }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const [reason, setReason] = useState('');
     const close = useMutation({
@@ -38,28 +40,28 @@ function CloseBooking({ reservation }) {
         const r = close.data;
         return (
             <div className="se-alert info" role="status">
-                {r.reservation.status === 'Expired' ? 'Marked as a no-show.' : 'Booking cancelled.'}{' '}
+                {r.reservation.status === 'Expired' ? tr('Marked as a no-show.') : tr('Booking cancelled.')}{' '}
                 {r.depositPaid > 0 && (r.depositRefundable
                     ? `The ${formatVnd(r.depositPaid)} deposit is owed back; it now waits in Deposit Refunds.`
                     : `The ${formatVnd(r.depositPaid)} deposit is kept.`)}
-                <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['reservations'] })}>Done</button>
+                <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['reservations'] })}>{tr('Done')}</button>
             </div>
         );
     }
     return (
         <>
-            <span className="se-label">End this booking</span>
+            <span className="se-label">{tr('End this booking')}</span>
             <label><span className="se-label">Reason (optional)</span>
                 <div className="se-input"><input maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} /></div></label>
             {close.isError && <div className="se-alert" role="alert">{errorMessage(close.error)}</div>}
             <div className="sa-form-actions">
                 <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
                     onClick={() => window.confirm(`Cancel ${reservation.reservationCode}?${paid ? ` The ${formatVnd(paid)} deposit will be owed back.` : ''}`) && close.mutate(false)}>
-                    Cancel booking</button>
+                    {tr('Cancel booking')}</button>
                 {late && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
                         onClick={() => window.confirm(`Mark ${reservation.reservationCode} as a no-show?${paid ? ` The ${formatVnd(paid)} deposit is kept.` : ''}`) && close.mutate(true)}>
-                        Mark no-show</button>
+                        {tr('Mark no-show')}</button>
                 )}
             </div>
             {!late && <p className="se-hint">No-show is possible once the move-in date ({formatDate(reservation.moveInDate)}) has passed.</p>}
@@ -68,6 +70,7 @@ function CloseBooking({ reservation }) {
 }
 
 function AssignPanel({ reservation, onClose }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const units = useUnits({ facilityId: reservation.facilityId, status: 'Available' });
     const candidates = (units.data ?? []).filter((u) => u.unitTypeId === reservation.unitTypeId);
@@ -88,32 +91,32 @@ function AssignPanel({ reservation, onClose }) {
         <aside className="se-panel sa-side-panel">
             <div className="sa-card-title">
                 <h2>{reservation.reservationCode} <Status value={reservation.status} /></h2>
-                <button type="button" className="sa-close" onClick={onClose} aria-label="Close"><Icon name="arrowLeft" size={16} /></button>
+                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button>
             </div>
             <p className="sa-muted">Created {formatDateTime(reservation.createdAt)}</p>
             <dl className="se-kv">
-                <div><dt>Customer</dt><dd>{reservation.customerName}</dd></div>
-                <div><dt>Facility</dt><dd>{reservation.facilityName}</dd></div>
-                <div><dt>Requested</dt><dd>{reservation.unitTypeName}</dd></div>
-                <div><dt>Rental period</dt><dd>{formatDate(reservation.moveInDate)} → {formatDate(rentalEndDate(reservation.moveInDate, reservation.rentalMonths))}</dd></div>
-                {reservation.unitCode && <div><dt>Unit</dt><dd>{reservation.unitCode}</dd></div>}
+                <div><dt>{tr('Customer')}</dt><dd>{reservation.customerName}</dd></div>
+                <div><dt>{tr('Facility')}</dt><dd>{reservation.facilityName}</dd></div>
+                <div><dt>{tr('Requested')}</dt><dd>{reservation.unitTypeName}</dd></div>
+                <div><dt>{tr('Rental period')}</dt><dd>{formatDate(reservation.moveInDate)} → {formatDate(rentalEndDate(reservation.moveInDate, reservation.rentalMonths))}</dd></div>
+                {reservation.unitCode && <div><dt>{tr('Unit')}</dt><dd>{reservation.unitCode}</dd></div>}
             </dl>
             {pending && (
                 <>
-                    <span className="se-label">Assign a unit</span>
-                    <div className="sa-unit-options" role="radiogroup" aria-label="Unit to assign">
+                    <span className="se-label">{tr('Assign a unit')}</span>
+                    <div className="sa-unit-options" role="radiogroup" aria-label={tr('Unit to assign')}>
                         {candidates.map((u, i) => (
                             <label key={u.storageUnitId} className={`sa-unit-option${chosen === u.storageUnitId ? ' active' : ''}`}>
                                 <input type="radio" name="unit" aria-label={`Unit ${u.unitCode}`} checked={chosen === u.storageUnitId} onChange={() => setUnitId(u.storageUnitId)} />
                                 <span><strong>{u.unitCode}</strong><small>{u.floorName}{u.zone ? ` · ${u.zone}` : ''}</small></span>
-                                {i === 0 && <span className="se-badge">First free</span>}
+                                {i === 0 && <span className="se-badge">{tr('First free')}</span>}
                             </label>
                         ))}
                         {!candidates.length && <p className="sa-muted">{units.isLoading ? 'Loading units…' : 'No available unit of this size at this facility.'}</p>}
                     </div>
                     {assign.isError && <div className="se-alert" role="alert">{errorMessage(assign.error)}</div>}
                     <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!chosen || assign.isPending} onClick={() => assign.mutate()}>
-                        <Icon name="check" size={16} /> {assign.isPending ? 'Assigning…' : 'Confirm & assign'}
+                        <Icon name="check" size={16} /> {assign.isPending ? tr('Assigning…') : tr('Confirm & assign')}
                     </button>
                 </>
             )}
@@ -124,6 +127,7 @@ function AssignPanel({ reservation, onClose }) {
 
 /** A05: online bookings by status; staff assign a free unit to each pending one. */
 export default function ReservationsPage() {
+    const tr = useT();
     const [tab, setTab] = useState('Pending');
     const [selected, setSelected] = useState(null);
     const reservations = useReservations();
@@ -135,8 +139,8 @@ export default function ReservationsPage() {
 
     return (
         <>
-            <PageHeader title="Reservations" subtitle="Review online bookings, assign a suitable unit and schedule handover">
-                {canAssign && <Link to="/admin/walk-in" className="se-btn se-btn-primary"><Icon name="box" size={16} /> New walk-in booking</Link>}
+            <PageHeader title={tr('Reservations')} subtitle="Review online bookings, assign a suitable unit and schedule handover">
+                {canAssign && <Link to="/admin/walk-in" className="se-btn se-btn-primary"><Icon name="box" size={16} /> {tr('New walk-in booking')}</Link>}
             </PageHeader>
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
@@ -148,7 +152,7 @@ export default function ReservationsPage() {
             <div className={`sa-split${current ? ' open' : ''}`}>
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
-                        <thead><tr><th>Code</th><th>Customer</th><th>Requested</th><th>Facility</th><th>Move-in</th><th>Period</th><th /></tr></thead>
+                        <thead><tr><th>{tr('Code')}</th><th>{tr('Customer')}</th><th>{tr('Requested')}</th><th>{tr('Facility')}</th><th>{tr('Move-in')}</th><th>{tr('Period')}</th><th /></tr></thead>
                         <tbody>
                             {shown.map((r) => (
                                 <tr key={r.reservationId} className={selected === r.reservationId ? 'active' : ''} onClick={() => setSelected(r.reservationId)}>
@@ -158,7 +162,7 @@ export default function ReservationsPage() {
                                     <td>{r.facilityName}</td>
                                     <td>{formatDate(r.moveInDate)}</td>
                                     <td>{r.rentalMonths} mo</td>
-                                    <td>{waitingForUnit(r) && canAssign && <button type="button" className="se-btn se-btn-outline se-btn-sm">Assign</button>}</td>
+                                    <td>{waitingForUnit(r) && canAssign && <button type="button" className="se-btn se-btn-outline se-btn-sm">{tr('Assign')}</button>}</td>
                                 </tr>
                             ))}
                             <TableState query={reservations} rows={shown} cols={7} empty="No reservations in this list." />

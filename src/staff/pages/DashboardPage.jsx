@@ -17,6 +17,7 @@ export function occupancy(units) {
 
 /** A02: what needs doing today, and how the business is doing. */
 export default function DashboardPage() {
+    const tr = useT();
     const { session } = useAuth();
     const today = todayIso();
     const year = today.slice(0, 4);
@@ -43,16 +44,16 @@ export default function DashboardPage() {
     const firstName = session?.fullName?.trim().split(/\s+/).at(-1);
 
     const attention = [
-        { icon: 'clock', tone: 'bad', count: overdue.length, text: 'invoices overdue', to: '/admin/payments' },
-        { icon: 'calendar', tone: 'warn', count: reservations.data?.length ?? 0, text: 'reservations to assign', to: '/admin/reservations' },
-        { icon: 'chat', tone: '', count: urgent.length, text: 'urgent support tickets', to: '/admin/tickets' },
-        { icon: 'file', tone: '', count: expiring.length, text: 'contracts expire in 14 days', to: '/admin/contracts' },
+        { icon: 'clock', tone: 'bad', count: overdue.length, text: tr('invoices overdue'), to: '/admin/payments' },
+        { icon: 'calendar', tone: 'warn', count: reservations.data?.length ?? 0, text: tr('reservations to assign'), to: '/admin/reservations' },
+        { icon: 'chat', tone: '', count: urgent.length, text: tr('urgent support tickets'), to: '/admin/tickets' },
+        { icon: 'file', tone: '', count: expiring.length, text: tr('contracts expire in 14 days'), to: '/admin/contracts' },
     ];
 
     return (
         <>
             <PageHeader title={`Hello, ${firstName}`} subtitle={`${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' })} · All facilities`}>
-                <Link to="/admin/reports" className="se-btn se-btn-primary"><Icon name="file" size={16} /> Reports</Link>
+                <Link to="/admin/reports" className="se-btn se-btn-primary"><Icon name="file" size={16} /> {tr('Reports')}</Link>
             </PageHeader>
             {(facilities.data ?? []).some((f) => !f.staffed) && (
                 <div className="se-alert" role="alert">
@@ -70,7 +71,7 @@ export default function DashboardPage() {
 
             <div className="sa-grid-2">
                 <section className="se-panel">
-                    <div className="sa-card-title"><h2>Monthly revenue {year}</h2><span className="sa-muted">Paid amount by invoice month</span></div>
+                    <div className="sa-card-title"><h2>Monthly revenue {year}</h2><span className="sa-muted">{tr('Paid amount by invoice month')}</span></div>
                     <div className="sa-bars" role="img" aria-label={`Revenue per month in ${year}`}>
                         {revenue.map((v, i) => (
                             <div key={i} className="sa-bar" title={`${MONTHS[i]}: ${formatVnd(v)}`}>
@@ -81,7 +82,7 @@ export default function DashboardPage() {
                     </div>
                 </section>
                 <section className="se-panel">
-                    <div className="sa-card-title"><h2>Occupancy by facility</h2></div>
+                    <div className="sa-card-title"><h2>{tr('Occupancy by facility')}</h2></div>
                     <div className="sa-occupancy">
                         {(facilities.data ?? []).map((f) => {
                             const pct = occupancy(allUnits.filter((u) => u.facilityId === f.facilityId));
@@ -99,15 +100,15 @@ export default function DashboardPage() {
 
             <div className="sa-grid-2">
                 <section className="se-panel">
-                    <div className="sa-card-title"><h2>Today&apos;s schedule</h2><Link to="/admin/handover" className="se-link">Open handover desk <Icon name="arrow" size={14} /></Link></div>
+                    <div className="sa-card-title"><h2>Today&apos;s schedule</h2><Link to="/admin/handover" className="se-link">{tr('Open handover desk')} <Icon name="arrow" size={14} /></Link></div>
                     <div className="se-table-wrap">
                         <table className="se-table">
-                            <thead><tr><th>Time</th><th>Type</th><th>Reference</th><th>Staff</th><th>Status</th></tr></thead>
+                            <thead><tr><th>{tr('Time')}</th><th>{tr('Type')}</th><th>{tr('Reference')}</th><th>{tr('Staff')}</th><th>{tr('Status')}</th></tr></thead>
                             <tbody>
                                 {todaysTasks.map((t) => (
                                     <tr key={t.taskId}>
                                         <td>{formatDateTime(t.scheduledAt).slice(0, 5)}</td>
-                                        <td>{humanize(t.taskType)}</td>
+                                        <td>{tr(humanize(t.taskType))}</td>
                                         <td>{t.referenceCode ?? '—'}</td>
                                         <td>{t.assignedToName}</td>
                                         <td><Status value={t.status} /></td>
@@ -119,7 +120,7 @@ export default function DashboardPage() {
                     </div>
                 </section>
                 <section className="se-panel">
-                    <div className="sa-card-title"><h2>Needs attention</h2></div>
+                    <div className="sa-card-title"><h2>{tr('Needs attention')}</h2></div>
                     <div className="sa-attention">
                         {attention.map((a) => (
                             <Link key={a.text} to={a.to} className="sa-attention-item">

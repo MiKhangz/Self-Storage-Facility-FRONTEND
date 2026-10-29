@@ -31,6 +31,7 @@ const FLOOR_STATUS = { Open: ['', 'Open'], UnderConstruction: ['low', 'Under con
 
 /** One floor in the list: shows its state, and edits or removes it in place. */
 function FloorRow({ floor, onChanged }) {
+    const tr = useT();
     const [form, setForm] = useState(null);
     const save = useMutation({
         mutationFn: () => floorsApi.update(floor.floorId, { floorNumber: Number(form.floorNumber), name: form.name.trim() || null, status: form.status }),
@@ -53,10 +54,10 @@ function FloorRow({ floor, onChanged }) {
                         {Object.entries(FLOOR_STATUS).map(([value, [, text]]) => <option key={value} value={value}>{text}</option>)}
                     </select>
                 </Field>
-                {form.status !== 'Open' && floor.status === 'Open' && <p className="se-hint">Free units on this floor stop being bookable until it reopens. Rented units keep their customers.</p>}
+                {form.status !== 'Open' && floor.status === 'Open' && <p className="se-hint">{tr('Free units on this floor stop being bookable until it reopens. Rented units keep their customers.')}</p>}
                 {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
                 <div className="sa-form-actions">
-                    <button type="button" className="se-btn se-btn-ghost" onClick={() => setForm(null)}>Cancel</button>
+                    <button type="button" className="se-btn se-btn-ghost" onClick={() => setForm(null)}>{tr('Cancel')}</button>
                     <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save floor'}</button>
                 </div>
             </form>
@@ -69,17 +70,18 @@ function FloorRow({ floor, onChanged }) {
                 <small>{floor.unitCount} units{rented ? ` · ${floor.rentedUnits} rented` : ''}</small></span>
             <span className={`se-badge ${tone}`}>{label}</span>
             <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Edit floor ${floor.floorNumber}`}
-                onClick={() => setForm({ floorNumber: String(floor.floorNumber), name: floor.name ?? '', status: floor.status })}>Edit</button>
+                onClick={() => setForm({ floorNumber: String(floor.floorNumber), name: floor.name ?? '', status: floor.status })}>{tr('Edit')}</button>
             <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Remove floor ${floor.floorNumber}`}
                 disabled={rented || remove.isPending}
-                title={rented ? 'Customers still hold units on this floor' : undefined}
-                onClick={() => window.confirm(`Remove floor ${floor.floorNumber}? Its ${floor.unitCount} unit(s) go too, or are retired if they have past bookings.`) && remove.mutate()}>Remove</button>
+                title={rented ? tr('Customers still hold units on this floor') : undefined}
+                onClick={() => window.confirm(`Remove floor ${floor.floorNumber}? Its ${floor.unitCount} unit(s) go too, or are retired if they have past bookings.`) && remove.mutate()}>{tr('Remove')}</button>
             {remove.error && <div className="se-alert" role="alert">{errorMessage(remove.error)}</div>}
         </li>
     );
 }
 
 function FloorsAndUnits({ facilityId, onClose }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const floors = useQuery({ queryKey: ['facilities', facilityId, 'floors'], queryFn: () => facilitiesApi.getFloors(facilityId) });
     const types = useUnitTypes().data ?? [];
@@ -113,10 +115,10 @@ function FloorsAndUnits({ facilityId, onClose }) {
 
     return (
         <section className="se-panel">
-            <div className="sa-card-title"><h2>Floors &amp; units</h2><button type="button" className="sa-close" onClick={onClose} aria-label="Close">×</button></div>
+            <div className="sa-card-title"><h2>Floors &amp; units</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}>×</button></div>
             <div className="sa-floors-grid">
             <div>
-            <h3>Floors</h3>
+            <h3>{tr('Floors')}</h3>
             <ul className="sa-people">
                 {list.map((f) => <FloorRow key={f.floorId} floor={f} onChanged={changed} />)}
                 {!list.length && <li className="sa-muted">{floors.isLoading ? 'Loading…' : 'No floors yet. Add one, then add its units.'}</li>}
@@ -124,10 +126,10 @@ function FloorsAndUnits({ facilityId, onClose }) {
             </div>
 
             <form className="se-form sa-setup-card blue" onSubmit={(e) => { e.preventDefault(); addFloor.mutate(); }}>
-                <h3>Add floor</h3>
+                <h3>{tr('Add floor')}</h3>
                 <div className="se-panel-grid">
                     <Field label="Floor number *"><input type="number" min={-5} max={200} required value={floor.floorNumber} onChange={(e) => setFloor({ ...floor, floorNumber: e.target.value })} /></Field>
-                    <Field label="Name"><input maxLength={50} placeholder="e.g. Tầng 1" value={floor.name} onChange={(e) => setFloor({ ...floor, name: e.target.value })} /></Field>
+                    <Field label="Name"><input maxLength={50} placeholder={tr('e.g. Tầng 1')} value={floor.name} onChange={(e) => setFloor({ ...floor, name: e.target.value })} /></Field>
                 </div>
                 <Field label="Status">
                     <select value={floor.status} onChange={(e) => setFloor({ ...floor, status: e.target.value })}>
@@ -139,21 +141,21 @@ function FloorsAndUnits({ facilityId, onClose }) {
             </form>
 
             <form className="se-form sa-setup-card orange" onSubmit={(e) => { e.preventDefault(); addUnit.mutate(); }}>
-                <h3>Add unit</h3>
+                <h3>{tr('Add unit')}</h3>
                 <div className="se-panel-grid">
                     <Field label="Floor *">
                         <select required value={unit.floorId} onChange={setU('floorId')} disabled={!list.length}>
-                            <option value="">Choose a floor</option>
+                            <option value="">{tr('Choose a floor')}</option>
                             {list.map((f) => <option key={f.floorId} value={f.floorId}>Floor {f.floorNumber}{f.name ? ` · ${f.name}` : ''}</option>)}
                         </select>
                     </Field>
                     <Field label="Size *">
                         <select required value={unit.unitTypeId} onChange={setU('unitTypeId')}>
-                            <option value="">Choose a size</option>
+                            <option value="">{tr('Choose a size')}</option>
                             {types.map((t) => <option key={t.unitTypeId} value={t.unitTypeId}>{t.code} · {t.areaM2} m² · {formatVnd(t.monthlyPrice)}/mo</option>)}
                         </select>
                     </Field>
-                    <Field label="Unit code *"><input required maxLength={20} pattern="[A-Za-z0-9\-]+" title="Letters, digits and dashes" placeholder="e.g. B-201" value={unit.unitCode} onChange={setU('unitCode')} /></Field>
+                    <Field label="Unit code *"><input required maxLength={20} pattern="[A-Za-z0-9\-]+" title={tr('Letters, digits and dashes')} placeholder="e.g. B-201" value={unit.unitCode} onChange={setU('unitCode')} /></Field>
                     <Field label="Zone"><input maxLength={10} value={unit.zone} onChange={setU('zone')} /></Field>
                 </div>
                 {addUnit.isError && <div className="se-alert" role="alert">{errorMessage(addUnit.error)}</div>}
@@ -168,6 +170,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
 
 /** Admin-only: change the facility's details and manager, or take it offline. */
 function EditFacility({ facility, onClose }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const managers = useStaff({ role: Roles.FacilityManager }).data ?? [];
     const [form, setForm] = useState(() => ({
@@ -187,7 +190,7 @@ function EditFacility({ facility, onClose }) {
 
     return (
         <section className="se-panel">
-            <div className="sa-card-title"><h2>Edit facility</h2><button type="button" className="sa-close" onClick={onClose} aria-label="Close">×</button></div>
+            <div className="sa-card-title"><h2>{tr('Edit facility')}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}>×</button></div>
             <form className="se-form" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
                 <div className="se-panel-grid sa-grid-3">
                     {FACILITY_FIELDS.map(([key, label, required]) => (
@@ -197,17 +200,17 @@ function EditFacility({ facility, onClose }) {
                     ))}
                     <Field label="Manager">
                         <select value={form.managerId} onChange={(e) => setForm({ ...form, managerId: e.target.value })}>
-                            <option value="">No manager</option>
+                            <option value="">{tr('No manager')}</option>
                             {managers.map((m) => <option key={m.userId} value={m.userId}>{m.fullName} · {m.email}</option>)}
                         </select>
                     </Field>
                 </div>
                 {[save, toggle].map((m, i) => m.isError && <div key={i} className="se-alert" role="alert">{errorMessage(m.error)}</div>)}
-                {save.isSuccess && <div className="se-alert info" role="status">Facility saved.</div>}
+                {save.isSuccess && <div className="se-alert info" role="status">{tr('Facility saved.')}</div>}
                 <div className="sa-form-actions">
                     <button type="button" className="se-btn se-btn-ghost" disabled={toggle.isPending}
                         onClick={() => (!active || window.confirm(`Deactivate ${facility.name}? Customers can no longer find or book it.`)) && toggle.mutate()}>
-                        {active ? 'Deactivate facility' : 'Activate facility'}
+                        {active ? tr('Deactivate facility') : tr('Activate facility')}
                     </button>
                     <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save facility'}</button>
                 </div>
@@ -218,6 +221,7 @@ function EditFacility({ facility, onClose }) {
 
 /** A12: one facility — floors, unit mix, open tickets and who is on shift today. */
 export default function FacilityDetailPage() {
+    const tr = useT();
     const facilityId = Number(useParams().facilityId);
     const today = todayIso();
     // By id, not from the list: the list leaves out inactive facilities.
@@ -240,15 +244,15 @@ export default function FacilityDetailPage() {
     const [panel, setPanel] = useState(location.state?.setUp ? 'floors' : null);
 
     if (detail.isError) return <div className="se-alert" role="alert">{errorMessage(detail.error)}</div>;
-    if (!facility) return <p className="se-empty">Loading facility…</p>;
+    if (!facility) return <p className="se-empty">{tr('Loading facility…')}</p>;
 
     return (
         <>
-            <Link to="/admin/facilities" className="se-back"><Icon name="arrowLeft" size={16} /> Back to facilities</Link>
+            <Link to="/admin/facilities" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to facilities')}</Link>
             <PageHeader title={<>{facility.name} <Status value={facility.status} /></>} subtitle={`${facility.address}${facility.district ? `, ${facility.district}` : ''}`}>
                 {canSetUp && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'floors'} onClick={() => setPanel(panel === 'floors' ? null : 'floors')}><Icon name="grid" size={16} /> Floors &amp; units</button>}
-                {role === Roles.SystemAdministrator && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'edit'} onClick={() => setPanel(panel === 'edit' ? null : 'edit')}><Icon name="file" size={16} /> Edit facility</button>}
-                <Link to="/admin/units" className="se-btn se-btn-primary"><Icon name="grid" size={16} /> View units</Link>
+                {role === Roles.SystemAdministrator && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'edit'} onClick={() => setPanel(panel === 'edit' ? null : 'edit')}><Icon name="file" size={16} /> {tr('Edit facility')}</button>}
+                <Link to="/admin/units" className="se-btn se-btn-primary"><Icon name="grid" size={16} /> {tr('View units')}</Link>
             </PageHeader>
             {panel === 'edit' && <Modal onClose={() => setPanel(null)} wide><EditFacility key={facility.facilityId} facility={facility} onClose={() => setPanel(null)} /></Modal>}
             {panel === 'floors' && <Modal onClose={() => setPanel(null)} wide><FloorsAndUnits facilityId={facilityId} onClose={() => setPanel(null)} /></Modal>}
@@ -261,7 +265,7 @@ export default function FacilityDetailPage() {
             <div className="sa-grid-2">
                 <div className="sa-terms">
                     <section className="se-panel">
-                        <div className="sa-card-title"><h2>Occupancy by floor</h2></div>
+                        <div className="sa-card-title"><h2>{tr('Occupancy by floor')}</h2></div>
                         <div className="sa-occupancy">
                             {floors.map((f) => (
                                 <div key={f.label}>
@@ -269,14 +273,14 @@ export default function FacilityDetailPage() {
                                     <div className="se-progress flat"><span style={{ width: `${occupancy(f.units)}%` }} /></div>
                                 </div>
                             ))}
-                            {!floors.length && <p className="sa-muted">No units yet.</p>}
+                            {!floors.length && <p className="sa-muted">{tr('No units yet.')}</p>}
                         </div>
                     </section>
                     <section className="se-panel">
                         <div className="sa-card-title"><h2>Unit mix &amp; availability</h2></div>
                         <div className="se-table-wrap">
                             <table className="se-table">
-                                <thead><tr><th>Size</th><th>Total</th><th>Rented</th><th>Available</th><th>Price / mo</th></tr></thead>
+                                <thead><tr><th>{tr('Size')}</th><th>{tr('Total')}</th><th>{tr('Rented')}</th><th>{tr('Available')}</th><th>{tr('Price / mo')}</th></tr></thead>
                                 <tbody>
                                     {mix.map((m) => (
                                         <tr key={m.label}><td className="strong">{m.label} · {m.units[0].areaM2} m²</td><td>{m.units.length}</td><td>{m.rented}</td><td>{m.free}</td><td className="price">{formatVnd(sizePrice[m.units[0].unitTypeId])}</td></tr>
@@ -288,28 +292,28 @@ export default function FacilityDetailPage() {
                 </div>
                 <div className="sa-terms">
                     <section className="se-panel">
-                        <div className="sa-card-title"><h2>Facility information</h2></div>
+                        <div className="sa-card-title"><h2>{tr('Facility information')}</h2></div>
                         <dl className="se-kv">
-                            <div><dt>Code</dt><dd>{facility.code}</dd></div>
-                            <div><dt>Address</dt><dd>{facility.address}</dd></div>
-                            <div><dt>District</dt><dd>{facility.district}</dd></div>
-                            <div><dt>Opening hours</dt><dd>{facility.openingHours}</dd></div>
-                            <div><dt>Phone</dt><dd>{facility.phone}</dd></div>
-                            <div><dt>Manager</dt><dd>{facility.managerName ?? '—'}</dd></div>
-                            <div><dt>Floors</dt><dd>{floors.length}</dd></div>
-                            <div><dt>Total units</dt><dd>{units.length}</dd></div>
+                            <div><dt>{tr('Code')}</dt><dd>{facility.code}</dd></div>
+                            <div><dt>{tr('Address')}</dt><dd>{facility.address}</dd></div>
+                            <div><dt>{tr('District')}</dt><dd>{facility.district}</dd></div>
+                            <div><dt>{tr('Opening hours')}</dt><dd>{facility.openingHours}</dd></div>
+                            <div><dt>{tr('Phone')}</dt><dd>{facility.phone}</dd></div>
+                            <div><dt>{tr('Manager')}</dt><dd>{facility.managerName ?? '—'}</dd></div>
+                            <div><dt>{tr('Floors')}</dt><dd>{floors.length}</dd></div>
+                            <div><dt>{tr('Total units')}</dt><dd>{units.length}</dd></div>
                         </dl>
                     </section>
                     {canSetUp && (
                         <section className="se-panel">
-                            <div className="sa-card-title"><h2>Staff at this facility <span className="se-count">{team.length}</span></h2><Link to="/admin/users" className="se-link">Users &amp; roles <Icon name="arrow" size={14} /></Link></div>
+                            <div className="sa-card-title"><h2>{tr('Staff at this facility')} <span className="se-count">{team.length}</span></h2><Link to="/admin/users" className="se-link">Users &amp; roles <Icon name="arrow" size={14} /></Link></div>
                             {!team.length && <div className="se-alert" role="alert">Nobody works here yet, so customers can't see or book this facility. Assign a manager or staff on Users &amp; roles.</div>}
                             <ul className="sa-people">
                                 {team.map((u) => (
                                     <li key={u.userId}>
                                         <span className="se-avatar sm">{initials(u.fullName)}</span>
                                         <span className="sa-person-text"><strong>{u.fullName}</strong><small>{u.email}</small></span>
-                                        <span className={`se-badge ${u.status === 'Active' ? 'info' : 'muted'}`}>{u.userId === facility.managerId ? 'Manager of record' : humanize(u.role)}{u.status === 'Active' ? '' : ` · ${u.status}`}</span>
+                                        <span className={`se-badge ${u.status === 'Active' ? 'info' : 'muted'}`}>{u.userId === facility.managerId ? tr('Manager of record') : humanize(u.role)}{u.status === 'Active' ? '' : ` · ${u.status}`}</span>
                                     </li>
                                 ))}
                                 {!team.length && <li className="sa-muted">No staff assigned yet. Assign them on Users &amp; roles.</li>}
@@ -317,12 +321,12 @@ export default function FacilityDetailPage() {
                         </section>
                     )}
                     <section className="se-panel">
-                        <div className="sa-card-title"><h2>Staff on duty today</h2><Link to="/admin/staff" className="se-link">Shifts <Icon name="arrow" size={14} /></Link></div>
+                        <div className="sa-card-title"><h2>{tr('Staff on duty today')}</h2><Link to="/admin/staff" className="se-link">{tr('Shifts')} <Icon name="arrow" size={14} /></Link></div>
                         <ul className="sa-people">
                             {shifts.map((s) => (
                                 <li key={s.shiftId}><span className="se-avatar sm">{initials(s.userName)}</span><span>{s.userName}</span><small>{s.startTime.slice(0, 5)}–{s.endTime.slice(0, 5)}</small></li>
                             ))}
-                            {!shifts.length && <li className="sa-muted">No shifts today.</li>}
+                            {!shifts.length && <li className="sa-muted">{tr('No shifts today.')}</li>}
                         </ul>
                     </section>
                 </div>

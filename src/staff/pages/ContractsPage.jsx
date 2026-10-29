@@ -11,6 +11,7 @@ import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { periodUsed } from '../../customer/account/queries.js';
 import { PageHeader, SearchFilter, Filters, Status, TableState, downloadFile, matches } from '../components/ui.jsx';
 import { useContracts, useInvoices } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const ENDED = ['Closed', 'Terminated'];
 const TABS = [
@@ -23,6 +24,7 @@ const TABS = [
 const daysBetween = (from, to) => Math.round((Date.parse(`${to}T00:00:00Z`) - Date.parse(`${from}T00:00:00Z`)) / 86400000);
 
 function ContractPanel({ contract, invoices, onClose }) {
+    const tr = useT();
     const { session } = useAuth();
     const queryClient = useQueryClient();
     const today = todayIso();
@@ -45,21 +47,21 @@ function ContractPanel({ contract, invoices, onClose }) {
         <aside className="se-panel sa-side-panel">
             <div className="sa-card-title">
                 <h2>{contract.contractNumber} <Status value={contract.status} /></h2>
-                <button type="button" className="sa-close" onClick={onClose} aria-label="Close"><Icon name="arrowLeft" size={16} /></button>
+                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button>
             </div>
             <p className="sa-muted"><Link to={`/admin/customers/${contract.customerId}`} className="se-link">{contract.customerName}</Link> · Unit {contract.unitCode}</p>
             {due > 0 && (
                 <div className={`sa-eligibility ${oldest ? 'no' : ''}`}>
-                    <small>Total due</small><strong>{formatVnd(due)}</strong>
+                    <small>{tr('Total due')}</small><strong>{formatVnd(due)}</strong>
                     {oldest && <small>{daysBetween(oldest.dueDate, today)} days overdue since {formatDate(oldest.dueDate)}</small>}
                 </div>
             )}
             <dl className="se-kv">
-                <div><dt>Period</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)}</dd></div>
-                <div><dt>Monthly rent</dt><dd>{formatVnd(contract.monthlyRent)}</dd></div>
-                <div><dt>Deposit held</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
-                <div><dt>Payment day</dt><dd>Day {contract.paymentDay}</dd></div>
-                <div><dt>Signed</dt><dd>{contract.signedAt ? formatDate(contract.signedAt) : 'Not yet'}</dd></div>
+                <div><dt>{tr('Period')}</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)}</dd></div>
+                <div><dt>{tr('Monthly rent')}</dt><dd>{formatVnd(contract.monthlyRent)}</dd></div>
+                <div><dt>{tr('Deposit held')}</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
+                <div><dt>{tr('Payment day')}</dt><dd>Day {contract.paymentDay}</dd></div>
+                <div><dt>{tr('Signed')}</dt><dd>{contract.signedAt ? formatDate(contract.signedAt) : tr('Not yet')}</dd></div>
             </dl>
             {oldest && policy && (
                 <>
@@ -78,11 +80,11 @@ function ContractPanel({ contract, invoices, onClose }) {
                 </>
             )}
             {terminate.isError && <div className="se-alert" role="alert">{errorMessage(terminate.error)}</div>}
-            {!!open.length && <Link to={`/admin/payments?invoiceId=${open[0].invoiceId}`} className="se-btn se-btn-primary se-btn-block"><Icon name="card" size={16} /> Record payment</Link>}
+            {!!open.length && <Link to={`/admin/payments?invoiceId=${open[0].invoiceId}`} className="se-btn se-btn-primary se-btn-block"><Icon name="card" size={16} /> {tr('Record payment')}</Link>}
             {canTerminate && (
                 <button type="button" className="se-btn se-btn-danger se-btn-block" disabled={terminate.isPending}
                     onClick={() => window.confirm(`Terminate contract ${contract.contractNumber}? This revokes access and cannot be undone.`) && terminate.mutate()}>
-                    Terminate contract
+                    {tr('Terminate contract')}
                 </button>
             )}
         </aside>
@@ -92,6 +94,7 @@ function ContractPanel({ contract, invoices, onClose }) {
 /** A07: every rental contract — who, which unit, what is owed — with overdue follow-up. */
 /** T-01: renewals customers asked for. Facility managers (own facilities) and business operations decide. */
 function RenewalRequests() {
+    const tr = useT();
     const queryClient = useQueryClient();
     const canDecide = [Roles.FacilityManager, Roles.BusinessOperationsManager].includes(useAuth().session?.role);
     const requested = useQuery({ queryKey: ['renewals', 'Requested'], queryFn: () => renewalsApi.list({ status: 'Requested', page: 1, pageSize: 100 }) });
@@ -103,11 +106,11 @@ function RenewalRequests() {
     if (!list.length) return null;
     return (
         <section className="se-panel" style={{ marginBottom: 20 }}>
-            <div className="sa-card-title"><h2>Renewal requests</h2><span className="se-count">{list.length}</span></div>
+            <div className="sa-card-title"><h2>{tr('Renewal requests')}</h2><span className="se-count">{list.length}</span></div>
             {decide.isError && <div className="se-alert" role="alert">{errorMessage(decide.error)}</div>}
             <div className="se-table-wrap">
                 <table className="se-table">
-                    <thead><tr><th>Contract</th><th>Unit</th><th>Extend</th><th>End date</th><th>Monthly rent</th><th>Requested</th>{canDecide && <th />}</tr></thead>
+                    <thead><tr><th>{tr('Contract')}</th><th>{tr('Unit')}</th><th>{tr('Extend')}</th><th>{tr('End date')}</th><th>{tr('Monthly rent')}</th><th>{tr('Requested')}</th>{canDecide && <th />}</tr></thead>
                     <tbody>
                         {list.map((r) => (
                             <tr key={r.renewalId}>
@@ -120,9 +123,9 @@ function RenewalRequests() {
                                 {canDecide && (
                                     <td className="sa-row-actions">
                                         <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={decide.isPending}
-                                            onClick={() => window.confirm(`Approve? ${r.contractNumber} runs to ${formatDate(r.newEndDate)} at ${formatVnd(r.newMonthlyRent)} a month.`) && decide.mutate({ id: r.renewalId, approve: true })}>Approve</button>{' '}
+                                            onClick={() => window.confirm(`Approve? ${r.contractNumber} runs to ${formatDate(r.newEndDate)} at ${formatVnd(r.newMonthlyRent)} a month.`) && decide.mutate({ id: r.renewalId, approve: true })}>{tr('Approve')}</button>{' '}
                                         <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={decide.isPending}
-                                            onClick={() => window.confirm(`Reject the renewal of ${r.contractNumber}?`) && decide.mutate({ id: r.renewalId, approve: false })}>Reject</button>
+                                            onClick={() => window.confirm(`Reject the renewal of ${r.contractNumber}?`) && decide.mutate({ id: r.renewalId, approve: false })}>{tr('Reject')}</button>
                                     </td>
                                 )}
                             </tr>
@@ -135,6 +138,7 @@ function RenewalRequests() {
 }
 
 export default function ContractsPage() {
+    const tr = useT();
     const today = todayIso();
     const [tab, setTab] = useState('all');
     const [search, setSearch] = useState('');
@@ -158,8 +162,8 @@ export default function ContractsPage() {
 
     return (
         <>
-            <PageHeader title="Customers & contracts" subtitle="Monitor rental periods, payment status, renewals and overdue cases">
-                <button type="button" className="se-btn se-btn-primary" onClick={exportCsv}><Icon name="file" size={16} /> Export CSV</button>
+            <PageHeader title={tr('Customers & contracts')} subtitle="Monitor rental periods, payment status, renewals and overdue cases">
+                <button type="button" className="se-btn se-btn-primary" onClick={exportCsv}><Icon name="file" size={16} /> {tr('Export CSV')}</button>
             </PageHeader>
             {exportError && <div className="se-alert" role="alert">{exportError}</div>}
             <RenewalRequests />
@@ -170,11 +174,11 @@ export default function ContractsPage() {
                     </button>
                 ))}
             </div>
-            <Filters><SearchFilter value={search} onChange={setSearch} placeholder="Search contract, customer or unit" /></Filters>
+            <Filters><SearchFilter value={search} onChange={setSearch} placeholder={tr('Search contract, customer or unit')} /></Filters>
             <div className={`sa-split${current ? ' open' : ''}`}>
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
-                        <thead><tr><th>Contract</th><th>Customer</th><th>Unit</th><th>Period</th><th>Balance due</th><th>Status</th></tr></thead>
+                        <thead><tr><th>{tr('Contract')}</th><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Period')}</th><th>{tr('Balance due')}</th><th>{tr('Status')}</th></tr></thead>
                         <tbody>
                             {shown.map((c) => (
                                 <tr key={c.contractId} className={selected === c.contractId ? 'active' : ''} onClick={() => setSelected(c.contractId)}>

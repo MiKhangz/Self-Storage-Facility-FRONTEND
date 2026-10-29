@@ -12,22 +12,24 @@ import { Filters, Modal, PageHeader, SearchFilter, SelectFilter, Status, TableSt
 import { PERMISSIONS, ROLE_INFO } from '../permissions.js';
 import { humanize, useStaff } from '../queries.js';
 import { FacilityPicker } from '../components/FacilityPicker.jsx';
+import { useT } from '../../i18n/I18n.jsx';
 
 const STATUSES = ['Active', 'Disabled'];
 
 export function PermissionMatrix({ highlight, search = '' }) {
+    const tr = useT();
     const rows = PERMISSIONS.filter((p) => matches(search, p.feature, p.group));
     return (
         <div className="se-table-wrap">
             <table className="se-table sa-matrix">
-                <thead><tr><th>Feature</th>{ROLE_INFO.map((r) => <th key={r.role} className={highlight === r.role ? 'hl' : ''} title={r.title}>{r.short}</th>)}</tr></thead>
+                <thead><tr><th>{tr('Feature')}</th>{ROLE_INFO.map((r) => <th key={r.role} className={highlight === r.role ? 'hl' : ''} title={r.title}>{r.short}</th>)}</tr></thead>
                 <tbody>
                     {rows.map((p) => (
                         <tr key={p.feature}>
                             <td>{p.feature}</td>
                             {ROLE_INFO.map((r) => (
                                 <td key={r.role} className={highlight === r.role ? 'hl' : ''}>
-                                    {p.roles.includes(r.role) ? <span className="sa-yes" aria-label="Allowed"><Icon name="check" size={12} /></span> : <span className="sa-no" aria-label="Not allowed" />}
+                                    {p.roles.includes(r.role) ? <span className="sa-yes" aria-label={tr('Allowed')}><Icon name="check" size={12} /></span> : <span className="sa-no" aria-label={tr('Not allowed')} />}
                                 </td>
                             ))}
                         </tr>
@@ -41,19 +43,20 @@ export function PermissionMatrix({ highlight, search = '' }) {
 
 /** The roles and what each may do, opened from a help button so the users table keeps the full width. */
 function PermissionHelp({ onClose }) {
+    const tr = useT();
     const [search, setSearch] = useState('');
     return (
         <Modal onClose={onClose}>
         <section className="se-panel sa-dialog" aria-labelledby="perm-help-title">
-            <div className="sa-card-title"><h2 id="perm-help-title">Who can do what?</h2>
-                <button type="button" className="sa-close" onClick={onClose} aria-label="Close">×</button></div>
+            <div className="sa-card-title"><h2 id="perm-help-title">{tr('Who can do what?')}</h2>
+                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}>×</button></div>
             <dl className="se-kv sa-role-legend">
                 {ROLE_INFO.map((r) => <div key={r.role}><dt><span className="se-badge info">{r.short}</span> {r.title}</dt><dd>{r.text}</dd></div>)}
             </dl>
-            <label><span className="se-label">Find a feature</span>
-                <div className="se-input"><Icon name="search" size={16} /><input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="e.g. refund, handover, pricing" /></div></label>
+            <label><span className="se-label">{tr('Find a feature')}</span>
+                <div className="se-input"><Icon name="search" size={16} /><input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('e.g. refund, handover, pricing')} /></div></label>
             <PermissionMatrix search={search} />
-            <p className="sa-muted">Enforced by the API: a role without a tick gets “not allowed” even if it finds the screen.</p>
+            <p className="sa-muted">{tr('Enforced by the API: a role without a tick gets “not allowed” even if it finds the screen.')}</p>
         </section>
         </Modal>
     );
@@ -61,6 +64,7 @@ function PermissionHelp({ onClose }) {
 
 /** `managed` is null for an admin; for a facility manager, the facility ids they may add or remove. */
 function EditUser({ user, managed, onClose }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     // The API refuses to let an admin lock or demote themselves (nobody could undo it), so don't offer it.
     const self = useAuth().session?.userId === user.userId;
@@ -78,16 +82,16 @@ function EditUser({ user, managed, onClose }) {
 
     return (
         <aside className="se-panel sa-side-panel">
-            <div className="sa-card-title"><h2>Edit {user.fullName}</h2><button type="button" className="sa-close" onClick={onClose} aria-label="Close"><Icon name="arrowLeft" size={16} /></button></div>
+            <div className="sa-card-title"><h2>Edit {user.fullName}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
             <p className="sa-muted">{user.email}</p>
             {isManager ? (
                 <p className="se-hint">{self ? 'Only a system administrator can change your own facilities.' : 'You can add or remove the facilities you manage.'}</p>
             ) : (<>
-            <label><span className="se-label">Full name</span><div className="se-input"><input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div></label>
-            <label><span className="se-label">Phone</span><div className="se-input"><input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} /></div></label>
-            <label><span className="se-label">Role</span>
+            <label><span className="se-label">{tr('Full name')}</span><div className="se-input"><input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div></label>
+            <label><span className="se-label">{tr('Phone')}</span><div className="se-input"><input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} /></div></label>
+            <label><span className="se-label">{tr('Role')}</span>
                 <div className="se-field"><select value={form.role} disabled={self} onChange={(e) => setForm({ ...form, role: e.target.value })}>{ROLE_INFO.map((r) => <option key={r.role} value={r.role}>{r.title}</option>)}</select></div></label>
-            <label><span className="se-label">Status</span>
+            <label><span className="se-label">{tr('Status')}</span>
                 <div className="se-field"><select value={form.status} disabled={self} onChange={(e) => setForm({ ...form, status: e.target.value })}>{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
                 <p className="se-hint">{self ? 'You cannot change your own role or status.' : 'Disabled accounts cannot sign in or be assigned work.'}</p></label>
             </>)}
@@ -100,6 +104,7 @@ function EditUser({ user, managed, onClose }) {
 
 /** A10: staff accounts, their roles and facilities, plus what each role may do. */
 export default function UsersPage() {
+    const tr = useT();
     const { session } = useAuth();
     const isAdmin = session?.role === Roles.SystemAdministrator;
     const [search, setSearch] = useState('');
@@ -115,24 +120,24 @@ export default function UsersPage() {
 
     return (
         <>
-            <PageHeader title="Users & roles" subtitle={isAdmin ? 'Manage staff accounts, assign roles and control access by facility' : 'Assign facility staff to the facilities you manage'}>
-                <button type="button" className="se-btn se-btn-ghost" onClick={() => setHelp(true)}><Icon name="shield" size={16} /> Who can do what?</button>
-                {isAdmin && <Link to="/admin/users/invite" className="se-btn se-btn-primary"><Icon name="shield" size={16} /> Add user</Link>}
+            <PageHeader title={tr('Users & roles')} subtitle={isAdmin ? tr('Manage staff accounts, assign roles and control access by facility') : tr('Assign facility staff to the facilities you manage')}>
+                <button type="button" className="se-btn se-btn-ghost" onClick={() => setHelp(true)}><Icon name="shield" size={16} /> {tr('Who can do what?')}</button>
+                {isAdmin && <Link to="/admin/users/invite" className="se-btn se-btn-primary"><Icon name="shield" size={16} /> {tr('Add user')}</Link>}
             </PageHeader>
             <Filters>
-                <SearchFilter value={search} onChange={setSearch} placeholder="Search name or email" />
+                <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search name or email')} />
                 <SelectFilter label="Role" value={role} onChange={setRole} all="All roles" options={ROLE_INFO.map((r) => ({ value: r.role, label: r.title }))} />
             </Filters>
             {help && <PermissionHelp onClose={() => setHelp(false)} />}
             <div className={`sa-split${current ? ' open' : ''}`}>
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
-                        <thead><tr><th>User</th><th>Role</th><th>Facilities</th><th>Status</th><th>Created</th></tr></thead>
+                        <thead><tr><th>{tr('User')}</th><th>{tr('Role')}</th><th>{tr('Facilities')}</th><th>{tr('Status')}</th><th>{tr('Created')}</th></tr></thead>
                         <tbody>
                             {shown.map((u) => (
                                 <tr key={u.userId} className={selected === u.userId ? 'active' : ''} onClick={() => setSelected(u.userId)}>
                                     <td><span className="sa-person"><span className="se-avatar">{initials(u.fullName)}</span><span><strong>{u.fullName}</strong><div className="sa-muted">{u.email}</div></span></span></td>
-                                    <td><span className="se-badge info">{humanize(u.role)}</span></td>
+                                    <td><span className="se-badge info">{tr(humanize(u.role))}</span></td>
                                     <td>{u.facilities?.map((f) => f.facilityName ?? f.facilityId).join(', ') || '—'}</td>
                                     <td><Status value={u.status} /></td>
                                     <td>{formatDate(u.createdAt)}</td>

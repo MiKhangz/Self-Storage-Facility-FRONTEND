@@ -7,6 +7,7 @@ import { formatDate, formatVnd, todayIso } from '../../customer/components/forma
 import { PageHeader, Stat, Status } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useUnits } from '../queries.js';
 import { esc, printDocument } from '../print.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 /** Checked at the desk before anyone walks to the unit. */
 const CHECKS = [
@@ -16,6 +17,7 @@ const CHECKS = [
 
 /** Staff walk the customer to the unit. They like it, want another of the same size, or call the booking off. */
 function ViewUnit({ reservation, viewed, onViewed }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const [picking, setPicking] = useState(false);
     const [unitId, setUnitId] = useState('');
@@ -35,29 +37,29 @@ function ViewUnit({ reservation, viewed, onViewed }) {
     return (
         <li className={viewed ? 'done' : ''}>
             <span><strong>Show the customer unit {reservation.unitCode}</strong>
-                <small>{viewed ? 'The customer likes the unit.' : 'Walk them to the unit. Sign nothing until they are happy with it.'}</small></span>
+                <small>{viewed ? tr('The customer likes the unit.') : tr('Walk them to the unit. Sign nothing until they are happy with it.')}</small></span>
             {!viewed && !picking && (
                 <div className="sa-form-actions">
                     <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={cancel.isPending}
-                        onClick={() => window.confirm('Cancel this booking? The unit is freed and the full deposit is owed back to the customer.') && cancel.mutate()}>
-                        Cancel booking
+                        onClick={() => window.confirm(tr('Cancel this booking? The unit is freed and the full deposit is owed back to the customer.')) && cancel.mutate()}>
+                        {tr('Cancel booking')}
                     </button>
-                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setPicking(true)}>Show another unit</button>
-                    <button type="button" className="se-btn se-btn-primary se-btn-sm" onClick={onViewed}>Customer likes it</button>
+                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setPicking(true)}>{tr('Show another unit')}</button>
+                    <button type="button" className="se-btn se-btn-primary se-btn-sm" onClick={onViewed}>{tr('Customer likes it')}</button>
                 </div>
             )}
             {picking && (
                 <div className="sa-inline-form">
                     <label><span className="se-label">Another free {reservation.unitTypeName} unit</span>
                         <div className="se-input"><select value={unitId} onChange={(e) => setUnitId(e.target.value)}>
-                            <option value="">{others.length ? 'Choose a unit' : 'No other free unit of this size'}</option>
+                            <option value="">{others.length ? tr('Choose a unit') : tr('No other free unit of this size')}</option>
                             {others.map((u) => <option key={u.storageUnitId} value={u.storageUnitId}>{u.unitCode}{u.floorName ? ` · ${u.floorName}` : ''}{u.zone ? ` · zone ${u.zone}` : ''}</option>)}
                         </select></div></label>
-                    <p className="se-hint">If the contract was already signed, it must be signed again for the new unit.</p>
+                    <p className="se-hint">{tr('If the contract was already signed, it must be signed again for the new unit.')}</p>
                     <div className="sa-form-actions">
-                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setPicking(false)}>Back</button>
+                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setPicking(false)}>{tr('Back')}</button>
                         <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={!unitId || swap.isPending} onClick={() => swap.mutate()}>
-                            {swap.isPending ? 'Switching…' : 'Switch to this unit'}
+                            {swap.isPending ? tr('Switching…') : tr('Switch to this unit')}
                         </button>
                     </div>
                 </div>
@@ -107,6 +109,7 @@ function receiptHtml(reservation, deposit) {
 
 /** The contract is drafted once the customer likes the unit, then signed on paper in front of staff. */
 function SignContract({ reservation, contract, locked }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const [paymentDay, setPaymentDay] = useState(Math.min(Number(reservation.moveInDate.slice(8, 10)), 28));
     const refresh = () => queryClient.invalidateQueries({ queryKey: ['contracts'] });
@@ -121,43 +124,43 @@ function SignContract({ reservation, contract, locked }) {
 
     return (
         <li className={contract?.signedAt ? 'done' : ''}>
-            <span><strong>Customer signs the contract</strong>
-                <small>{locked ? 'After the customer has seen and accepted the unit.'
+            <span><strong>{tr('Customer signs the contract')}</strong>
+                <small>{locked ? tr('After the customer has seen and accepted the unit.')
                     : contract?.signedAt ? `${contract.contractNumber} signed ${formatDate(contract.signedAt)}`
                     : contract ? `Go through the terms below with the customer, print ${contract.contractNumber} and let them sign the paper copy.`
-                    : 'Draft the contract for this unit, then print it for signing.'}</small></span>
+                    : tr('Draft the contract for this unit, then print it for signing.')}</small></span>
             {!locked && !contract && (
                 <div className="sa-inline-form">
                     <label><span className="se-label">Rent due on day of month (1–28)</span>
                         <div className="se-input"><input type="number" min={1} max={28} value={paymentDay} onChange={(e) => setPaymentDay(Number(e.target.value))} /></div></label>
                     <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={draft.isPending || !(paymentDay >= 1 && paymentDay <= 28)} onClick={() => draft.mutate()}>
-                        {draft.isPending ? 'Drafting…' : 'Draft contract'}
+                        {draft.isPending ? tr('Drafting…') : tr('Draft contract')}
                     </button>
                 </div>
             )}
             {!locked && contract && (
                 <div className="sa-contract-summary">
                     <dl className="se-kv">
-                        <div><dt>Unit</dt><dd>{contract.unitCode} · {reservation.unitTypeName}</dd></div>
-                        <div><dt>Term</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)} ({reservation.rentalMonths} months)</dd></div>
-                        <div><dt>Monthly rent</dt><dd>{formatVnd(contract.monthlyRent)}</dd></div>
-                        <div><dt>Deposit</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
-                        <div><dt>Rent due</dt><dd>Day {contract.paymentDay} of each month</dd></div>
-                        <div><dt>Deposit bill</dt><dd>{deposit ? `${deposit.invoiceNumber} · ${deposit.status === 'Paid' ? 'paid' : 'not paid'} ${formatVnd(deposit.paidAmount)}` : 'No deposit was due'}</dd></div>
+                        <div><dt>{tr('Unit')}</dt><dd>{contract.unitCode} · {reservation.unitTypeName}</dd></div>
+                        <div><dt>{tr('Term')}</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)} ({reservation.rentalMonths} months)</dd></div>
+                        <div><dt>{tr('Monthly rent')}</dt><dd>{formatVnd(contract.monthlyRent)}</dd></div>
+                        <div><dt>{tr('Deposit')}</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
+                        <div><dt>{tr('Rent due')}</dt><dd>Day {contract.paymentDay} of each month</dd></div>
+                        <div><dt>{tr('Deposit bill')}</dt><dd>{deposit ? `${deposit.invoiceNumber} · ${deposit.status === 'Paid' ? 'paid' : tr('not paid')} ${formatVnd(deposit.paidAmount)}` : tr('No deposit was due')}</dd></div>
                     </dl>
                     <div className="sa-form-actions">
                         <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => print(contract.contractNumber, contractHtml(reservation, contract, customer))}>
-                            <Icon name="file" size={14} /> Print contract</button>
+                            <Icon name="file" size={14} /> {tr('Print contract')}</button>
                         {deposit && <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => print(deposit.invoiceNumber, receiptHtml(reservation, deposit))}>
-                            <Icon name="card" size={14} /> Print deposit receipt</button>}
+                            <Icon name="card" size={14} /> {tr('Print deposit receipt')}</button>}
                         {!contract.signedAt && (
                             <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={sign.isPending}
-                                onClick={() => window.confirm('Confirm the customer signed the paper contract in front of you?') && sign.mutate()}>
-                                Customer signed on paper
+                                onClick={() => window.confirm(tr('Confirm the customer signed the paper contract in front of you?')) && sign.mutate()}>
+                                {tr('Customer signed on paper')}
                             </button>
                         )}
                     </div>
-                    {blocked && <div className="se-alert" role="alert">The browser blocked the print window. Allow pop-ups for this site and press Print again.</div>}
+                    {blocked && <div className="se-alert" role="alert">{tr('The browser blocked the print window. Allow pop-ups for this site and press Print again.')}</div>}
                 </div>
             )}
             {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
@@ -166,6 +169,7 @@ function SignContract({ reservation, contract, locked }) {
 }
 
 function HandoverWizard({ reservation, contract, onCompleted }) {
+    const tr = useT();
     const [ticks, setTicks] = useState({});
     // Seeing the unit is a conversation, not a record: it lives here, and switching units resets it.
     const [viewedUnit, setViewedUnit] = useState(null);
@@ -199,14 +203,14 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
                 <ViewUnit reservation={reservation} viewed={viewed} onViewed={() => setViewedUnit(reservation.storageUnitId)} />
                 <SignContract reservation={reservation} contract={contract} locked={!viewed} />
                 <li>
-                    <span><strong>Hand over the disc lock and keys</strong><small>Give the customer the lock named after their unit</small></span>
+                    <span><strong>{tr('Hand over the disc lock and keys')}</strong><small>{tr('Give the customer the lock named after their unit')}</small></span>
                     <div>
-                        <div><span className="se-label">Lock name</span>
+                        <div><span className="se-label">{tr('Lock name')}</span>
                             <div className="sa-lock-row">
                                 <div className={`sa-lock ${lockGiven ? 'given' : ''}`}><Icon name="key" size={16} /> {reservation.unitCode}</div>
                                 {lockGiven
-                                    ? <button type="button" className="se-btn se-btn-ghost" onClick={() => setLockFor(null)}>Undo</button>
-                                    : <button type="button" className="se-btn se-btn-primary" onClick={() => setLockFor(reservation.storageUnitId)}>Confirm lock given</button>}
+                                    ? <button type="button" className="se-btn se-btn-ghost" onClick={() => setLockFor(null)}>{tr('Undo')}</button>
+                                    : <button type="button" className="se-btn se-btn-primary" onClick={() => setLockFor(reservation.storageUnitId)}>{tr('Confirm lock given')}</button>}
                             </div>
                             {lockGiven && <small className="sa-muted">Lock {reservation.unitCode} given to the customer.</small>}
                         </div>
@@ -216,9 +220,9 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
             </ol>
             {handover.isError && <div className="se-alert" role="alert">{errorMessage(handover.error)}</div>}
             <div className="sa-form-actions">
-                <span className="sa-muted">Completing activates the contract, occupies the unit and issues the access code.</span>
+                <span className="sa-muted">{tr('Completing activates the contract, occupies the unit and issues the access code.')}</span>
                 <button type="button" className="se-btn se-btn-primary" disabled={!ready || handover.isPending} onClick={() => handover.mutate()}>
-                    {handover.isPending ? 'Completing…' : 'Complete handover'}
+                    {handover.isPending ? tr('Completing…') : tr('Complete handover')}
                 </button>
             </div>
         </div>
@@ -226,6 +230,7 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
 }
 
 function HandoverDesk() {
+    const tr = useT();
     const today = todayIso();
     const reservations = useReservations({ status: 'Confirmed' });
     const drafts = useContracts({ status: 'Draft' });
@@ -242,7 +247,7 @@ function HandoverDesk() {
     return (
         <div className="sa-split open sa-desk">
             <section className="se-panel">
-                <div className="sa-card-title"><h2>Waiting for handover</h2><span className="se-count">{queue.length}</span></div>
+                <div className="sa-card-title"><h2>{tr('Waiting for handover')}</h2><span className="se-count">{queue.length}</span></div>
                 <div className="sa-queue">
                     {queue.map((r) => (
                         <button key={r.reservationId} type="button" className={`sa-queue-item${current?.reservationId === r.reservationId ? ' active' : ''}`} onClick={() => setSelected(r.reservationId)}>
@@ -264,7 +269,7 @@ function HandoverDesk() {
                             ['reservations', 'contracts', 'storage-units', 'check-ins'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
                             setDone(null);
                             setSelected(null);
-                        }}>Next handover</button>
+                        }}>{tr('Next handover')}</button>
                     </div>
                 ) : current && !drafts.isLoading && <HandoverWizard key={current.reservationId} reservation={current} contract={contract} onCompleted={setDone} />}
             </div>
@@ -274,6 +279,7 @@ function HandoverDesk() {
 
 /** SR-02: undo a handover made by mistake. The reservation goes back to waiting for a unit. */
 function CancelHandover({ contractId }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const handovers = useQuery({ queryKey: ['handovers', 'Completed'], queryFn: () => handoversApi.list({ status: 'Completed', page: 1, pageSize: 100 }) });
     const handover = handovers.data?.items?.find((c) => c.contractId === contractId);
@@ -286,8 +292,8 @@ function CancelHandover({ contractId }) {
         <>
             {cancel.isError && <div className="se-alert" role="alert">{errorMessage(cancel.error)}</div>}
             <button type="button" className="se-btn se-btn-ghost" disabled={cancel.isPending}
-                onClick={() => window.confirm('Cancel this handover? The contract is terminated, the code revoked and the unit freed; the reservation waits for a unit again.') && cancel.mutate()}>
-                Cancel handover
+                onClick={() => window.confirm(tr('Cancel this handover? The contract is terminated, the code revoked and the unit freed; the reservation waits for a unit again.')) && cancel.mutate()}>
+                {tr('Cancel handover')}
             </button>
         </>
     );
@@ -295,25 +301,27 @@ function CancelHandover({ contractId }) {
 
 /** TH-06: a lost card or leaked code. The customer gets a new code from their unit page. */
 function RevokeCode({ contractId, accessCodeId }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const revoke = useMutation({
         mutationFn: () => accessCodesApi.revoke(accessCodeId),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts', contractId, 'access-code'] }),
     });
     const confirmAndRevoke = () => {
-        if (window.confirm('Revoke this access code? The customer cannot open the unit until they request a new code.')) revoke.mutate();
+        if (window.confirm(tr('Revoke this access code? The customer cannot open the unit until they request a new code.'))) revoke.mutate();
     };
     return (
         <>
             {revoke.isError && <div className="se-alert" role="alert">{errorMessage(revoke.error)}</div>}
             <button type="button" className="se-btn se-btn-ghost" disabled={revoke.isPending} onClick={confirmAndRevoke}>
-                <Icon name="key" size={16} /> {revoke.isPending ? 'Revoking…' : 'Revoke code'}
+                <Icon name="key" size={16} /> {revoke.isPending ? tr('Revoking…') : tr('Revoke code')}
             </button>
         </>
     );
 }
 
 function ActiveRentals() {
+    const tr = useT();
     const contracts = useContracts({ status: 'Active' });
     const invoices = useInvoices();
     const [selected, setSelected] = useState(null);
@@ -331,7 +339,7 @@ function ActiveRentals() {
     return (
         <div className="sa-split open sa-desk">
             <section className="se-panel">
-                <div className="sa-card-title"><h2>Active rentals</h2><span className="se-count">{list.length}</span></div>
+                <div className="sa-card-title"><h2>{tr('Active rentals')}</h2><span className="se-count">{list.length}</span></div>
                 <div className="sa-queue">
                     {list.map((c) => (
                         <button key={c.contractId} type="button" className={`sa-queue-item${current?.contractId === c.contractId ? ' active' : ''}`} onClick={() => setSelected(c.contractId)}>
@@ -346,13 +354,13 @@ function ActiveRentals() {
                 <section className="se-panel">
                     <div className="sa-card-title"><h2>{current.customerName} → Unit {current.unitCode}</h2><span className="sa-muted">{current.contractNumber}</span></div>
                     <dl className="se-kv">
-                        <div><dt>Contract status</dt><dd><Status value={current.status} /></dd></div>
-                        <div><dt>Payment status</dt><dd>{owing?.length ? `${owing.length} open invoice${owing.length > 1 ? 's' : ''}${overdue ? ' · overdue' : ''}` : 'Paid up'}</dd></div>
-                        <div><dt>Access code</dt><dd>{code.data?.isActive ? `Active · expires ${formatDate(code.data.expiresAt)}` : 'No active code'}</dd></div>
+                        <div><dt>{tr('Contract status')}</dt><dd><Status value={current.status} /></dd></div>
+                        <div><dt>{tr('Payment status')}</dt><dd>{owing?.length ? `${owing.length} open invoice${owing.length > 1 ? 's' : ''}${overdue ? tr(' · overdue') : ''}` : tr('Paid up')}</dd></div>
+                        <div><dt>{tr('Access code')}</dt><dd>{code.data?.isActive ? `Active · expires ${formatDate(code.data.expiresAt)}` : tr('No active code')}</dd></div>
                     </dl>
                     <div className={`sa-eligibility ${eligible ? 'ok' : 'no'}`}>
-                        <small>Access eligibility</small>
-                        <strong>{eligible ? 'Eligible for access' : 'Not eligible — check payment or access code'}</strong>
+                        <small>{tr('Access eligibility')}</small>
+                        <strong>{eligible ? tr('Eligible for access') : tr('Not eligible — check payment or access code')}</strong>
                     </div>
                     {code.data?.isActive && <RevokeCode key={code.data.accessCodeId} contractId={current.contractId} accessCodeId={code.data.accessCodeId} />}
                     <CancelHandover key={current.contractId} contractId={current.contractId} />
@@ -364,6 +372,7 @@ function ActiveRentals() {
 
 /** A06: the on-site desk — hand over newly booked units, and see who may access their unit. */
 export default function HandoverPage() {
+    const tr = useT();
     const [tab, setTab] = useState('desk');
     const units = useUnits();
     const reservations = useReservations({ status: 'Confirmed' });
@@ -372,7 +381,7 @@ export default function HandoverPage() {
 
     return (
         <>
-            <PageHeader title="Handover" subtitle={`Today, ${formatDate(todayIso())}`} />
+            <PageHeader title={tr('Handover')} subtitle={`Today, ${formatDate(todayIso())}`} />
             <div className="sa-stats">
                 <Stat icon="key" label="Waiting for handover" value={reservations.data?.length ?? 0} />
                 <Stat icon="file" label="Active rentals" value={active.data?.length ?? 0} />
@@ -380,7 +389,7 @@ export default function HandoverPage() {
                 <Stat icon="shield" tone="warn" label="In maintenance" value={all.filter((u) => u.status === 'Maintenance').length} />
             </div>
             <div className="se-tabs se-tabs-line" role="tablist">
-                <button role="tab" aria-selected={tab === 'desk'} className={tab === 'desk' ? 'active' : ''} onClick={() => setTab('desk')}>Handover desk</button>
+                <button role="tab" aria-selected={tab === 'desk'} className={tab === 'desk' ? 'active' : ''} onClick={() => setTab('desk')}>{tr('Handover desk')}</button>
                 <button role="tab" aria-selected={tab === 'active'} className={tab === 'active' ? 'active' : ''} onClick={() => setTab('active')}>Active rentals &amp; access</button>
             </div>
             {tab === 'desk' ? <HandoverDesk /> : <ActiveRentals />}

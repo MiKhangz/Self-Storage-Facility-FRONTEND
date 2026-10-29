@@ -11,6 +11,7 @@ import { formatDateTime } from '../../customer/support/support.js';
 import { Modal, PageHeader, Status } from '../components/ui.jsx';
 import { humanize } from '../queries.js';
 import '../../customer/support/Support.css';
+import { useT } from '../../i18n/I18n.jsx';
 
 // Moves staff may make, per the backend's ticket status rules; Closed is left to the customer or a manager.
 const NEXT = { New: ['InProgress'], InProgress: ['WaitingForCustomer', 'Resolved'], WaitingForCustomer: ['InProgress', 'Resolved'], Resolved: ['InProgress'] };
@@ -18,6 +19,7 @@ const NEXT = { New: ['InProgress'], InProgress: ['WaitingForCustomer', 'Resolved
 /** A20: one ticket from the staff side — conversation, internal notes, status and assignment. */
 /** The customer reported a problem with their unit: staff open the repair from here, the only way onto a rented unit. */
 function OrderRepair({ ticket }) {
+    const tr = useT();
     const queryClient = useQueryClient();
     const [open, setOpen] = useState(false);
     const [description, setDescription] = useState(ticket.subject ?? '');
@@ -33,13 +35,13 @@ function OrderRepair({ ticket }) {
                 <Modal onClose={() => setOpen(false)}>
                     <form className="se-panel sa-dialog" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
                         <div className="sa-card-title"><h2>Maintenance for unit {ticket.unitCode}</h2>
-                            <button type="button" className="sa-close" onClick={() => setOpen(false)} aria-label="Close">×</button></div>
+                            <button type="button" className="sa-close" onClick={() => setOpen(false)} aria-label={tr('Close')}>×</button></div>
                         <p className="sa-muted">From {ticket.customerName}'s ticket {ticket.ticketCode}. The unit stays theirs while the work is done.</p>
-                        <label><span className="se-label">What needs doing *</span>
+                        <label><span className="se-label">{tr('What needs doing *')}</span>
                             <textarea className="se-textarea" rows={3} maxLength={300} required value={description} onChange={(e) => setDescription(e.target.value)} /></label>
                         {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
                         <div className="sa-form-actions">
-                            <button type="button" className="se-btn se-btn-ghost" onClick={() => setOpen(false)}>Cancel</button>
+                            <button type="button" className="se-btn se-btn-ghost" onClick={() => setOpen(false)}>{tr('Cancel')}</button>
                             <button type="submit" className="se-btn se-btn-primary" disabled={!description.trim() || create.isPending}>{create.isPending ? 'Creating…' : 'Create order'}</button>
                         </div>
                     </form>
@@ -50,6 +52,7 @@ function OrderRepair({ ticket }) {
 }
 
 export default function TicketDetailPage() {
+    const tr = useT();
     const ticketId = Number(useParams().ticketId);
     const { session } = useAuth();
     const queryClient = useQueryClient();
@@ -67,7 +70,7 @@ export default function TicketDetailPage() {
     const move = useMutation({ mutationFn: (status) => ticketQueueApi.status(ticketId, { status }), onSuccess: refresh });
     const assign = useMutation({ mutationFn: () => ticketQueueApi.assign(ticketId, { assigneeId: session.userId }), onSuccess: refresh });
 
-    if (ticket.isLoading) return <p className="se-empty">Loading ticket…</p>;
+    if (ticket.isLoading) return <p className="se-empty">{tr('Loading ticket…')}</p>;
     if (ticket.isError) return <div className="se-alert" role="alert">{errorMessage(ticket.error)}</div>;
     const t = ticket.data;
     const closed = t.status === 'Closed';
@@ -77,15 +80,15 @@ export default function TicketDetailPage() {
 
     return (
         <>
-            <Link to="/admin/tickets" className="se-back"><Icon name="arrowLeft" size={16} /> Back to the ticket board</Link>
+            <Link to="/admin/tickets" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to the ticket board')}</Link>
             <PageHeader title={`${t.ticketCode} · ${t.subject}`} subtitle={`Opened ${formatDateTime(t.createdAt)} by ${t.customerName}${t.unitCode ? ` · unit ${t.unitCode}` : ''} · ${t.facilityName}`}>
-                {isManager && !closed && <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm('Close this ticket?') && move.mutate('Closed')}>Close ticket</button>}
-                {(NEXT[t.status] ?? []).includes('Resolved') && <button type="button" className="se-btn se-btn-primary" disabled={move.isPending} onClick={() => move.mutate('Resolved')}><Icon name="check" size={16} /> Resolve ticket</button>}
+                {isManager && !closed && <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm('Close this ticket?') && move.mutate('Closed')}>{tr('Close ticket')}</button>}
+                {(NEXT[t.status] ?? []).includes('Resolved') && <button type="button" className="se-btn se-btn-primary" disabled={move.isPending} onClick={() => move.mutate('Resolved')}><Icon name="check" size={16} /> {tr('Resolve ticket')}</button>}
             </PageHeader>
             {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
             <div className="se-support-grid">
                 <section className="se-panel se-convo">
-                    <h2>Conversation <span><Status value={t.priority} /> <Status value={t.status} /></span></h2>
+                    <h2>{tr('Conversation')} <span><Status value={t.priority} /> <Status value={t.status} /></span></h2>
                     <ol className="se-messages">
                         {messages.data?.map((m) => (
                             <li key={m.messageId} className={m.senderId === t.customerId ? '' : 'own'}>
@@ -100,16 +103,16 @@ export default function TicketDetailPage() {
                     {!closed && (
                         <form className="se-reply" onSubmit={(e) => { e.preventDefault(); if (body.trim()) send.mutate(); }}>
                             <div className="se-tabs" role="tablist">
-                                <button type="button" role="tab" aria-selected={!internal} className={!internal ? 'active' : ''} onClick={() => setInternal(false)}>Reply to customer</button>
-                                <button type="button" role="tab" aria-selected={internal} className={internal ? 'active' : ''} onClick={() => setInternal(true)}>Internal note</button>
+                                <button type="button" role="tab" aria-selected={!internal} className={!internal ? 'active' : ''} onClick={() => setInternal(false)}>{tr('Reply to customer')}</button>
+                                <button type="button" role="tab" aria-selected={internal} className={internal ? 'active' : ''} onClick={() => setInternal(true)}>{tr('Internal note')}</button>
                             </div>
-                            <textarea className="se-textarea" rows={3} maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} placeholder={internal ? 'Only staff can see this note…' : 'Type your reply…'} aria-label="Message" />
+                            <textarea className="se-textarea" rows={3} maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} placeholder={internal ? 'Only staff can see this note…' : 'Type your reply…'} aria-label={tr('Message')} />
                             <div className="sa-form-actions">
                                 {!internal && !!NEXT[t.status]?.length && (
-                                    <label className="sa-filter"><span className="sr-only">Status after sending</span>
-                                        <select value={nextStatus} onChange={(e) => setNextStatus(e.target.value)} aria-label="Status after sending">
-                                            <option value="">Keep status</option>
-                                            {NEXT[t.status].map((s) => <option key={s} value={s}>Set to {humanize(s)}</option>)}
+                                    <label className="sa-filter"><span className="sr-only">{tr('Status after sending')}</span>
+                                        <select value={nextStatus} onChange={(e) => setNextStatus(e.target.value)} aria-label={tr('Status after sending')}>
+                                            <option value="">{tr('Keep status')}</option>
+                                            {NEXT[t.status].map((s) => <option key={s} value={s}>Set to {tr(humanize(s))}</option>)}
                                         </select>
                                     </label>
                                 )}
@@ -119,16 +122,16 @@ export default function TicketDetailPage() {
                     )}
                 </section>
                 <aside className="se-panel">
-                    <h2>Ticket</h2>
+                    <h2>{tr('Ticket')}</h2>
                     <dl className="se-kv">
-                        <div><dt>Status</dt><dd><Status value={t.status} /></dd></div>
-                        <div><dt>Priority</dt><dd><Status value={t.priority} /></dd></div>
-                        <div><dt>Category</dt><dd>{t.categoryName}</dd></div>
-                        <div><dt>Customer</dt><dd><Link to={`/admin/customers/${t.customerId}`} className="se-link">{t.customerName}</Link></dd></div>
-                        {t.unitCode && <div><dt>Unit</dt><dd>{t.unitCode}</dd></div>}
-                        <div><dt>Due</dt><dd>{t.dueDate ? formatDateTime(t.dueDate) : '—'}</dd></div>
+                        <div><dt>{tr('Status')}</dt><dd><Status value={t.status} /></dd></div>
+                        <div><dt>{tr('Priority')}</dt><dd><Status value={t.priority} /></dd></div>
+                        <div><dt>{tr('Category')}</dt><dd>{t.categoryName}</dd></div>
+                        <div><dt>{tr('Customer')}</dt><dd><Link to={`/admin/customers/${t.customerId}`} className="se-link">{t.customerName}</Link></dd></div>
+                        {t.unitCode && <div><dt>{tr('Unit')}</dt><dd>{t.unitCode}</dd></div>}
+                        <div><dt>{tr('Due')}</dt><dd>{t.dueDate ? formatDateTime(t.dueDate) : '—'}</dd></div>
                     </dl>
-                    {isManager && !closed && <button type="button" className="se-btn se-btn-outline se-btn-block" disabled={assign.isPending} onClick={() => assign.mutate()}>Assign to me</button>}
+                    {isManager && !closed && <button type="button" className="se-btn se-btn-outline se-btn-block" disabled={assign.isPending} onClick={() => assign.mutate()}>{tr('Assign to me')}</button>}
                     {canOrderWork && <OrderRepair ticket={t} />}
                 </aside>
             </div>

@@ -3,6 +3,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { Roles } from '../../features/auth/roles';
 import { useFacilities, useStaff } from '../queries.js';
 import { matches, Modal } from './ui.jsx';
+import { useT } from '../../i18n/I18n.jsx';
 
 const FACILITY_ROLES = [Roles.FacilityStaff, Roles.FacilityManager];
 
@@ -11,6 +12,7 @@ const FACILITY_ROLES = [Roles.FacilityStaff, Roles.FacilityManager];
  * facilities the person editing may not add or remove (a manager edits only the facilities they manage).
  */
 export function FacilityPicker({ value, onChange, canChange = () => true, label = 'Assigned facilities' }) {
+    const tr = useT();
     const facilities = useFacilities().data ?? [];
     const staff = useStaff().data ?? [];
     const [draft, setDraft] = useState(null);
@@ -32,18 +34,18 @@ export function FacilityPicker({ value, onChange, canChange = () => true, label 
                         {canChange(id) && <button type="button" aria-label={`Remove ${nameOf[id] ?? id}`} onClick={() => onChange(value.filter((x) => x !== id))}>×</button>}
                     </span>
                 ))}
-                {!value.length && <span className="sa-muted">No facility chosen yet.</span>}
+                {!value.length && <span className="sa-muted">{tr('No facility chosen yet.')}</span>}
             </div>
-            <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setDraft(value)}><Icon name="building" size={14} /> Choose facilities</button>
+            <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setDraft(value)}><Icon name="building" size={14} /> {tr('Choose facilities')}</button>
 
             {draft && (
                 <Modal onClose={close}>
                     <section className="se-panel sa-dialog" aria-labelledby="facility-picker-title">
-                        <div className="sa-card-title"><h2 id="facility-picker-title">Choose facilities</h2>
-                            <button type="button" className="sa-close" onClick={close} aria-label="Close">×</button></div>
-                        <label><span className="se-label">Search by name</span>
+                        <div className="sa-card-title"><h2 id="facility-picker-title">{tr('Choose facilities')}</h2>
+                            <button type="button" className="sa-close" onClick={close} aria-label={tr('Close')}>×</button></div>
+                        <label><span className="se-label">{tr('Search by name')}</span>
                             <div className="se-input"><Icon name="search" size={16} />
-                                <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Facility name, address or district" /></div></label>
+                                <input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('Facility name, address or district')} /></div></label>
                         <ul className="sa-facility-list">
                             {shown.map((f) => {
                                 const count = headCount(f.facilityId);
@@ -54,7 +56,7 @@ export function FacilityPicker({ value, onChange, canChange = () => true, label 
                                             <input type="checkbox" checked={draft.includes(f.facilityId)} disabled={locked} onChange={() => toggle(f.facilityId)} />
                                             <span><strong>{f.name}</strong><small>{f.address}{f.district ? `, ${f.district}` : ''}</small></span>
                                         </label>
-                                        <span className={`se-badge ${count ? 'info' : 'none'}`}>{count ? `${count} staff` : 'No staff yet'}</span>
+                                        <span className={`se-badge ${count ? 'info' : 'none'}`}>{count ? `${count} staff` : tr('No staff yet')}</span>
                                     </li>
                                 );
                             })}
@@ -62,8 +64,8 @@ export function FacilityPicker({ value, onChange, canChange = () => true, label 
                         </ul>
                         <div className="sa-form-actions">
                             <span className="sa-muted">{draft.length} selected</span>
-                            <button type="button" className="se-btn se-btn-ghost" onClick={() => setDraft(draft.filter((id) => !canChange(id)))}>Clear</button>
-                            <button type="button" className="se-btn se-btn-primary" onClick={() => { onChange(draft); close(); }}>Done</button>
+                            <button type="button" className="se-btn se-btn-ghost" onClick={() => setDraft(draft.filter((id) => !canChange(id)))}>{tr('Clear')}</button>
+                            <button type="button" className="se-btn se-btn-primary" onClick={() => { onChange(draft); close(); }}>{tr('Done')}</button>
                         </div>
                     </section>
                 </Modal>

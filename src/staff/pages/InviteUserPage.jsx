@@ -10,12 +10,14 @@ import { PageHeader } from '../components/ui.jsx';
 import { ROLE_INFO } from '../permissions.js';
 import { FacilityPicker } from '../components/FacilityPicker.jsx';
 import { PermissionMatrix } from './UsersPage.jsx';
+import { useT } from '../../i18n/I18n.jsx';
 
 // Facility roles work at specific sites; the two head-office roles see every facility.
 const NEEDS_FACILITY = [Roles.FacilityManager, Roles.FacilityStaff];
 
 /** A21: create a staff account with a role and facilities. */
 export default function InviteUserPage() {
+    const tr = useT();
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const [form, setForm] = useState({ fullName: '', email: '', phoneNumber: '', password: '', role: Roles.FacilityStaff });
@@ -35,22 +37,22 @@ export default function InviteUserPage() {
 
     return (
         <>
-            <Link to="/admin/users" className="se-back"><Icon name="arrowLeft" size={16} /> Back to users</Link>
-            <PageHeader title="Add a staff user" subtitle="Create a staff account and choose what the person can do">
-                <Link to="/admin/users" className="se-btn se-btn-ghost">Cancel</Link>
+            <Link to="/admin/users" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to users')}</Link>
+            <PageHeader title={tr('Add a staff user')} subtitle="Create a staff account and choose what the person can do">
+                <Link to="/admin/users" className="se-btn se-btn-ghost">{tr('Cancel')}</Link>
                 <button type="submit" form="invite" className="se-btn se-btn-primary" disabled={!valid || create.isPending}>{create.isPending ? 'Creating…' : 'Create account'}</button>
             </PageHeader>
             {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
             <div className="sa-grid-2 sa-grid-flip">
                 <form id="invite" className="se-panel se-form" onSubmit={(e) => { e.preventDefault(); if (valid) create.mutate(); }}>
-                    <h2>New user</h2>
-                    <label><span className="se-label">Full name *</span><div className="se-input"><input value={form.fullName} onChange={set('fullName')} required /></div></label>
-                    <label><span className="se-label">Work email *</span><div className="se-input"><Icon name="mail" size={16} /><input type="email" value={form.email} onChange={set('email')} required /></div></label>
-                    <label><span className="se-label">Phone *</span><div className="se-input"><input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} required /></div></label>
-                    <label><span className="se-label">Temporary password *</span><PasswordInput value={form.password} onChange={set('password')} invalid={form.password && !strong} autoComplete="new-password" />
+                    <h2>{tr('New user')}</h2>
+                    <label><span className="se-label">{tr('Full name *')}</span><div className="se-input"><input value={form.fullName} onChange={set('fullName')} required /></div></label>
+                    <label><span className="se-label">{tr('Work email *')}</span><div className="se-input"><Icon name="mail" size={16} /><input type="email" value={form.email} onChange={set('email')} required /></div></label>
+                    <label><span className="se-label">{tr('Phone *')}</span><div className="se-input"><input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} required /></div></label>
+                    <label><span className="se-label">{tr('Temporary password *')}</span><PasswordInput value={form.password} onChange={set('password')} invalid={form.password && !strong} autoComplete="new-password" />
                         <p className="se-hint">At least 8 characters and 1 number. Share it privately; the person should change it after signing in.</p></label>
-                    <span className="se-label">Role *</span>
-                    <div className="sa-unit-options" role="radiogroup" aria-label="Role">
+                    <span className="se-label">{tr('Role *')}</span>
+                    <div className="sa-unit-options" role="radiogroup" aria-label={tr('Role')}>
                         {ROLE_INFO.map((r) => (
                             <label key={r.role} className={`sa-unit-option${form.role === r.role ? ' active' : ''}`}>
                                 <input type="radio" name="role" aria-label={r.title} checked={form.role === r.role} onChange={() => setForm({ ...form, role: r.role })} />

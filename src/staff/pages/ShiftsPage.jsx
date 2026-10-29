@@ -20,6 +20,7 @@ export function weekStart(iso) {
 
 /** A13: weekly shift roster per facility, with add and remove for managers. */
 export default function ShiftsPage() {
+    const tr = useT();
     const { session } = useAuth();
     const queryClient = useQueryClient();
     const [start, setStart] = useState(weekStart(todayIso()));
@@ -45,11 +46,11 @@ export default function ShiftsPage() {
 
     return (
         <>
-            <PageHeader title="Staff & shifts" subtitle={`Week of ${formatDate(days[0])} – ${formatDate(days[6])}`}>
-                <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, -7))} aria-label="Previous week"><Icon name="arrowLeft" size={16} /></button>
-                <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(weekStart(todayIso()))}>This week</button>
-                <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, 7))} aria-label="Next week"><Icon name="arrow" size={16} /></button>
-                {canWrite && <button type="button" className="se-btn se-btn-primary" onClick={openForm}><Icon name="calendar" size={16} /> Add shift</button>}
+            <PageHeader title={tr('Staff & shifts')} subtitle={`Week of ${formatDate(days[0])} – ${formatDate(days[6])}`}>
+                <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, -7))} aria-label={tr('Previous week')}><Icon name="arrowLeft" size={16} /></button>
+                <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(weekStart(todayIso()))}>{tr('This week')}</button>
+                <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, 7))} aria-label={tr('Next week')}><Icon name="arrow" size={16} /></button>
+                {canWrite && <button type="button" className="se-btn se-btn-primary" onClick={openForm}><Icon name="calendar" size={16} /> {tr('Add shift')}</button>}
             </PageHeader>
             <div className="sa-filters">
                 <SelectFilter label="Facility" value={fid ?? ''} onChange={setFacilityId} all="Choose facility" options={facilities.map((f) => ({ value: f.facilityId, label: f.name }))} />
@@ -58,21 +59,21 @@ export default function ShiftsPage() {
             {form && (
                 <form className="sa-inline-form" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
                     <div className="se-panel-grid">
-                        <label><span className="se-label">Staff member</span>
+                        <label><span className="se-label">{tr('Staff member')}</span>
                             <div className="se-field"><select value={form.userId} onChange={(e) => setForm({ ...form, userId: e.target.value })} required>
                                 {[...people].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></div></label>
-                        <label><span className="se-label">Date</span><div className="se-input"><input type="date" min={todayIso()} value={form.shiftDate} onChange={(e) => setForm({ ...form, shiftDate: e.target.value })} required /></div></label>
-                        <label><span className="se-label">Shift</span>
+                        <label><span className="se-label">{tr('Date')}</span><div className="se-input"><input type="date" min={todayIso()} value={form.shiftDate} onChange={(e) => setForm({ ...form, shiftDate: e.target.value })} required /></div></label>
+                        <label><span className="se-label">{tr('Shift')}</span>
                             <div className="se-field"><select value={form.shiftType} onChange={(e) => { const t = e.target.value; setForm({ ...form, shiftType: t, startTime: TIMES[t][0], endTime: TIMES[t][1] }); }}>
                                 {Object.keys(TIMES).map((t) => <option key={t} value={t}>{t}</option>)}</select></div></label>
-                        <label><span className="se-label">Start – end</span>
+                        <label><span className="se-label">{tr('Start – end')}</span>
                             <div className="sa-time-pair"><div className="se-input"><input type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} /></div>
                                 <div className="se-input"><input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} /></div></div></label>
                     </div>
                     {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
                     <div className="sa-form-actions">
-                        <button type="button" className="se-btn se-btn-ghost" onClick={() => setForm(null)}>Cancel</button>
-                        <button type="submit" className="se-btn se-btn-primary" disabled={create.isPending || !form.userId}>Save shift</button>
+                        <button type="button" className="se-btn se-btn-ghost" onClick={() => setForm(null)}>{tr('Cancel')}</button>
+                        <button type="submit" className="se-btn se-btn-primary" disabled={create.isPending || !form.userId}>{tr('Save shift')}</button>
                     </div>
                 </form>
             )}
@@ -80,7 +81,7 @@ export default function ShiftsPage() {
 
             <div className="se-card se-table-wrap">
                 <table className="se-table sa-roster">
-                    <thead><tr><th>Staff</th>{days.map((d) => <th key={d} className={d === todayIso() ? 'hl' : ''}>{new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', timeZone: 'UTC' })}</th>)}</tr></thead>
+                    <thead><tr><th>{tr('Staff')}</th>{days.map((d) => <th key={d} className={d === todayIso() ? 'hl' : ''}>{new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { weekday: 'short', day: '2-digit', timeZone: 'UTC' })}</th>)}</tr></thead>
                     <tbody>
                         {[...new Map(shifts.map((s) => [s.userId, s.userName]))].map(([userId, name]) => (
                             <tr key={userId}>
@@ -93,16 +94,16 @@ export default function ShiftsPage() {
                                                 <div key={s.shiftId} className={`sa-shift ${s.shiftType}`}>
                                                     <strong>{s.startTime.slice(0, 5)}–{s.endTime.slice(0, 5)}</strong>
                                                     <small>{tasks.filter((t) => t.shiftId === s.shiftId).length} tasks</small>
-                                                    {canWrite && <button type="button" aria-label={`Remove ${name}'s shift on ${formatDate(d)}`} onClick={() => window.confirm('Remove this shift?') && remove.mutate(s.shiftId)}>×</button>}
+                                                    {canWrite && <button type="button" aria-label={`Remove ${name}'s shift on ${formatDate(d)}`} onClick={() => window.confirm(tr('Remove this shift?')) && remove.mutate(s.shiftId)}>×</button>}
                                                 </div>
                                             ))}
-                                            {!mine.length && <span className="sa-off">Off</span>}
+                                            {!mine.length && <span className="sa-off">{tr('Off')}</span>}
                                         </td>
                                     );
                                 })}
                             </tr>
                         ))}
-                        {!shifts.length && <tr><td colSpan={8} className="se-empty">No shifts this week.</td></tr>}
+                        {!shifts.length && <tr><td colSpan={8} className="se-empty">{tr('No shifts this week.')}</td></tr>}
                     </tbody>
                 </table>
             </div>
