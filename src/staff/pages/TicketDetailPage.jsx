@@ -30,13 +30,13 @@ function OrderRepair({ ticket }) {
     return (
         <>
             {create.isSuccess && <div className="se-alert info" role="status">Maintenance order created for unit {ticket.unitCode}.</div>}
-            <button type="button" className="se-btn se-btn-ghost se-btn-block" onClick={() => setOpen(true)}>Order maintenance for {ticket.unitCode}</button>
+            <button type="button" className="se-btn se-btn-ghost se-btn-block" onClick={() => setOpen(true)}>{tr('Order maintenance for {code}', { code: ticket.unitCode })}</button>
             {open && (
                 <Modal onClose={() => setOpen(false)}>
                     <form className="se-panel sa-dialog" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
-                        <div className="sa-card-title"><h2>Maintenance for unit {ticket.unitCode}</h2>
+                        <div className="sa-card-title"><h2>{tr('Maintenance for unit {code}', { code: ticket.unitCode })}</h2>
                             <button type="button" className="sa-close" onClick={() => setOpen(false)} aria-label={tr('Close')}>×</button></div>
-                        <p className="sa-muted">From {ticket.customerName}'s ticket {ticket.ticketCode}. The unit stays theirs while the work is done.</p>
+                        <p className="sa-muted">{tr("From {name}'s ticket {code}. The unit stays theirs while the work is done.", { name: ticket.customerName, code: ticket.ticketCode })}</p>
                         <label><span className="se-label">{tr('What needs doing *')}</span>
                             <textarea className="se-textarea" rows={3} maxLength={300} required value={description} onChange={(e) => setDescription(e.target.value)} /></label>
                         {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
@@ -112,7 +112,7 @@ export default function TicketDetailPage() {
                                     <label className="sa-filter"><span className="sr-only">{tr('Status after sending')}</span>
                                         <select value={nextStatus} onChange={(e) => setNextStatus(e.target.value)} aria-label={tr('Status after sending')}>
                                             <option value="">{tr('Keep status')}</option>
-                                            {NEXT[t.status].map((s) => <option key={s} value={s}>Set to {tr(humanize(s))}</option>)}
+                                            {NEXT[t.status].map((s) => <option key={s} value={s}>{tr('Set to {status}', { status: tr(humanize(s)) })}</option>)}
                                         </select>
                                     </label>
                                 )}

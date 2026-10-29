@@ -40,7 +40,7 @@ function UnitEditor({ unit }) {
             <label><span className="se-label">{tr('Floor')}</span><div className="se-input">
                 <select value={form.floorId} onChange={set('floorId')} disabled={!movable}>
                     {(floors.data ?? [{ floorId: unit.floorId, name: unit.floorName }]).map((f) => (
-                        <option key={f.floorId} value={f.floorId}>{f.floorNumber != null ? `Floor ${f.floorNumber}` : ''}{f.name ? `${f.floorNumber != null ? ' · ' : ''}${f.name}` : ''}</option>
+                        <option key={f.floorId} value={f.floorId}>{f.floorNumber != null ? `${tr('Floor')} ${f.floorNumber}` : ''}{f.name ? `${f.floorNumber != null ? ' · ' : ''}${f.name}` : ''}</option>
                     ))}
                 </select></div></label>
             <label><span className="se-label">{tr('Size')}</span><div className="se-input">
@@ -91,7 +91,7 @@ export default function UnitsPage() {
 
     return (
         <>
-            <PageHeader title={tr('Storage units')} subtitle={`${all.length} units${facilityId ? '' : tr(' across all facilities')}`} />
+            <PageHeader title={tr('Storage units')} subtitle={`${tr('{n} units', { n: all.length })}${facilityId ? '' : tr(' across all facilities')}`} />
             <div className="sa-chip-row" role="tablist">
                 <button type="button" role="tab" aria-selected={!status} className={!status ? 'active' : ''} onClick={() => setStatus('')}>{tr('All')} <b>{all.length}</b></button>
                 {STATUSES.map((s) => (

@@ -5,7 +5,7 @@ import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
 import { PageHeader, Status } from '../components/ui.jsx';
-import { useUnitTypes } from '../queries.js';
+import { humanize, useUnitTypes } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
 const TERMS = [
@@ -84,7 +84,7 @@ function DraftTerms({ policy }) {
                 <div key={group.title} className="sa-term-group">
                     <h3><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {tr(group.title)}</h3>
                     {group.rows.map(([k, label, unit]) => (
-                        <label key={k}><span className="se-label">{tr(label)} ({unit})</span>
+                        <label key={k}><span className="se-label">{tr(label)} ({tr(unit)})</span>
                             <div className="se-input"><input type="number" min="0" step="any" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} required /></div></label>
                     ))}
                 </div>
@@ -127,22 +127,22 @@ export default function PricingPage() {
 
     return (
         <>
-            <PageHeader title={tr('Pricing & rental policies')} subtitle={active ? `Policy version ${active.version} active since ${formatDate(active.effectiveFrom)}` : tr('No active policy')}>
+            <PageHeader title={tr('Pricing & rental policies')} subtitle={active ? tr('Policy version {version} active since {date}', { version: active.version, date: formatDate(active.effectiveFrom) }) : tr('No active policy')}>
                 {!draft && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={newDraft.isPending} onClick={() => newDraft.mutate()}>
-                        <Icon name="file" size={16} /> {policy ? `Copy version ${policy.version} to a new draft` : tr('New draft version')}
+                        <Icon name="file" size={16} /> {policy ? tr('Copy version {version} to a new draft', { version: policy.version }) : tr('New draft version')}
                     </button>
                 )}
                 {editable && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={removeDraft.isPending}
-                        onClick={() => window.confirm(`Delete draft version ${policy.version}? Its prices and fees are removed; published versions are not touched.`) && removeDraft.mutate()}>
+                        onClick={() => window.confirm(tr('Delete draft version {version}? Its prices and fees are removed; published versions are not touched.', { version: policy.version })) && removeDraft.mutate()}>
                         {tr('Delete draft')}
                     </button>
                 )}
                 {editable && (
                     <button type="button" className="se-btn se-btn-primary" disabled={activate.isPending}
-                        onClick={() => window.confirm(`Publish version ${policy.version}? It replaces the active policy for new contracts and renewals.`) && activate.mutate()}>
-                        <Icon name="check" size={16} /> Publish version {policy.version}
+                        onClick={() => window.confirm(tr('Publish version {version}? It replaces the active policy for new contracts and renewals.', { version: policy.version })) && activate.mutate()}>
+                        <Icon name="check" size={16} /> {tr('Publish version {version}', { version: policy.version })}
                     </button>
                 )}
             </PageHeader>
@@ -154,7 +154,7 @@ export default function PricingPage() {
                 <div className="sa-filters">
                     <label className="sa-version-pick"><span className="se-label">{tr('Policy version')}</span>
                         <div className="se-field"><select value={policy.pricingPolicyId} onChange={(e) => setPickedId(Number(e.target.value))} aria-label={tr('Policy version')}>
-                            {all.map((p) => <option key={p.pricingPolicyId} value={p.pricingPolicyId}>Version {p.version} · {p.status}</option>)}
+                            {all.map((p) => <option key={p.pricingPolicyId} value={p.pricingPolicyId}>{tr('Version {version}', { version: p.version })} · {tr(humanize(p.status))}</option>)}
                         </select></div>
                     </label>
                 </div>
@@ -162,7 +162,7 @@ export default function PricingPage() {
             {policy && (
                 <section className="se-panel sa-pricing">
                         <div className="sa-card-title">
-                            <h2>Version {policy.version} <Status value={policy.status} /></h2>
+                            <h2>{tr('Version {version}', { version: policy.version })} <Status value={policy.status} /></h2>
                         </div>
                         {editable && <p className="sa-muted">Set the prices (Save each row), then the rental terms (Save terms), then Publish.</p>}
                         <h3 className="sa-pricing-step">{tr('1 · Prices per size')}</h3>
@@ -194,7 +194,7 @@ export default function PricingPage() {
                                 {TERMS.map((group) => (
                                     <div key={group.title} className="sa-term-group">
                                         <h3><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {tr(group.title)}</h3>
-                                        <dl className="se-kv">{group.rows.map(([k, label, unit]) => <div key={k}><dt>{tr(label)}</dt><dd>{policy[k]} {unit}</dd></div>)}</dl>
+                                        <dl className="se-kv">{group.rows.map(([k, label, unit]) => <div key={k}><dt>{tr(label)}</dt><dd>{policy[k]} {tr(unit)}</dd></div>)}</dl>
                                     </div>
                                 ))}
                             </div>

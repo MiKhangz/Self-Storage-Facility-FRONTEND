@@ -77,7 +77,7 @@ function Payments({ invoice, canRefund }) {
                         <small className="sa-muted"> {p.paidAt ? formatDate(p.paidAt) : '—'}{p.referenceNo ? ` · ${p.referenceNo}` : ''}</small>
                         {canRefund && p.status === 'Succeeded' && (
                             <button type="button" className="se-btn se-btn-ghost" disabled={refund.isPending}
-                                onClick={() => window.confirm(`Refund ${formatVnd(p.amount)}? The invoice reopens for that amount.`) && refund.mutate(p.paymentId)}>{tr('Refund')}</button>
+                                onClick={() => window.confirm(tr('Refund {amount}? The invoice reopens for that amount.', { amount: formatVnd(p.amount) })) && refund.mutate(p.paymentId)}>{tr('Refund')}</button>
                         )}
                     </li>
                 ))}
@@ -170,7 +170,7 @@ export default function RecordPaymentPage() {
                                     <div className="se-input"><input maxLength={50} value={reference} onChange={(e) => setReference(e.target.value)} /></div></label>
                                 {!valid && <p className="sa-bad">{tr('Enter an amount between 1 and the outstanding balance.')}</p>}
                                 {pay.isError && <div className="se-alert" role="alert">{errorMessage(pay.error)}</div>}
-                                <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={!valid || pay.isPending}>{pay.isPending ? tr('Recording…') : `Record ${formatVnd(value)}`}</button>
+                                <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={!valid || pay.isPending}>{pay.isPending ? tr('Recording…') : tr('Record {amount}', { amount: formatVnd(value) })}</button>
                             </form>
                         ) : <div className="se-alert info">This invoice is {invoice.status.toLowerCase()}.</div>)}
                         <Payments invoice={invoice} canRefund={role === BOM} />

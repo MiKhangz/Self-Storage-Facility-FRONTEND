@@ -42,8 +42,8 @@ function CloseBooking({ reservation }) {
             <div className="se-alert info" role="status">
                 {r.reservation.status === 'Expired' ? tr('Marked as a no-show.') : tr('Booking cancelled.')}{' '}
                 {r.depositPaid > 0 && (r.depositRefundable
-                    ? `The ${formatVnd(r.depositPaid)} deposit is owed back; it now waits in Deposit Refunds.`
-                    : `The ${formatVnd(r.depositPaid)} deposit is kept.`)}
+                    ? tr('The {amount} deposit is owed back; it now waits in Deposit Refunds.', { amount: formatVnd(r.depositPaid) })
+                    : tr('The {amount} deposit is kept.', { amount: formatVnd(r.depositPaid) }))}
                 <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['reservations'] })}>{tr('Done')}</button>
             </div>
         );
@@ -56,11 +56,11 @@ function CloseBooking({ reservation }) {
             {close.isError && <div className="se-alert" role="alert">{errorMessage(close.error)}</div>}
             <div className="sa-form-actions">
                 <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
-                    onClick={() => window.confirm(`Cancel ${reservation.reservationCode}?${paid ? ` The ${formatVnd(paid)} deposit will be owed back.` : ''}`) && close.mutate(false)}>
+                    onClick={() => window.confirm(`${tr('Cancel {code}?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit will be owed back.', { amount: formatVnd(paid) })}` : ''}`) && close.mutate(false)}>
                     {tr('Cancel booking')}</button>
                 {late && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
-                        onClick={() => window.confirm(`Mark ${reservation.reservationCode} as a no-show?${paid ? ` The ${formatVnd(paid)} deposit is kept.` : ''}`) && close.mutate(true)}>
+                        onClick={() => window.confirm(`${tr('Mark {code} as a no-show?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit is kept.', { amount: formatVnd(paid) })}` : ''}`) && close.mutate(true)}>
                         {tr('Mark no-show')}</button>
                 )}
             </div>

@@ -63,7 +63,7 @@ export default function InviteUserPage() {
                     {needsFacility && <FacilityPicker label="Assigned facilities *" value={facilityIds} onChange={setFacilityIds} />}
                 </form>
                 <section className="se-panel">
-                    <h2>What a {ROLE_INFO.find((r) => r.role === form.role)?.title} can do</h2>
+                    <h2>{tr('What a {role} can do', { role: tr(ROLE_INFO.find((r) => r.role === form.role)?.title ?? '') })}</h2>
                     <p className="sa-muted">{tr('Permissions are fixed per role by the API; the highlighted column is the role you picked.')}</p>
                     <PermissionMatrix highlight={form.role} />
                 </section>

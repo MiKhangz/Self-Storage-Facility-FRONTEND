@@ -47,7 +47,7 @@ export default function ShiftsPage() {
 
     return (
         <>
-            <PageHeader title={tr('Staff & shifts')} subtitle={`Week of ${formatDate(days[0])} – ${formatDate(days[6])}`}>
+            <PageHeader title={tr('Staff & shifts')} subtitle={tr('Week of {from} – {to}', { from: formatDate(days[0]), to: formatDate(days[6]) })}>
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, -7))} aria-label={tr('Previous week')}><Icon name="arrowLeft" size={16} /></button>
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(weekStart(todayIso()))}>{tr('This week')}</button>
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, 7))} aria-label={tr('Next week')}><Icon name="arrow" size={16} /></button>
@@ -66,7 +66,7 @@ export default function ShiftsPage() {
                         <label><span className="se-label">{tr('Date')}</span><div className="se-input"><input type="date" min={todayIso()} value={form.shiftDate} onChange={(e) => setForm({ ...form, shiftDate: e.target.value })} required /></div></label>
                         <label><span className="se-label">{tr('Shift')}</span>
                             <div className="se-field"><select value={form.shiftType} onChange={(e) => { const t = e.target.value; setForm({ ...form, shiftType: t, startTime: TIMES[t][0], endTime: TIMES[t][1] }); }}>
-                                {Object.keys(TIMES).map((t) => <option key={t} value={t}>{t}</option>)}</select></div></label>
+                                {Object.keys(TIMES).map((t) => <option key={t} value={t}>{tr(t)}</option>)}</select></div></label>
                         <label><span className="se-label">{tr('Start – end')}</span>
                             <div className="sa-time-pair"><div className="se-input"><input type="time" value={form.startTime} onChange={(e) => setForm({ ...form, startTime: e.target.value })} /></div>
                                 <div className="se-input"><input type="time" value={form.endTime} onChange={(e) => setForm({ ...form, endTime: e.target.value })} /></div></div></label>
@@ -95,7 +95,7 @@ export default function ShiftsPage() {
                                                 <div key={s.shiftId} className={`sa-shift ${s.shiftType}`}>
                                                     <strong>{s.startTime.slice(0, 5)}–{s.endTime.slice(0, 5)}</strong>
                                                     <small>{tasks.filter((t) => t.shiftId === s.shiftId).length} tasks</small>
-                                                    {canWrite && <button type="button" aria-label={`Remove ${name}'s shift on ${formatDate(d)}`} onClick={() => window.confirm(tr('Remove this shift?')) && remove.mutate(s.shiftId)}>×</button>}
+                                                    {canWrite && <button type="button" aria-label={tr("Remove {name}'s shift on {date}", { name, date: formatDate(d) })} onClick={() => window.confirm(tr('Remove this shift?')) && remove.mutate(s.shiftId)}>×</button>}
                                                 </div>
                                             ))}
                                             {!mine.length && <span className="sa-off">{tr('Off')}</span>}
