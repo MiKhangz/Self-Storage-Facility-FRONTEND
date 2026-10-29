@@ -197,7 +197,7 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
                 {CHECKS.map((c) => (
                     <li key={c.key} className={ticks[c.key] ? 'done' : ''}>
                         <label className="se-check"><input type="checkbox" checked={!!ticks[c.key]} onChange={(e) => setTicks({ ...ticks, [c.key]: e.target.checked })} />
-                            <span><strong>{c.title}</strong><small>{c.text}</small></span></label>
+                            <span><strong>{tr(c.title)}</strong><small>{tr(c.text)}</small></span></label>
                     </li>
                 ))}
                 <ViewUnit reservation={reservation} viewed={viewed} onViewed={() => setViewedUnit(reservation.storageUnitId)} />

@@ -145,7 +145,7 @@ export default function ReservationsPage() {
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
                     <button key={t.status} role="tab" aria-selected={tab === t.status} className={tab === t.status ? 'active' : ''} onClick={() => { setTab(t.status); setSelected(null); }}>
-                        {t.label} <span className="se-count">{all.filter((r) => r.status === t.status).length}</span>
+                        {tr(t.label)} <span className="se-count">{all.filter((r) => r.status === t.status).length}</span>
                     </button>
                 ))}
             </div>

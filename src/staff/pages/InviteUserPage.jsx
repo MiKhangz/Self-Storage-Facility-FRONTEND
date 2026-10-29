@@ -56,7 +56,7 @@ export default function InviteUserPage() {
                         {ROLE_INFO.map((r) => (
                             <label key={r.role} className={`sa-unit-option${form.role === r.role ? ' active' : ''}`}>
                                 <input type="radio" name="role" aria-label={r.title} checked={form.role === r.role} onChange={() => setForm({ ...form, role: r.role })} />
-                                <span><strong>{r.title}</strong><small>{r.text}</small></span>
+                                <span><strong>{tr(r.title)}</strong><small>{tr(r.text)}</small></span>
                             </label>
                         ))}
                     </div>

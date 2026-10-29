@@ -9,6 +9,7 @@ import { addDays, formatDate, todayIso } from '../../customer/components/format.
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { PageHeader, SelectFilter } from '../components/ui.jsx';
 import { useFacilities, useShifts, useStaff, useTasks } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const TIMES = { Morning: ['07:00', '15:00'], Afternoon: ['15:00', '23:00'], Night: ['23:00', '07:00'] };
 

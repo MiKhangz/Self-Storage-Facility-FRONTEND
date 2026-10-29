@@ -72,7 +72,7 @@ export function AddFacilityPage() {
                 <h2>{tr('Basic information')}</h2>
                 <div className="se-panel-grid">
                     {FACILITY_FIELDS.map(([key, label, required]) => (
-                        <label key={key}><span className="se-label">{label}{required ? ' *' : ''}</span>
+                        <label key={key}><span className="se-label">{tr(label)}{required ? ' *' : ''}</span>
                             <div className="se-input"><input value={form[key]} required={required} onChange={(e) => setForm({ ...form, [key]: e.target.value })} /></div></label>
                     ))}
                 </div>

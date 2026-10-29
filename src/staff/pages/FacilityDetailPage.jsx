@@ -12,6 +12,7 @@ import { PageHeader, Stat, Status, Modal } from '../components/ui.jsx';
 import { humanize, useShifts, useSizePrices, useStaff, useTickets, useUnitTypes, useUnits } from '../queries.js';
 import { FACILITY_FIELDS } from './PendingBackendPages.jsx';
 import { occupancy } from './DashboardPage.jsx';
+import { useT } from '../../i18n/I18n.jsx';
 
 /** Rented / total per group, with the occupancy of the rentable units in it. */
 function group(units, key) {
@@ -23,7 +24,10 @@ function group(units, key) {
     return Object.values(out).map((g) => ({ ...g, rented: g.units.filter((u) => u.status === 'Occupied').length, free: g.units.filter((u) => u.status === 'Available').length }));
 }
 
-const Field = ({ label, children }) => <label><span className="se-label">{label}</span><div className="se-input">{children}</div></label>;
+function Field({ label, children }) {
+    const tr = useT();
+    return <label><span className="se-label">{tr(label)}</span><div className="se-input">{children}</div></label>;
+}
 
 /** Floors of the facility and the forms that add a floor or a unit (facility managers and admins). */
 /** A floor can close while it is built or renovated: its free units come off sale until it reopens. */
@@ -51,7 +55,7 @@ function FloorRow({ floor, onChanged }) {
                 </div>
                 <Field label="Status">
                     <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
-                        {Object.entries(FLOOR_STATUS).map(([value, [, text]]) => <option key={value} value={value}>{text}</option>)}
+                        {Object.entries(FLOOR_STATUS).map(([value, [, text]]) => <option key={value} value={value}>{tr(text)}</option>)}
                     </select>
                 </Field>
                 {form.status !== 'Open' && floor.status === 'Open' && <p className="se-hint">{tr('Free units on this floor stop being bookable until it reopens. Rented units keep their customers.')}</p>}
@@ -68,7 +72,7 @@ function FloorRow({ floor, onChanged }) {
         <li className="sa-floor-row">
             <span><strong>Floor {floor.floorNumber}{floor.name ? ` · ${floor.name}` : ''}</strong>
                 <small>{floor.unitCount} units{rented ? ` · ${floor.rentedUnits} rented` : ''}</small></span>
-            <span className={`se-badge ${tone}`}>{label}</span>
+            <span className={`se-badge ${tone}`}>{tr(label)}</span>
             <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Edit floor ${floor.floorNumber}`}
                 onClick={() => setForm({ floorNumber: String(floor.floorNumber), name: floor.name ?? '', status: floor.status })}>{tr('Edit')}</button>
             <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Remove floor ${floor.floorNumber}`}
@@ -133,7 +137,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
                 </div>
                 <Field label="Status">
                     <select value={floor.status} onChange={(e) => setFloor({ ...floor, status: e.target.value })}>
-                        {Object.entries(FLOOR_STATUS).map(([value, [, text]]) => <option key={value} value={value}>{text}</option>)}
+                        {Object.entries(FLOOR_STATUS).map(([value, [, text]]) => <option key={value} value={value}>{tr(text)}</option>)}
                     </select>
                 </Field>
                 {addFloor.isError && <div className="se-alert" role="alert">{errorMessage(addFloor.error)}</div>}
@@ -194,7 +198,7 @@ function EditFacility({ facility, onClose }) {
             <form className="se-form" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
                 <div className="se-panel-grid sa-grid-3">
                     {FACILITY_FIELDS.map(([key, label, required]) => (
-                        <Field key={key} label={`${label}${required ? ' *' : ''}`}>
+                        <Field key={key} label={`${tr(label)}${required ? ' *' : ''}`}>
                             <input value={form[key]} required={required} onChange={(e) => setForm({ ...form, [key]: e.target.value })} />
                         </Field>
                     ))}
@@ -269,7 +273,7 @@ export default function FacilityDetailPage() {
                         <div className="sa-occupancy">
                             {floors.map((f) => (
                                 <div key={f.label}>
-                                    <div className="sa-occ-label"><span>{f.label}</span><span className="sa-muted">{f.rented} / {f.units.length} rented</span></div>
+                                    <div className="sa-occ-label"><span>{tr(f.label)}</span><span className="sa-muted">{f.rented} / {f.units.length} rented</span></div>
                                     <div className="se-progress flat"><span style={{ width: `${occupancy(f.units)}%` }} /></div>
                                 </div>
                             ))}
@@ -283,7 +287,7 @@ export default function FacilityDetailPage() {
                                 <thead><tr><th>{tr('Size')}</th><th>{tr('Total')}</th><th>{tr('Rented')}</th><th>{tr('Available')}</th><th>{tr('Price / mo')}</th></tr></thead>
                                 <tbody>
                                     {mix.map((m) => (
-                                        <tr key={m.label}><td className="strong">{m.label} · {m.units[0].areaM2} m²</td><td>{m.units.length}</td><td>{m.rented}</td><td>{m.free}</td><td className="price">{formatVnd(sizePrice[m.units[0].unitTypeId])}</td></tr>
+                                        <tr key={m.label}><td className="strong">{tr(m.label)} · {m.units[0].areaM2} m²</td><td>{m.units.length}</td><td>{m.rented}</td><td>{m.free}</td><td className="price">{formatVnd(sizePrice[m.units[0].unitTypeId])}</td></tr>
                                     ))}
                                 </tbody>
                             </table>

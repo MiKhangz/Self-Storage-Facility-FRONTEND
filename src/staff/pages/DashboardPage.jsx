@@ -5,6 +5,7 @@ import { addDays, formatVnd, todayIso } from '../../customer/components/format.j
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
 import { humanize, useContracts, useFacilities, useInvoices, useReservations, useTasks, useTickets, useUnits } from '../queries.js';
+import { useLang, useT } from '../../i18n/I18n.jsx';
 
 const MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
 const compactVnd = (n) => (n >= 1e9 ? `${(n / 1e9).toFixed(2)}B ₫` : n >= 1e6 ? `${(n / 1e6).toFixed(1)}M ₫` : formatVnd(n));
@@ -18,6 +19,7 @@ export function occupancy(units) {
 /** A02: what needs doing today, and how the business is doing. */
 export default function DashboardPage() {
     const tr = useT();
+    const { lang } = useLang();
     const { session } = useAuth();
     const today = todayIso();
     const year = today.slice(0, 4);
@@ -52,31 +54,31 @@ export default function DashboardPage() {
 
     return (
         <>
-            <PageHeader title={`Hello, ${firstName}`} subtitle={`${new Date().toLocaleDateString('en-GB', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' })} · All facilities`}>
+            <PageHeader title={tr('Hello, {name}', { name: firstName })} subtitle={`${new Date().toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' })} · ${tr('All facilities')}`}>
                 <Link to="/admin/reports" className="se-btn se-btn-primary"><Icon name="file" size={16} /> {tr('Reports')}</Link>
             </PageHeader>
             {(facilities.data ?? []).some((f) => !f.staffed) && (
                 <div className="se-alert" role="alert">
-                    No staff assigned at {(facilities.data ?? []).filter((f) => !f.staffed).map((f) => f.name).join(', ')}.
-                    Customers can't see or book it until a manager or staff member is assigned in <Link to="/admin/users" className="se-link">Users &amp; roles</Link>.
+                    {tr('No staff assigned at {names}.', { names: (facilities.data ?? []).filter((f) => !f.staffed).map((f) => f.name).join(', ') })}{' '}
+                    {tr("Customers can't see or book it until a manager or staff member is assigned in")} <Link to="/admin/users" className="se-link">{tr('Users & roles')}</Link>.
                 </div>
             )}
 
             <div className="sa-stats">
-                <Stat icon="grid" label="Occupancy rate" value={`${occupancy(allUnits)}%`} note={`${allUnits.length} units`} />
-                <Stat icon="card" label={`Revenue (${new Date().toLocaleString('en', { month: 'short' })})`} value={compactVnd(paidInMonth(month))} note="paid on invoices issued this month" />
-                <Stat icon="file" label="Active contracts" value={active.length} note={`${allContracts.filter((c) => c.status === 'Draft').length} drafts awaiting handover`} />
+                <Stat icon="grid" label="Occupancy rate" value={`${occupancy(allUnits)}%`} note={tr('{n} units', { n: allUnits.length })} />
+                <Stat icon="card" label={tr('Revenue ({month})', { month: new Date().toLocaleString(lang === 'vi' ? 'vi-VN' : 'en', { month: 'short' }) })} value={compactVnd(paidInMonth(month))} note="paid on invoices issued this month" />
+                <Stat icon="file" label="Active contracts" value={active.length} note={tr('{n} drafts awaiting handover', { n: allContracts.filter((c) => c.status === 'Draft').length })} />
                 <Stat icon="clock" tone="bad" label="Overdue payments" value={overdue.length} note={formatVnd(overdue.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} />
             </div>
 
             <div className="sa-grid-2">
                 <section className="se-panel">
-                    <div className="sa-card-title"><h2>Monthly revenue {year}</h2><span className="sa-muted">{tr('Paid amount by invoice month')}</span></div>
+                    <div className="sa-card-title"><h2>{tr('Monthly revenue {year}', { year })}</h2><span className="sa-muted">{tr('Paid amount by invoice month')}</span></div>
                     <div className="sa-bars" role="img" aria-label={`Revenue per month in ${year}`}>
                         {revenue.map((v, i) => (
-                            <div key={i} className="sa-bar" title={`${MONTHS[i]}: ${formatVnd(v)}`}>
+                            <div key={i} className="sa-bar" title={`${tr(MONTHS[i])}: ${formatVnd(v)}`}>
                                 <span style={{ height: `${(v / maxRevenue) * 100}%` }} className={i === Number(month.slice(5)) - 1 ? 'current' : ''} />
-                                <small>{MONTHS[i]}</small>
+                                <small>{tr(MONTHS[i])}</small>
                             </div>
                         ))}
                     </div>
@@ -125,7 +127,7 @@ export default function DashboardPage() {
                         {attention.map((a) => (
                             <Link key={a.text} to={a.to} className="sa-attention-item">
                                 <span className={`sa-stat-icon ${a.tone}`}><Icon name={a.icon} size={16} /></span>
-                                <span><strong>{a.count}</strong> {a.text}</span>
+                                <span><strong>{a.count}</strong> {tr(a.text)}</span>
                                 <Icon name="arrow" size={14} />
                             </Link>
                         ))}

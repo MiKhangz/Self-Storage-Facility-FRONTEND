@@ -33,7 +33,7 @@ function PayPanel({ refund, onClose }) {
                 <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
             <p className="sa-muted"><Link to={`/admin/customers/${refund.customerId}`} className="se-link">{refund.customerName}</Link> · {refund.customerPhone}</p>
             <dl className="se-kv">
-                <div><dt>{tr('Why')}</dt><dd>{SOURCE[refund.source]}</dd></div>
+                <div><dt>{tr('Why')}</dt><dd>{tr(SOURCE[refund.source])}</dd></div>
                 <div><dt>{tr('Booking')}</dt><dd>{refund.reservationCode}</dd></div>
                 <div><dt>{tr('Facility')}</dt><dd>{refund.facilityName}</dd></div>
                 <div><dt>{tr('Owed since')}</dt><dd>{formatDate(refund.createdAt)}</dd></div>
@@ -85,7 +85,7 @@ export default function DepositRefundsPage() {
                             {shown.map((r) => (
                                 <tr key={r.depositRefundId} className={selected === r.depositRefundId ? 'active' : ''} onClick={() => setSelected(r.depositRefundId)}>
                                     <td className="strong">{r.customerName}<div className="sa-muted">{r.facilityName}</div></td>
-                                    <td>{SOURCE[r.source]}</td>
+                                    <td>{tr(SOURCE[r.source])}</td>
                                     <td>{r.reservationCode}</td>
                                     <td className="price">{formatVnd(r.amount)}</td>
                                     <td>{formatDate(r.createdAt)}</td>

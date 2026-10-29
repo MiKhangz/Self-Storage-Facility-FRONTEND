@@ -27,11 +27,11 @@ export function FacilityPicker({ value, onChange, canChange = () => true, label 
 
     return (
         <div className="sa-facility-picker">
-            <span className="se-label">{label}</span>
+            <span className="se-label">{tr(label)}</span>
             <div className="sa-chips">
                 {value.map((id) => (
                     <span key={id} className="sa-chip">{nameOf[id] ?? `Facility ${id}`}
-                        {canChange(id) && <button type="button" aria-label={`Remove ${nameOf[id] ?? id}`} onClick={() => onChange(value.filter((x) => x !== id))}>×</button>}
+                        {canChange(id) && <button type="button" aria-label={`${tr('Remove')} ${nameOf[id] ?? id}`} onClick={() => onChange(value.filter((x) => x !== id))}>×</button>}
                     </span>
                 ))}
                 {!value.length && <span className="sa-muted">{tr('No facility chosen yet.')}</span>}

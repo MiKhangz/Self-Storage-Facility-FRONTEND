@@ -6,6 +6,7 @@ import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useTickets } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const TABS = ['Contracts', 'Reservations', 'Payments', 'Support requests'];
 
@@ -30,24 +31,24 @@ export default function CustomerPage() {
     const invoices = (useInvoices().data ?? []).filter((i) => i.customerId === customerId);
     const ticketsQuery = useTickets();
     const tickets = (ticketsQuery.data ?? []).filter((t) => t.customerId === customerId);
-    const name = contracts[0]?.customerName ?? reservations[0]?.customerName ?? tickets[0]?.customerName ?? `Customer #${customerId}`;
+    const name = contracts[0]?.customerName ?? reservations[0]?.customerName ?? tickets[0]?.customerName ?? `${tr('Customer')} #${customerId}`;
     const active = contracts.filter((c) => c.status === 'Active');
     const open = invoices.filter((i) => ['Issued', 'Overdue'].includes(i.status));
     const onTime = onTimeShare(invoices);
 
     return (
         <>
-            <Link to="/admin/contracts" className="se-back"><Icon name="arrowLeft" size={16} /> Back to customers &amp; contracts</Link>
-            <PageHeader title={name} subtitle={`Customer #${customerId}`} />
+            <Link to="/admin/contracts" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to customers & contracts')}</Link>
+            <PageHeader title={name} subtitle={`${tr('Customer')} #${customerId}`} />
             <div className="sa-stats">
                 <Stat icon="box" label="Active units" value={active.length} note={active.map((c) => c.unitCode).join(' · ') || '—'} />
-                <Stat icon="card" label="Lifetime paid" value={formatVnd(invoices.reduce((s, i) => s + (i.paidAmount ?? 0), 0))} note={`${invoices.length} invoices`} />
-                <Stat icon="clock" tone={open.some((i) => i.status === 'Overdue') ? 'bad' : ''} label="Outstanding" value={formatVnd(open.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} note={open[0] ? `due ${formatDate(open[0].dueDate)}` : tr('nothing due')} />
+                <Stat icon="card" label="Lifetime paid" value={formatVnd(invoices.reduce((s, i) => s + (i.paidAmount ?? 0), 0))} note={tr('{n} invoices', { n: invoices.length })} />
+                <Stat icon="clock" tone={open.some((i) => i.status === 'Overdue') ? 'bad' : ''} label="Outstanding" value={formatVnd(open.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} note={open[0] ? tr('due {date}', { date: formatDate(open[0].dueDate) }) : tr('nothing due')} />
                 <Stat icon="check" label="On-time payments" value={onTime == null ? '—' : `${onTime}%`} />
             </div>
             <div className="sa-person sa-person-lg"><span className="se-avatar">{initials(name)}</span><span><strong>{name}</strong><small>{tr('Contact details are not available from the API yet.')}</small></span></div>
             <div className="se-tabs se-tabs-line" role="tablist">
-                {TABS.map((t) => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{t}</button>)}
+                {TABS.map((t) => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{tr(t)}</button>)}
             </div>
             <div className="se-card se-table-wrap">
                 {tab === 'Contracts' && (

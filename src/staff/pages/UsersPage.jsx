@@ -26,7 +26,7 @@ export function PermissionMatrix({ highlight, search = '' }) {
                 <tbody>
                     {rows.map((p) => (
                         <tr key={p.feature}>
-                            <td>{p.feature}</td>
+                            <td>{tr(p.feature)}</td>
                             {ROLE_INFO.map((r) => (
                                 <td key={r.role} className={highlight === r.role ? 'hl' : ''}>
                                     {p.roles.includes(r.role) ? <span className="sa-yes" aria-label={tr('Allowed')}><Icon name="check" size={12} /></span> : <span className="sa-no" aria-label={tr('Not allowed')} />}
@@ -51,7 +51,7 @@ function PermissionHelp({ onClose }) {
             <div className="sa-card-title"><h2 id="perm-help-title">{tr('Who can do what?')}</h2>
                 <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}>×</button></div>
             <dl className="se-kv sa-role-legend">
-                {ROLE_INFO.map((r) => <div key={r.role}><dt><span className="se-badge info">{r.short}</span> {r.title}</dt><dd>{r.text}</dd></div>)}
+                {ROLE_INFO.map((r) => <div key={r.role}><dt><span className="se-badge info">{r.short}</span> {tr(r.title)}</dt><dd>{tr(r.text)}</dd></div>)}
             </dl>
             <label><span className="se-label">{tr('Find a feature')}</span>
                 <div className="se-input"><Icon name="search" size={16} /><input autoFocus value={search} onChange={(e) => setSearch(e.target.value)} placeholder={tr('e.g. refund, handover, pricing')} /></div></label>
@@ -90,7 +90,7 @@ function EditUser({ user, managed, onClose }) {
             <label><span className="se-label">{tr('Full name')}</span><div className="se-input"><input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div></label>
             <label><span className="se-label">{tr('Phone')}</span><div className="se-input"><input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} /></div></label>
             <label><span className="se-label">{tr('Role')}</span>
-                <div className="se-field"><select value={form.role} disabled={self} onChange={(e) => setForm({ ...form, role: e.target.value })}>{ROLE_INFO.map((r) => <option key={r.role} value={r.role}>{r.title}</option>)}</select></div></label>
+                <div className="se-field"><select value={form.role} disabled={self} onChange={(e) => setForm({ ...form, role: e.target.value })}>{ROLE_INFO.map((r) => <option key={r.role} value={r.role}>{tr(r.title)}</option>)}</select></div></label>
             <label><span className="se-label">{tr('Status')}</span>
                 <div className="se-field"><select value={form.status} disabled={self} onChange={(e) => setForm({ ...form, status: e.target.value })}>{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
                 <p className="se-hint">{self ? 'You cannot change your own role or status.' : 'Disabled accounts cannot sign in or be assigned work.'}</p></label>

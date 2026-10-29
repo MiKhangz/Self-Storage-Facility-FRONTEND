@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { Filters, PageHeader, SearchFilter, SelectFilter, Status, matches } from '../components/ui.jsx';
 import { useTickets } from '../queries.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const COLUMNS = [
     { status: 'New', dot: 'muted' }, { status: 'InProgress', dot: 'info' },

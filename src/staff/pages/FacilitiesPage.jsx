@@ -24,12 +24,12 @@ export default function FacilitiesPage() {
 
     return (
         <>
-            <PageHeader title={tr('Facilities')} subtitle={`${all.length} facilities · ${allUnits.length} storage units`}>
+            <PageHeader title={tr('Facilities')} subtitle={tr('{f} facilities · {u} storage units', { f: all.length, u: allUnits.length })}>
                 {isAdmin && <Link to="/admin/facilities/new" className="se-btn se-btn-primary"><Icon name="building" size={16} /> {tr('Add facility')}</Link>}
             </PageHeader>
             <div className="sa-stats">
                 <Stat icon="building" label="Facilities" value={all.length} />
-                <Stat icon="grid" label="Total units" value={allUnits.length} note={`${allUnits.filter((u) => u.status === 'Available').length} available`} />
+                <Stat icon="grid" label="Total units" value={allUnits.length} note={tr('{n} available', { n: allUnits.filter((u) => u.status === 'Available').length })} />
                 <Stat icon="box" label="Occupied units" value={allUnits.filter((u) => u.status === 'Occupied').length} />
                 <Stat icon="grid" label="Avg. occupancy" value={`${occupancy(allUnits)}%`} />
             </div>

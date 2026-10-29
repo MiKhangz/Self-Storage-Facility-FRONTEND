@@ -53,7 +53,7 @@ function Inspect({ request, onDone }) {
                 ))}
             </div>
             {[['cleaningFee', 'Cleaning fee'], ['repairCharge', 'Repair charge'], ['otherDeduction', 'Other deduction']].map(([k, label]) => (
-                <label key={k}><span className="se-label">{label} (₫)</span><div className="se-input"><input type="number" min="0" step="1000" value={form[k]} onChange={set(k)} /></div></label>
+                <label key={k}><span className="se-label">{tr(label)} (₫)</span><div className="se-input"><input type="number" min="0" step="1000" value={form[k]} onChange={set(k)} /></div></label>
             ))}
             {inspect.isError && <div className="se-alert" role="alert">{errorMessage(inspect.error)}</div>}
             <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={inspect.isPending} onClick={() => inspect.mutate()}>{tr('Save inspection')}</button>

@@ -82,9 +82,9 @@ function DraftTerms({ policy }) {
             </div>
             {TERMS.map((group) => (
                 <div key={group.title} className="sa-term-group">
-                    <h3><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {group.title}</h3>
+                    <h3><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {tr(group.title)}</h3>
                     {group.rows.map(([k, label, unit]) => (
-                        <label key={k}><span className="se-label">{label} ({unit})</span>
+                        <label key={k}><span className="se-label">{tr(label)} ({unit})</span>
                             <div className="se-input"><input type="number" min="0" step="any" value={form[k]} onChange={(e) => setForm({ ...form, [k]: e.target.value })} required /></div></label>
                     ))}
                 </div>
@@ -193,8 +193,8 @@ export default function PricingPage() {
                                 </div>
                                 {TERMS.map((group) => (
                                     <div key={group.title} className="sa-term-group">
-                                        <h3><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {group.title}</h3>
-                                        <dl className="se-kv">{group.rows.map(([k, label, unit]) => <div key={k}><dt>{label}</dt><dd>{policy[k]} {unit}</dd></div>)}</dl>
+                                        <h3><span className="sa-stat-icon"><Icon name={group.icon} size={15} /></span> {tr(group.title)}</h3>
+                                        <dl className="se-kv">{group.rows.map(([k, label, unit]) => <div key={k}><dt>{tr(label)}</dt><dd>{policy[k]} {unit}</dd></div>)}</dl>
                                     </div>
                                 ))}
                             </div>

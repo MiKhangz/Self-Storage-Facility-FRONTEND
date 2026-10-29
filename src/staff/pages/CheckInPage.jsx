@@ -104,7 +104,7 @@ export default function CheckInPage() {
                                 <td>{r.unitCode}</td>
                                 <td>{r.facilityName}</td>
                                 <td>{r.since ? time(r.since) : '—'}
-                                    {LEFT_HOW[r.leftHow] && <div className="sa-muted">Left · {LEFT_HOW[r.leftHow]}</div>}
+                                    {LEFT_HOW[r.leftHow] && <div className="sa-muted">Left · {tr(LEFT_HOW[r.leftHow])}</div>}
                                     {!r.canEnter && <div className="sa-muted">{tr('No working code')}</div>}</td>
                                 <td>{r.inside && (
                                     <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setMarking(r)}

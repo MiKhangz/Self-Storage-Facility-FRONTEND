@@ -36,7 +36,7 @@ export default function AdminLoginPage() {
             const session = await login(email, password);
             if (!ADMIN_PORTAL_ROLES.includes(session.role)) {
                 logout();
-                setError('This portal is for staff accounts. Customers sign in on the customer site.');
+                setError(tr('This portal is for staff accounts. Customers sign in on the customer site.'));
                 return;
             }
             navigate(location.state?.from ?? '/admin', { replace: true });
@@ -59,7 +59,7 @@ export default function AdminLoginPage() {
                     <p>{tr('Manage units, reservations, returns, contracts and revenue across all StorEase locations.')}</p>
                     <ul>
                         {ROLES.map((r) => (
-                            <li key={r.title}><Icon name={r.icon} size={16} /><div><strong>{r.title}</strong><small>{r.text}</small></div></li>
+                            <li key={r.title}><Icon name={r.icon} size={16} /><div><strong>{tr(r.title)}</strong><small>{tr(r.text)}</small></div></li>
                         ))}
                     </ul>
                 </div>

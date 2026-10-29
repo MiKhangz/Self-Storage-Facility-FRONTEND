@@ -74,7 +74,7 @@ function ContractPanel({ contract, invoices, onClose }) {
                             [policy.clearOutAfterDays, 'Unit clear-out & deposit deduction'],
                         ].map(([days, text]) => {
                             const date = addDays(oldest.dueDate, days);
-                            return <li key={text} className={date <= today ? 'past' : ''}><b>{formatDate(date)}</b> {text}</li>;
+                            return <li key={text} className={date <= today ? 'past' : ''}><b>{formatDate(date)}</b> {tr(text)}</li>;
                         })}
                     </ul>
                 </>
@@ -170,7 +170,7 @@ export default function ContractsPage() {
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
                     <button key={t.key} role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
-                        {t.label} <span className="se-count">{all.filter((c) => t.match(c, today, owing)).length}</span>
+                        {tr(t.label)} <span className="se-count">{all.filter((c) => t.match(c, today, owing)).length}</span>
                     </button>
                 ))}
             </div>
