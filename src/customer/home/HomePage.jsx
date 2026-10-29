@@ -6,6 +6,7 @@ import Icon from '../components/Icon.jsx';
 import { formatVnd, todayIso } from '../components/format.js';
 import { useFacilities } from '../sizes/SizesPage.jsx';
 import './HomePage.css';
+import { useT } from '../../i18n/I18n.jsx';
 
 // Only what a locked self-storage unit is really used for; no services StorEase does not offer.
 const SERVICES = [
@@ -26,16 +27,18 @@ const OCCUPIED = ['A-103', 'B-102', 'B-103'];
 const formatArea = (n) => n.toLocaleString('vi-VN');
 
 function SectionHead({ title, text, center }) {
+    const t = useT();
     return (
         <div className={`se-section-head${center ? ' center' : ''}`}>
-            <h2>{title}</h2>
-            <p>{text}</p>
+            <h2>{t(title)}</h2>
+            <p>{t(text)}</p>
         </div>
     );
 }
 
 function QuickSearch() {
     const navigate = useNavigate();
+    const t = useT();
     const [form, setForm] = useState({ facilityId: '', unitTypeId: '', moveInDate: '', rentalMonths: '3' });
     const facilities = useFacilities();
     const unitTypes = useQuery({ queryKey: ['unit-types'], queryFn: () => unitTypesApi.list() });
@@ -50,43 +53,44 @@ function QuickSearch() {
     return (
         <form className="se-search" onSubmit={submit}>
             <label>
-                <span>Cơ sở</span>
+                <span>{t('Cơ sở')}</span>
                 <div className="se-field"><Icon name="pin" />
                     <select value={form.facilityId} onChange={set('facilityId')}>
-                        <option value="">{facilities.isError ? 'Không tải được danh sách cơ sở' : 'Chọn cơ sở'}</option>
+                        <option value="">{t(facilities.isError ? 'Không tải được danh sách cơ sở' : 'Chọn cơ sở')}</option>
                         {facilities.data?.items?.map((f) => <option key={f.facilityId} value={f.facilityId}>{f.name}</option>)}
                     </select>
                 </div>
             </label>
             <label>
-                <span>Kích thước</span>
+                <span>{t('Kích thước')}</span>
                 <div className="se-field"><Icon name="box" />
                     <select value={form.unitTypeId} onChange={set('unitTypeId')}>
-                        <option value="">Mọi kích thước</option>
+                        <option value="">{t('Mọi kích thước')}</option>
                         {unitTypes.data?.map((u) => <option key={u.unitTypeId} value={u.unitTypeId}>{u.code} · {formatArea(u.areaM2)} m²</option>)}
                     </select>
                 </div>
             </label>
             <label>
-                <span>Ngày nhận kho</span>
+                <span>{t('Ngày nhận kho')}</span>
                 <div className="se-field"><Icon name="calendar" />
                     <input type="date" value={form.moveInDate} min={todayIso()} onChange={set('moveInDate')} />
                 </div>
             </label>
             <label>
-                <span>Thời hạn thuê</span>
+                <span>{t('Thời hạn thuê')}</span>
                 <div className="se-field"><Icon name="clock" />
                     <select value={form.rentalMonths} onChange={set('rentalMonths')}>
-                        {[1, 3, 6, 12].map((m) => <option key={m} value={m}>{m} tháng</option>)}
+                        {[1, 3, 6, 12].map((m) => <option key={m} value={m}>{t('{months} tháng', { months: m })}</option>)}
                     </select>
                 </div>
             </label>
-            <button type="submit" className="se-btn se-btn-outline se-btn-lg"><Icon name="search" /> Tìm kho trống</button>
+            <button type="submit" className="se-btn se-btn-outline se-btn-lg"><Icon name="search" /> {t('Tìm kho trống')}</button>
         </form>
     );
 }
 
 export default function HomePage() {
+    const t = useT();
     const facilities = useFacilities();
     const locations = facilities.data?.items ?? [];
     const unitTypes = useQuery({ queryKey: ['unit-types'], queryFn: () => unitTypesApi.list() });
@@ -101,18 +105,18 @@ export default function HomePage() {
             enabled: !!quote.facilityId,
         })),
     });
-    const sizes = types.map((t, i) => ({
-        ...t,
+    const sizes = types.map((u, i) => ({
+        ...u,
         price: quotes[i].data?.monthlyRent,
         // The type name is often just the area, which the card header already shows.
-        note: [t.name !== `${t.areaM2} m²` && t.name, t.isClimateControlled && 'Có điều hòa nhiệt độ'].filter(Boolean).join(' · '),
+        note: [u.name !== `${u.areaM2} m²` && u.name, u.isClimateControlled && t('Có điều hòa nhiệt độ')].filter(Boolean).join(' · '),
     }));
 
     // Hero figures come from the API, never from copy (PRODUCT.md: no invented stats).
     const prices = sizes.map((s) => s.price).filter((p) => p != null);
     const freeUnits = locations.reduce((sum, f) => sum + (f.availableUnits ?? 0), 0);
     const areaRange = allTypes.length
-        ? `${formatArea(allTypes[0].areaM2)}${allTypes.length > 1 ? ` đến ${formatArea(allTypes.at(-1).areaM2)}` : ''} m²`
+        ? `${formatArea(allTypes[0].areaM2)}${allTypes.length > 1 ? ` ${t('đến')} ${formatArea(allTypes.at(-1).areaM2)}` : ''} m²`
         : null;
 
     return (
@@ -120,26 +124,26 @@ export default function HomePage() {
             <section className="se-hero">
                 <div className="se-container se-hero-grid">
                     <div>
-                        <h1>Thêm chỗ chứa đồ cho gia đình và công việc của bạn</h1>
+                        <h1>{t('Thêm chỗ chứa đồ cho gia đình và công việc của bạn')}</h1>
                         <p className="se-hero-lead">
-                            Kho tự quản có khóa riêng tại TP. Hồ Chí Minh{areaRange ? `, diện tích từ ${areaRange}` : ''}. Thuê theo tháng, ra vào bằng mã cá nhân và quản lý mọi thứ trực tuyến.
+                            {t('Kho tự quản có khóa riêng tại TP. Hồ Chí Minh')}{areaRange ? t(', diện tích từ {range}', { range: areaRange }) : ''}. {t('Thuê theo tháng, ra vào bằng mã cá nhân và quản lý mọi thứ trực tuyến.')}
                         </p>
                         <div className="se-hero-actions">
-                            <Link to="/booking" className="se-btn se-btn-primary se-btn-lg">Đặt kho ngay <Icon name="arrow" size={16} /></Link>
-                            <Link to="/sizes" className="se-btn se-btn-outline se-btn-lg">Xem kích thước và giá</Link>
+                            <Link to="/booking" className="se-btn se-btn-primary se-btn-lg">{t('Đặt kho ngay')} <Icon name="arrow" size={16} /></Link>
+                            <Link to="/sizes" className="se-btn se-btn-outline se-btn-lg">{t('Xem kích thước và giá')}</Link>
                         </div>
                         {!!locations.length && (
                             <dl className="se-hero-stats">
-                                <div><dt>{locations.length}</dt><dd>cơ sở đang hoạt động</dd></div>
-                                <div><dt>{freeUnits}</dt><dd>kho đang trống</dd></div>
-                                {!!prices.length && <div><dt>{formatVnd(Math.min(...prices))}</dt><dd>giá thuê thấp nhất / tháng</dd></div>}
+                                <div><dt>{locations.length}</dt><dd>{t('cơ sở đang hoạt động')}</dd></div>
+                                <div><dt>{freeUnits}</dt><dd>{t('kho đang trống')}</dd></div>
+                                {!!prices.length && <div><dt>{formatVnd(Math.min(...prices))}</dt><dd>{t('giá thuê thấp nhất / tháng')}</dd></div>}
                             </dl>
                         )}
                     </div>
 
                     <div className="se-hero-art" aria-hidden="true">
-                        <div className="se-art-badge top"><Icon name="shield" size={16} /> Mã ra vào riêng cho mỗi kho</div>
-                        <div className="se-art-sign">STOREASE · KHO TỰ QUẢN</div>
+                        <div className="se-art-badge top"><Icon name="shield" size={16} /> {t('Mã ra vào riêng cho mỗi kho')}</div>
+                        <div className="se-art-sign">{t('STOREASE · KHO TỰ QUẢN')}</div>
                         <div className="se-art-units">
                             {['A-101', 'A-102', 'A-103', 'A-104', 'B-101', 'B-102', 'B-103', 'B-104'].map((u) => (
                                 <div key={u} className={`se-art-unit${OCCUPIED.includes(u) ? ' busy' : ''}`}><span>{u}</span></div>
@@ -147,7 +151,7 @@ export default function HomePage() {
                         </div>
                         <div className="se-art-badge bottom">
                             <span className="se-art-lock"><Icon name="lock" size={18} /></span>
-                            <div><strong>Đã mở kho B-103</strong><small>Mã ra vào hợp lệ · 07:42</small></div>
+                            <div><strong>{t('Đã mở kho B-103')}</strong><small>{t('Mã ra vào hợp lệ')} · 07:42</small></div>
                         </div>
                     </div>
                 </div>
@@ -161,9 +165,9 @@ export default function HomePage() {
                         {SERVICES.map((s) => (
                             <article key={s.title} className="se-card se-service">
                                 <span className="se-icon-tile"><Icon name={s.icon} size={20} /></span>
-                                <h3>{s.title}</h3>
-                                <p>{s.text}</p>
-                                <Link to="/sizes" className="se-link">Xem kích thước phù hợp <Icon name="arrow" size={14} /></Link>
+                                <h3>{t(s.title)}</h3>
+                                <p>{t(s.text)}</p>
+                                <Link to="/sizes" className="se-link">{t('Xem kích thước phù hợp')} <Icon name="arrow" size={14} /></Link>
                             </article>
                         ))}
                     </div>
@@ -173,7 +177,7 @@ export default function HomePage() {
             <section className="se-section soft">
                 <div className="se-container">
                     <SectionHead title="Các cỡ kho"
-                        text={locations[0] ? `Giá thuê 1 tháng tại ${locations[0].name}.` : 'So sánh các cỡ kho bên dưới.'} />
+                        text={locations[0] ? t('Giá thuê 1 tháng tại {name}.', { name: locations[0].name }) : 'So sánh các cỡ kho bên dưới.'} />
                     <div className="se-sizes">
                         {sizes.map((s) => (
                             <article key={s.unitTypeId} className="se-card se-size">
@@ -184,21 +188,21 @@ export default function HomePage() {
                                 <div className="se-size-body">
                                     {s.note && <p>{s.note}</p>}
                                     {s.price != null
-                                        ? <div className="se-size-price">{formatVnd(s.price)} <small>/ tháng</small></div>
-                                        : <p className="se-size-noprice">Chưa có giá cho cơ sở này. Xem giá ở bước đặt kho.</p>}
-                                    <Link to={`/booking?unitTypeId=${s.unitTypeId}`} className="se-btn se-btn-outline se-btn-block">Đặt kho {s.code}</Link>
+                                        ? <div className="se-size-price">{formatVnd(s.price)} <small>/ {t('tháng')}</small></div>
+                                        : <p className="se-size-noprice">{t('Chưa có giá cho cơ sở này. Xem giá ở bước đặt kho.')}</p>}
+                                    <Link to={`/booking?unitTypeId=${s.unitTypeId}`} className="se-btn se-btn-outline se-btn-block">{t('Đặt kho')} {s.code}</Link>
                                 </div>
                             </article>
                         ))}
                         {!sizes.length && (
                             <p className="se-hint">
-                                {unitTypes.isLoading ? 'Đang tải các cỡ kho…'
+                                {t(unitTypes.isLoading ? 'Đang tải các cỡ kho…'
                                     : unitTypes.isError ? 'Không tải được các cỡ kho. Vui lòng tải lại trang.'
-                                        : 'Hiện chưa có cỡ kho nào để thuê.'}
+                                        : 'Hiện chưa có cỡ kho nào để thuê.')}
                             </p>
                         )}
                     </div>
-                    <Link to="/sizes" className="se-link se-more">So sánh tất cả kích thước và giá <Icon name="arrow" size={16} /></Link>
+                    <Link to="/sizes" className="se-link se-more">{t('So sánh tất cả kích thước và giá')} <Icon name="arrow" size={16} /></Link>
                 </div>
             </section>
 
@@ -209,8 +213,8 @@ export default function HomePage() {
                         {STEPS.map((s) => (
                             <article key={s.title} className="se-card se-step">
                                 <span className="se-step-icon"><Icon name={s.icon} size={22} /></span>
-                                <h3>{s.title}</h3>
-                                <p>{s.text}</p>
+                                <h3>{t(s.title)}</h3>
+                                <p>{t(s.text)}</p>
                             </article>
                         ))}
                     </div>
@@ -219,7 +223,7 @@ export default function HomePage() {
 
             <section className="se-section soft">
                 <div className="se-container">
-                    <SectionHead title={locations.length ? `${locations.length} cơ sở tại TP. Hồ Chí Minh` : 'Các cơ sở của StorEase'}
+                    <SectionHead title={locations.length ? t('{n} cơ sở tại TP. Hồ Chí Minh', { n: locations.length }) : 'Các cơ sở của StorEase'}
                         text="Tìm cơ sở gần nhà hoặc gần nơi làm việc của bạn." />
                     <div className="se-locations">
                         <div className="se-map" aria-hidden="true">
@@ -231,18 +235,18 @@ export default function HomePage() {
                             {locations.slice(0, 5).map((l, i) => (
                                 <Link key={l.facilityId} to={`/booking?facilityId=${l.facilityId}`} className={`se-location${i === 0 ? ' active' : ''}`}>
                                     <span className="se-icon-tile sm"><Icon name="building" size={16} /></span>
-                                    <span className="se-location-text"><strong>{l.name}</strong><small>{[l.district, `${l.availableUnits} kho trống`].filter(Boolean).join(' · ')}</small></span>
+                                    <span className="se-location-text"><strong>{l.name}</strong><small>{[l.district, t('{n} kho trống', { n: l.availableUnits })].filter(Boolean).join(' · ')}</small></span>
                                     <Icon name="arrow" size={16} className="se-location-arrow" />
                                 </Link>
                             ))}
                             {!locations.length && (
                                 <p className="se-hint">
-                                    {facilities.isLoading ? 'Đang tải danh sách cơ sở…'
+                                    {t(facilities.isLoading ? 'Đang tải danh sách cơ sở…'
                                         : facilities.isError ? 'Không tải được danh sách cơ sở. Vui lòng tải lại trang.'
-                                            : 'Hiện chưa có cơ sở nào mở cửa.'}
+                                            : 'Hiện chưa có cơ sở nào mở cửa.')}
                                 </p>
                             )}
-                            <Link to="/locations" className="se-btn se-btn-outline se-btn-block">Xem tất cả cơ sở</Link>
+                            <Link to="/locations" className="se-btn se-btn-outline se-btn-block">{t('Xem tất cả cơ sở')}</Link>
                         </div>
                     </div>
                 </div>
@@ -251,12 +255,12 @@ export default function HomePage() {
             <section className="se-cta">
                 <div className="se-container se-cta-row">
                     <div>
-                        <h2>Chưa biết cần kho cỡ nào?</h2>
-                        <p>Cho chúng tôi biết bạn muốn cất những gì, nhân viên sẽ gợi ý cỡ kho phù hợp.</p>
+                        <h2>{t('Chưa biết cần kho cỡ nào?')}</h2>
+                        <p>{t('Cho chúng tôi biết bạn muốn cất những gì, nhân viên sẽ gợi ý cỡ kho phù hợp.')}</p>
                     </div>
                     <div className="se-cta-actions">
-                        <Link to="/support/new" className="se-btn se-btn-white">Gửi yêu cầu tư vấn</Link>
-                        <Link to="/register" className="se-btn se-btn-on-dark">Tạo tài khoản</Link>
+                        <Link to="/support/new" className="se-btn se-btn-white">{t('Gửi yêu cầu tư vấn')}</Link>
+                        <Link to="/register" className="se-btn se-btn-on-dark">{t('Tạo tài khoản')}</Link>
                     </div>
                 </div>
             </section>
