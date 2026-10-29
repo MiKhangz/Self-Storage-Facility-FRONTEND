@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { formatDate } from '../components/format.js';
+import { fill } from '../../i18n/I18n.jsx';
 import { contractsApi, invoicesApi, reservationsApi, ticketQueueApi } from '../../api/generated';
 
 // ponytail: one page of 50 covers a customer's own records; add paging if anyone ever rents more.
@@ -28,7 +29,10 @@ export function periodUsed(startIso, endIso, todayIso) {
 const INVOICE_BADGE = { Paid: ['', 'Đã thanh toán'], Overdue: ['none', 'Quá hạn'], WrittenOff: ['none', 'Đã xóa nợ'] };
 
 /** [tone, label] for an invoice status badge; an open invoice shows its due date. */
-export const invoiceBadge = (inv) => INVOICE_BADGE[inv.status] ?? ['low', `Hạn ${formatDate(inv.dueDate)}`];
+export const invoiceBadge = (inv, tr = fill) => {
+    const [tone, label] = INVOICE_BADGE[inv.status] ?? ['low', 'Hạn {date}'];
+    return [tone, tr(label, { date: formatDate(inv.dueDate) })];
+};
 
 /** [tone, label] per contract status, in the customer's words. */
 export const CONTRACT_BADGE = {

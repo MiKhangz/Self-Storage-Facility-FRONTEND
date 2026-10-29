@@ -8,6 +8,7 @@ import { formatDate, formatVnd, todayIso } from '../components/format.js';
 import { earlyReturnText, useTerms } from '../components/terms.js';
 import { useMyContracts, useMyReservations } from './queries.js';
 import './UnitDetailPage.css';
+import { useT } from '../../i18n/I18n.jsx';
 
 const CHECKS = [
     'Tôi sẽ dọn trống và quét sạch kho',
@@ -32,6 +33,7 @@ const MOVE_OUT_DAYS = 15;
 
 export default function ReturnPage() {
     const [params] = useSearchParams();
+    const t = useT();
     const queryClient = useQueryClient();
     const contracts = useMyContracts();
     const reservations = useMyReservations();
@@ -66,21 +68,21 @@ export default function ReturnPage() {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['returns'] }),
     });
 
-    if (contracts.isLoading) return <p className="se-empty">Đang tải…</p>;
+    if (contracts.isLoading) return <p className="se-empty">{t('Đang tải…')}</p>;
     if (!contract) {
         return (
             <>
-                <div className="se-account-title"><div><h1>Yêu cầu trả kho</h1></div></div>
-                <div className="se-card se-empty">Bạn không có kho nào đang thuê để trả. <Link to="/my-storage" className="se-link">Quay lại Kho của tôi</Link></div>
+                <div className="se-account-title"><div><h1>{t('Yêu cầu trả kho')}</h1></div></div>
+                <div className="se-card se-empty">{t('Bạn không có kho nào đang thuê để trả.')} <Link to="/my-storage" className="se-link">{t('Quay lại Kho của tôi')}</Link></div>
             </>
         );
     }
 
     return (
         <>
-            <Link to={`/my-storage/units/${contract.contractId}`} className="se-back"><Icon name="arrowLeft" size={16} /> Quay lại kho {contract.unitCode}</Link>
+            <Link to={`/my-storage/units/${contract.contractId}`} className="se-back"><Icon name="arrowLeft" size={16} /> {t('Quay lại kho {code}', { code: contract.unitCode })}</Link>
             <div className="se-account-title">
-                <div><h1>Yêu cầu trả kho</h1><p>Cho chúng tôi biết ngày bạn dọn trống kho, nhân viên sẽ hẹn lịch kiểm tra cùng bạn.</p></div>
+                <div><h1>{t('Yêu cầu trả kho')}</h1><p>{t('Cho chúng tôi biết ngày bạn dọn trống kho, nhân viên sẽ hẹn lịch kiểm tra cùng bạn.')}</p></div>
             </div>
 
             <div className="se-detail-grid">
@@ -88,11 +90,11 @@ export default function ReturnPage() {
                     <div className="se-summary-unit">
                         <span className="se-brand-mark"><Icon name="box" size={18} /></span>
                         <div>
-                            <strong>Kho {contract.unitCode}{reservation ? ` · ${reservation.unitTypeName}` : ''}</strong>
-                            <small>{reservation?.facilityName} · hợp đồng {contract.contractNumber} hết hạn {formatDate(contract.endDate)}</small>
+                            <strong>{t('Kho')} {contract.unitCode}{reservation ? ` · ${reservation.unitTypeName}` : ''}</strong>
+                            <small>{reservation?.facilityName} · {t('hợp đồng {number} hết hạn {date}', { number: contract.contractNumber, date: formatDate(contract.endDate) })}</small>
                         </div>
                         {active.length > 1 && (
-                            <select className="se-unit-switch" value={contract.contractId} onChange={(e) => setPicked(e.target.value)} aria-label="Chọn kho khác">
+                            <select className="se-unit-switch" value={contract.contractId} onChange={(e) => setPicked(e.target.value)} aria-label={t('Chọn kho khác')}>
                                 {active.map((c) => <option key={c.contractId} value={c.contractId}>{c.unitCode}</option>)}
                             </select>
                         )}
@@ -100,50 +102,50 @@ export default function ReturnPage() {
 
                     {open ? (
                         <div className="se-alert info">
-                            Bạn đã yêu cầu trả kho ngày {formatDate(open.plannedReturnDate)}. Trạng thái:{' '}
-                            <span className={`se-badge ${MOVE_OUT_BADGE[open.status]?.[0] ?? ''}`}>{MOVE_OUT_BADGE[open.status]?.[1] ?? open.status}</span>
-                            {open.inspectionSlot ? ` · lịch kiểm tra ${formatDate(open.inspectionSlot)}` : ''}
-                            {open.moveOutDeadline ? ` · hạn dọn kho ${formatDate(open.moveOutDeadline)}` : ''}
-                            {open.accessLockedAt && <strong> · Đã quá hạn dọn kho, quyền ra vào đã bị khoá.</strong>}
+                            {t('Bạn đã yêu cầu trả kho ngày {date}. Trạng thái:', { date: formatDate(open.plannedReturnDate) })}{' '}
+                            <span className={`se-badge ${MOVE_OUT_BADGE[open.status]?.[0] ?? ''}`}>{t(MOVE_OUT_BADGE[open.status]?.[1] ?? open.status)}</span>
+                            {open.inspectionSlot ? ` · ${t('lịch kiểm tra {date}', { date: formatDate(open.inspectionSlot) })}` : ''}
+                            {open.moveOutDeadline ? ` · ${t('hạn dọn kho {date}', { date: formatDate(open.moveOutDeadline) })}` : ''}
+                            {open.accessLockedAt && <strong> · {t('Đã quá hạn dọn kho, quyền ra vào đã bị khoá.')}</strong>}
                         </div>
                     ) : (
                         <form className="se-form" onSubmit={(e) => { e.preventDefault(); if (ready) submit.mutate(); }}>
-                            <h2>1. Khi nào bạn trả kho?</h2>
+                            <h2>{t('1. Khi nào bạn trả kho?')}</h2>
                             <div className="se-panel-grid">
-                                <label><span className="se-label">Ngày dự kiến trả kho</span>
+                                <label><span className="se-label">{t('Ngày dự kiến trả kho')}</span>
                                     <div className="se-field"><Icon name="calendar" />
                                         <input type="date" min={earliest} max={latest} value={form.plannedReturnDate} onChange={(e) => set({ plannedReturnDate: e.target.value })} required />
                                     </div>
-                                    <p className="se-hint">Bạn có {MOVE_OUT_DAYS} ngày để dọn kho, hạn chót {formatDate(deadline)}. Sau hạn này quyền ra vào kho sẽ bị khoá.</p>
-                                    <p className="se-hint">{terms.data ? earlyReturnText(terms.data) : ''}</p>
+                                    <p className="se-hint">{t('Bạn có {days} ngày để dọn kho, hạn chót {date}. Sau hạn này quyền ra vào kho sẽ bị khoá.', { days: MOVE_OUT_DAYS, date: formatDate(deadline) })}</p>
+                                    <p className="se-hint">{terms.data ? earlyReturnText(terms.data, t) : ''}</p>
                                 </label>
-                                <label><span className="se-label">Lý do (không bắt buộc)</span>
-                                    <div className="se-input"><input maxLength={200} value={form.reason} onChange={(e) => set({ reason: e.target.value })} placeholder="Ví dụ: chuyển sang kho lớn hơn" /></div>
+                                <label><span className="se-label">{t('Lý do (không bắt buộc)')}</span>
+                                    <div className="se-input"><input maxLength={200} value={form.reason} onChange={(e) => set({ reason: e.target.value })} placeholder={t('Ví dụ: chuyển sang kho lớn hơn')} /></div>
                                 </label>
                             </div>
 
-                            <h2>2. Xác nhận trước khi kiểm tra kho</h2>
+                            <h2>{t('2. Xác nhận trước khi kiểm tra kho')}</h2>
                             <div className="se-checklist">
                                 {CHECKS.map((label, i) => (
                                     <label key={label} className="se-check">
                                         <input type="checkbox" checked={checked[i]} onChange={(e) => setChecked(checked.map((v, j) => (j === i ? e.target.checked : v)))} />
-                                        <span>{label}</span>
+                                        <span>{t(label)}</span>
                                     </label>
                                 ))}
                             </div>
 
-                            <h2>3. Hoàn tiền cọc vào đâu?</h2>
+                            <h2>{t('3. Hoàn tiền cọc vào đâu?')}</h2>
                             <div className="se-panel-grid">
-                                <label><span className="se-label">Cách nhận tiền cọc</span>
+                                <label><span className="se-label">{t('Cách nhận tiền cọc')}</span>
                                     <div className="se-field"><Icon name="card" />
                                         <select value={form.refundMethod} onChange={(e) => set({ refundMethod: e.target.value })}>
-                                            <option value="BankTransfer">Chuyển khoản ngân hàng</option>
-                                            <option value="Cash">Nhận tiền mặt tại cơ sở</option>
+                                            <option value="BankTransfer">{t('Chuyển khoản ngân hàng')}</option>
+                                            <option value="Cash">{t('Nhận tiền mặt tại cơ sở')}</option>
                                         </select>
                                     </div>
                                 </label>
                                 {needsAccount && (
-                                    <label><span className="se-label">Ngân hàng và số tài khoản</span>
+                                    <label><span className="se-label">{t('Ngân hàng và số tài khoản')}</span>
                                         <div className="se-input"><input maxLength={50} value={form.refundAccount} onChange={(e) => set({ refundAccount: e.target.value })} placeholder="Vietcombank 0071 000 123 456" required /></div>
                                     </label>
                                 )}
@@ -151,9 +153,9 @@ export default function ReturnPage() {
 
                             {submit.isError && <div className="se-alert" role="alert">{errorMessage(submit.error)}</div>}
                             <div className="se-form-actions">
-                                <Link to={`/my-storage/units/${contract.contractId}`} className="se-btn se-btn-ghost">Hủy</Link>
+                                <Link to={`/my-storage/units/${contract.contractId}`} className="se-btn se-btn-ghost">{t('Hủy')}</Link>
                                 <button type="submit" className="se-btn se-btn-primary" disabled={!ready || submit.isPending}>
-                                    {submit.isPending ? 'Đang gửi…' : <>Gửi yêu cầu trả kho <Icon name="arrow" size={16} /></>}
+                                    {submit.isPending ? t('Đang gửi…') : <>{t('Gửi yêu cầu trả kho')} <Icon name="arrow" size={16} /></>}
                                 </button>
                             </div>
                         </form>
@@ -162,20 +164,20 @@ export default function ReturnPage() {
 
                 <aside>
                     <section className="se-panel">
-                        <h2>Tiền cọc</h2>
+                        <h2>{t('Tiền cọc')}</h2>
                         <dl className="se-kv">
-                            <div><dt>Tiền cọc đang giữ</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
-                            <div><dt>Phí vệ sinh, hư hỏng</dt><dd>xác định khi kiểm tra kho</dd></div>
+                            <div><dt>{t('Tiền cọc đang giữ')}</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
+                            <div><dt>{t('Phí vệ sinh, hư hỏng')}</dt><dd>{t('xác định khi kiểm tra kho')}</dd></div>
                         </dl>
-                        <p className="se-hint">Số tiền hoàn lại cuối cùng được xác nhận sau khi kiểm tra kho.</p>
+                        <p className="se-hint">{t('Số tiền hoàn lại cuối cùng được xác nhận sau khi kiểm tra kho.')}</p>
                     </section>
                     <section className="se-panel">
-                        <h2>Các bước tiếp theo</h2>
-                        <ol className="se-next-steps">{NEXT_STEPS.map((s) => <li key={s}>{s}</li>)}</ol>
+                        <h2>{t('Các bước tiếp theo')}</h2>
+                        <ol className="se-next-steps">{NEXT_STEPS.map((s) => <li key={s}>{t(s)}</li>)}</ol>
                     </section>
                     <div className="se-due-card">
-                        <strong>Trả kho trước hạn</strong>
-                        <small>Hợp đồng của bạn có hiệu lực đến ngày {formatDate(contract.endDate)}. Bạn vẫn có thể trả kho sớm hơn; hãy hỏi nhân viên về tiền thuê của những tháng còn lại.</small>
+                        <strong>{t('Trả kho trước hạn')}</strong>
+                        <small>{t('Hợp đồng của bạn có hiệu lực đến ngày {date}. Bạn vẫn có thể trả kho sớm hơn; hãy hỏi nhân viên về tiền thuê của những tháng còn lại.', { date: formatDate(contract.endDate) })}</small>
                     </div>
                 </aside>
             </div>
