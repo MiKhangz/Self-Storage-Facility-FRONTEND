@@ -136,7 +136,7 @@ export default function UnitsPage() {
                         <dl className="se-kv">
                             <div><dt>{tr('Size')}</dt><dd>{unit.unitTypeName} · {unit.areaM2} m²</dd></div>
                             <div><dt>{tr('Floor / zone')}</dt><dd>{unit.floorName}{unit.zone ? ` · ${unit.zone}` : ''}</dd></div>
-                            <div><dt>{tr('Monthly price')}</dt><dd>{formatVnd(sizePrice[unit.unitTypeId])}<small className="sa-muted"> · set per size in Pricing &amp; Policies</small></dd></div>
+                            <div><dt>{tr('Monthly price')}</dt><dd>{formatVnd(sizePrice[unit.unitTypeId])}<small className="sa-muted"> {tr('· set per size in Pricing & Policies')}</small></dd></div>
                             <div><dt>{tr('Customer')}</dt><dd>{contract?.customerName ?? '—'}</dd></div>
                             <div><dt>{tr('Contract')}</dt><dd>{contract ? `${contract.contractNumber} · ${tr(humanize(contract.status))}` : '—'}</dd></div>
                             {contract && <div><dt>{tr('Period')}</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)}</dd></div>}

@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
             </aside>
             <main className="sa-login-main">
                 <form className="se-form sa-login-form" onSubmit={submit}>
-                    <span className="se-pill">Staff &amp; Admin Portal</span>
+                    <span className="se-pill">{tr('Staff & Admin Portal')}</span>
                     <h2>{tr('Sign in to your workspace')}</h2>
                     <p className="sa-muted">{tr('Use the work account created by your System Administrator.')}</p>
                     <label><span className="se-label">{tr('Work email')}</span>

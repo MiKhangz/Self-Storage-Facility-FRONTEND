@@ -50,7 +50,7 @@ export default function InviteUserPage() {
                     <label><span className="se-label">{tr('Work email *')}</span><div className="se-input"><Icon name="mail" size={16} /><input type="email" value={form.email} onChange={set('email')} required /></div></label>
                     <label><span className="se-label">{tr('Phone *')}</span><div className="se-input"><input type="tel" value={form.phoneNumber} onChange={set('phoneNumber')} required /></div></label>
                     <label><span className="se-label">{tr('Temporary password *')}</span><PasswordInput value={form.password} onChange={set('password')} invalid={form.password && !strong} autoComplete="new-password" />
-                        <p className="se-hint">At least 8 characters and 1 number. Share it privately; the person should change it after signing in.</p></label>
+                        <p className="se-hint">{tr('At least 8 characters and 1 number. Share it privately; the person should change it after signing in.')}</p></label>
                     <span className="se-label">{tr('Role *')}</span>
                     <div className="sa-unit-options" role="radiogroup" aria-label={tr('Role')}>
                         {ROLE_INFO.map((r) => (
@@ -64,7 +64,7 @@ export default function InviteUserPage() {
                 </form>
                 <section className="se-panel">
                     <h2>What a {ROLE_INFO.find((r) => r.role === form.role)?.title} can do</h2>
-                    <p className="sa-muted">Permissions are fixed per role by the API; the highlighted column is the role you picked.</p>
+                    <p className="sa-muted">{tr('Permissions are fixed per role by the API; the highlighted column is the role you picked.')}</p>
                     <PermissionMatrix highlight={form.role} />
                 </section>
             </div>

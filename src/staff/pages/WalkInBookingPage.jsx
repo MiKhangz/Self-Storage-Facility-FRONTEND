@@ -117,7 +117,7 @@ export default function WalkInBookingPage() {
             <CustomerStep value={who} onChange={setWho} />
 
             <section className="se-panel">
-                <h2>2. Unit &amp; rental period</h2>
+                <h2>{tr('2. Unit & rental period')}</h2>
                 <div className="se-panel-grid">
                     <label><span className="se-label">{tr('Facility *')}</span><div className="se-input">
                         <select value={form.facilityId} onChange={(e) => set({ facilityId: e.target.value, storageUnitId: '' })}>

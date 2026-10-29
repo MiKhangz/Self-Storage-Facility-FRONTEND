@@ -36,7 +36,7 @@ function ViewUnit({ reservation, viewed, onViewed }) {
 
     return (
         <li className={viewed ? 'done' : ''}>
-            <span><strong>Show the customer unit {reservation.unitCode}</strong>
+            <span><strong>{tr('Show the customer unit {code}', { code: reservation.unitCode })}</strong>
                 <small>{viewed ? tr('The customer likes the unit.') : tr('Walk them to the unit. Sign nothing until they are happy with it.')}</small></span>
             {!viewed && !picking && (
                 <div className="sa-form-actions">
@@ -50,10 +50,10 @@ function ViewUnit({ reservation, viewed, onViewed }) {
             )}
             {picking && (
                 <div className="sa-inline-form">
-                    <label><span className="se-label">Another free {reservation.unitTypeName} unit</span>
+                    <label><span className="se-label">{tr('Another free {size} unit', { size: reservation.unitTypeName })}</span>
                         <div className="se-input"><select value={unitId} onChange={(e) => setUnitId(e.target.value)}>
                             <option value="">{others.length ? tr('Choose a unit') : tr('No other free unit of this size')}</option>
-                            {others.map((u) => <option key={u.storageUnitId} value={u.storageUnitId}>{u.unitCode}{u.floorName ? ` · ${u.floorName}` : ''}{u.zone ? ` · zone ${u.zone}` : ''}</option>)}
+                            {others.map((u) => <option key={u.storageUnitId} value={u.storageUnitId}>{u.unitCode}{u.floorName ? ` · ${u.floorName}` : ''}{u.zone ? ` · ${tr('zone')} ${u.zone}` : ''}</option>)}
                         </select></div></label>
                     <p className="se-hint">{tr('If the contract was already signed, it must be signed again for the new unit.')}</p>
                     <div className="sa-form-actions">
@@ -126,8 +126,8 @@ function SignContract({ reservation, contract, locked }) {
         <li className={contract?.signedAt ? 'done' : ''}>
             <span><strong>{tr('Customer signs the contract')}</strong>
                 <small>{locked ? tr('After the customer has seen and accepted the unit.')
-                    : contract?.signedAt ? `${contract.contractNumber} signed ${formatDate(contract.signedAt)}`
-                    : contract ? `Go through the terms below with the customer, print ${contract.contractNumber} and let them sign the paper copy.`
+                    : contract?.signedAt ? tr('{number} signed {date}', { number: contract.contractNumber, date: formatDate(contract.signedAt) })
+                    : contract ? tr('Go through the terms below with the customer, print {number} and let them sign the paper copy.', { number: contract.contractNumber })
                     : tr('Draft the contract for this unit, then print it for signing.')}</small></span>
             {!locked && !contract && (
                 <div className="sa-inline-form">
@@ -145,8 +145,8 @@ function SignContract({ reservation, contract, locked }) {
                         <div><dt>{tr('Term')}</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)} ({reservation.rentalMonths} months)</dd></div>
                         <div><dt>{tr('Monthly rent')}</dt><dd>{formatVnd(contract.monthlyRent)}</dd></div>
                         <div><dt>{tr('Deposit')}</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
-                        <div><dt>{tr('Rent due')}</dt><dd>Day {contract.paymentDay} of each month</dd></div>
-                        <div><dt>{tr('Deposit bill')}</dt><dd>{deposit ? `${deposit.invoiceNumber} · ${deposit.status === 'Paid' ? 'paid' : tr('not paid')} ${formatVnd(deposit.paidAmount)}` : tr('No deposit was due')}</dd></div>
+                        <div><dt>{tr('Rent due')}</dt><dd>{tr('Day {day} of each month', { day: contract.paymentDay })}</dd></div>
+                        <div><dt>{tr('Deposit bill')}</dt><dd>{deposit ? `${deposit.invoiceNumber} · ${deposit.status === 'Paid' ? tr('paid') : tr('not paid')} ${formatVnd(deposit.paidAmount)}` : tr('No deposit was due')}</dd></div>
                     </dl>
                     <div className="sa-form-actions">
                         <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => print(contract.contractNumber, contractHtml(reservation, contract, customer))}>
@@ -190,7 +190,7 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
     return (
         <div className="se-panel">
             <div className="sa-card-title">
-                <h2>Handover · {reservation.customerName} → Unit {reservation.unitCode}</h2>
+                <h2>{tr('Handover')} · {reservation.customerName} → {tr('Kho')} {reservation.unitCode}</h2>
                 <span className="sa-muted">{reservation.reservationCode}{contract ? ` · ${contract.contractNumber}` : ''}</span>
             </div>
             <ol className="sa-steps">
@@ -262,8 +262,8 @@ function HandoverDesk() {
                 {done ? (
                     <div className="se-panel sa-checkin-done">
                         <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
-                        <h2>Handover complete — unit {done.unitCode} is now occupied</h2>
-                        <p className="sa-muted">Give the customer this access code. They are now checked in. The code changes each time they leave; they find the current one in their account.</p>
+                        <h2>{tr('Handover complete — unit {code} is now occupied', { code: done.unitCode })}</h2>
+                        <p className="sa-muted">{tr('Give the customer this access code. They are now checked in. The code changes each time they leave; they find the current one in their account.')}</p>
                         <div className="se-code-digits dark">{(done.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
                         <button type="button" className="se-btn se-btn-primary" onClick={() => {
                             ['reservations', 'contracts', 'storage-units', 'check-ins'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
@@ -343,7 +343,7 @@ function ActiveRentals() {
                 <div className="sa-queue">
                     {list.map((c) => (
                         <button key={c.contractId} type="button" className={`sa-queue-item${current?.contractId === c.contractId ? ' active' : ''}`} onClick={() => setSelected(c.contractId)}>
-                            <span><strong>{c.customerName}</strong><small>Unit {c.unitCode} · to {formatDate(c.endDate)}</small></span>
+                            <span><strong>{c.customerName}</strong><small>{tr('Kho')} {c.unitCode} · {tr('to {date}', { date: formatDate(c.endDate) })}</small></span>
                             <Status value={c.status} />
                         </button>
                     ))}
@@ -355,8 +355,8 @@ function ActiveRentals() {
                     <div className="sa-card-title"><h2>{current.customerName} → Unit {current.unitCode}</h2><span className="sa-muted">{current.contractNumber}</span></div>
                     <dl className="se-kv">
                         <div><dt>{tr('Contract status')}</dt><dd><Status value={current.status} /></dd></div>
-                        <div><dt>{tr('Payment status')}</dt><dd>{owing?.length ? `${owing.length} open invoice${owing.length > 1 ? 's' : ''}${overdue ? tr(' · overdue') : ''}` : tr('Paid up')}</dd></div>
-                        <div><dt>{tr('Access code')}</dt><dd>{code.data?.isActive ? `Active · expires ${formatDate(code.data.expiresAt)}` : tr('No active code')}</dd></div>
+                        <div><dt>{tr('Payment status')}</dt><dd>{owing?.length ? `${tr(owing.length > 1 ? '{n} open invoices' : '{n} open invoice', { n: owing.length })}${overdue ? tr(' · overdue') : ''}` : tr('Paid up')}</dd></div>
+                        <div><dt>{tr('Access code')}</dt><dd>{code.data?.isActive ? tr('Active · expires {date}', { date: formatDate(code.data.expiresAt) }) : tr('No active code')}</dd></div>
                     </dl>
                     <div className={`sa-eligibility ${eligible ? 'ok' : 'no'}`}>
                         <small>{tr('Access eligibility')}</small>
@@ -390,7 +390,7 @@ export default function HandoverPage() {
             </div>
             <div className="se-tabs se-tabs-line" role="tablist">
                 <button role="tab" aria-selected={tab === 'desk'} className={tab === 'desk' ? 'active' : ''} onClick={() => setTab('desk')}>{tr('Handover desk')}</button>
-                <button role="tab" aria-selected={tab === 'active'} className={tab === 'active' ? 'active' : ''} onClick={() => setTab('active')}>Active rentals &amp; access</button>
+                <button role="tab" aria-selected={tab === 'active'} className={tab === 'active' ? 'active' : ''} onClick={() => setTab('active')}>{tr('Active rentals & access')}</button>
             </div>
             {tab === 'desk' ? <HandoverDesk /> : <ActiveRentals />}
         </>

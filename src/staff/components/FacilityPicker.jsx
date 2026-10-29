@@ -13,6 +13,7 @@ const FACILITY_ROLES = [Roles.FacilityStaff, Roles.FacilityManager];
  */
 export function FacilityPicker({ value, onChange, canChange = () => true, label = 'Assigned facilities' }) {
     const tr = useT();
+    const tr = useT();
     const facilities = useFacilities().data ?? [];
     const staff = useStaff().data ?? [];
     const [draft, setDraft] = useState(null);

@@ -70,15 +70,15 @@ function FloorRow({ floor, onChanged }) {
 
     return (
         <li className="sa-floor-row">
-            <span><strong>Floor {floor.floorNumber}{floor.name ? ` · ${floor.name}` : ''}</strong>
-                <small>{floor.unitCount} units{rented ? ` · ${floor.rentedUnits} rented` : ''}</small></span>
+            <span><strong>{tr('Floor')} {floor.floorNumber}{floor.name ? ` · ${floor.name}` : ''}</strong>
+                <small>{tr('{n} units', { n: floor.unitCount })}{rented ? ` · ${tr('{n} rented', { n: floor.rentedUnits })}` : ''}</small></span>
             <span className={`se-badge ${tone}`}>{tr(label)}</span>
             <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Edit floor ${floor.floorNumber}`}
                 onClick={() => setForm({ floorNumber: String(floor.floorNumber), name: floor.name ?? '', status: floor.status })}>{tr('Edit')}</button>
             <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Remove floor ${floor.floorNumber}`}
                 disabled={rented || remove.isPending}
                 title={rented ? tr('Customers still hold units on this floor') : undefined}
-                onClick={() => window.confirm(`Remove floor ${floor.floorNumber}? Its ${floor.unitCount} unit(s) go too, or are retired if they have past bookings.`) && remove.mutate()}>{tr('Remove')}</button>
+                onClick={() => window.confirm(tr('Remove floor {floor}? Its {n} unit(s) go too, or are retired if they have past bookings.', { floor: floor.floorNumber, n: floor.unitCount })) && remove.mutate()}>{tr('Remove')}</button>
             {remove.error && <div className="se-alert" role="alert">{errorMessage(remove.error)}</div>}
         </li>
     );
@@ -119,7 +119,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
 
     return (
         <section className="se-panel">
-            <div className="sa-card-title"><h2>Floors &amp; units</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}>×</button></div>
+            <div className="sa-card-title"><h2>{tr('Floors & units')}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}>×</button></div>
             <div className="sa-floors-grid">
             <div>
             <h3>{tr('Floors')}</h3>
@@ -150,7 +150,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
                     <Field label="Floor *">
                         <select required value={unit.floorId} onChange={setU('floorId')} disabled={!list.length}>
                             <option value="">{tr('Choose a floor')}</option>
-                            {list.map((f) => <option key={f.floorId} value={f.floorId}>Floor {f.floorNumber}{f.name ? ` · ${f.name}` : ''}</option>)}
+                            {list.map((f) => <option key={f.floorId} value={f.floorId}>{tr('Floor')} {f.floorNumber}{f.name ? ` · ${f.name}` : ''}</option>)}
                         </select>
                     </Field>
                     <Field label="Size *">
@@ -164,7 +164,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
                 </div>
                 {addUnit.isError && <div className="se-alert" role="alert">{errorMessage(addUnit.error)}</div>}
                 {addUnit.isSuccess && <div className="se-alert info" role="status">Unit {addUnit.data.unitCode} added and available to book.</div>}
-                <p className="se-hint">The rent comes from the size's price in Pricing &amp; Policies.</p>
+                <p className="se-hint">{tr('The rent comes from the size\'s price in Pricing & Policies.')}</p>
                 <div className="sa-form-actions"><button type="submit" className="se-btn se-btn-primary" disabled={addUnit.isPending || !list.length}>{addUnit.isPending ? tr('Adding…') : tr('Add unit')}</button></div>
             </form>
             </div>
@@ -213,7 +213,7 @@ function EditFacility({ facility, onClose }) {
                 {save.isSuccess && <div className="se-alert info" role="status">{tr('Facility saved.')}</div>}
                 <div className="sa-form-actions">
                     <button type="button" className="se-btn se-btn-ghost" disabled={toggle.isPending}
-                        onClick={() => (!active || window.confirm(`Deactivate ${facility.name}? Customers can no longer find or book it.`)) && toggle.mutate()}>
+                        onClick={() => (!active || window.confirm(tr('Deactivate {name}? Customers can no longer find or book it.', { name: facility.name }))) && toggle.mutate()}>
                         {active ? tr('Deactivate facility') : tr('Activate facility')}
                     </button>
                     <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? tr('Saving…') : tr('Save facility')}</button>
@@ -254,7 +254,7 @@ export default function FacilityDetailPage() {
         <>
             <Link to="/admin/facilities" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to facilities')}</Link>
             <PageHeader title={<>{facility.name} <Status value={facility.status} /></>} subtitle={`${facility.address}${facility.district ? `, ${facility.district}` : ''}`}>
-                {canSetUp && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'floors'} onClick={() => setPanel(panel === 'floors' ? null : 'floors')}><Icon name="grid" size={16} /> Floors &amp; units</button>}
+                {canSetUp && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'floors'} onClick={() => setPanel(panel === 'floors' ? null : 'floors')}><Icon name="grid" size={16} /> {tr('Floors & units')}</button>}
                 {role === Roles.SystemAdministrator && <button type="button" className="se-btn se-btn-ghost" aria-pressed={panel === 'edit'} onClick={() => setPanel(panel === 'edit' ? null : 'edit')}><Icon name="file" size={16} /> {tr('Edit facility')}</button>}
                 <Link to="/admin/units" className="se-btn se-btn-primary"><Icon name="grid" size={16} /> {tr('View units')}</Link>
             </PageHeader>
@@ -273,7 +273,7 @@ export default function FacilityDetailPage() {
                         <div className="sa-occupancy">
                             {floors.map((f) => (
                                 <div key={f.label}>
-                                    <div className="sa-occ-label"><span>{tr(f.label)}</span><span className="sa-muted">{f.rented} / {f.units.length} rented</span></div>
+                                    <div className="sa-occ-label"><span>{tr(f.label)}</span><span className="sa-muted">{tr('{used} / {total} rented', { used: f.rented, total: f.units.length })}</span></div>
                                     <div className="se-progress flat"><span style={{ width: `${occupancy(f.units)}%` }} /></div>
                                 </div>
                             ))}
@@ -281,7 +281,7 @@ export default function FacilityDetailPage() {
                         </div>
                     </section>
                     <section className="se-panel">
-                        <div className="sa-card-title"><h2>Unit mix &amp; availability</h2></div>
+                        <div className="sa-card-title"><h2>{tr('Unit mix & availability')}</h2></div>
                         <div className="se-table-wrap">
                             <table className="se-table">
                                 <thead><tr><th>{tr('Size')}</th><th>{tr('Total')}</th><th>{tr('Rented')}</th><th>{tr('Available')}</th><th>{tr('Price / mo')}</th></tr></thead>
@@ -310,8 +310,8 @@ export default function FacilityDetailPage() {
                     </section>
                     {canSetUp && (
                         <section className="se-panel">
-                            <div className="sa-card-title"><h2>{tr('Staff at this facility')} <span className="se-count">{team.length}</span></h2><Link to="/admin/users" className="se-link">Users &amp; roles <Icon name="arrow" size={14} /></Link></div>
-                            {!team.length && <div className="se-alert" role="alert">Nobody works here yet, so customers can't see or book this facility. Assign a manager or staff on Users &amp; roles.</div>}
+                            <div className="sa-card-title"><h2>{tr('Staff at this facility')} <span className="se-count">{team.length}</span></h2><Link to="/admin/users" className="se-link">{tr('Users & roles')} <Icon name="arrow" size={14} /></Link></div>
+                            {!team.length && <div className="se-alert" role="alert">{tr('Nobody works here yet, so customers can\'t see or book this facility. Assign a manager or staff on Users & roles.')}</div>}
                             <ul className="sa-people">
                                 {team.map((u) => (
                                     <li key={u.userId}>
@@ -320,7 +320,7 @@ export default function FacilityDetailPage() {
                                         <span className={`se-badge ${u.status === 'Active' ? 'info' : 'muted'}`}>{u.userId === facility.managerId ? tr('Manager of record') : humanize(u.role)}{u.status === 'Active' ? '' : ` · ${u.status}`}</span>
                                     </li>
                                 ))}
-                                {!team.length && <li className="sa-muted">No staff assigned yet. Assign them on Users &amp; roles.</li>}
+                                {!team.length && <li className="sa-muted">{tr('No staff assigned yet. Assign them on Users & roles.')}</li>}
                             </ul>
                         </section>
                     )}

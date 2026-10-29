@@ -33,7 +33,7 @@ function Approve({ request, onDone }) {
             <label><span className="se-label">{tr('Inspection appointment')}</span>
                 <div className="se-input"><input type="datetime-local" value={slot} onChange={(e) => setSlot(e.target.value)} /></div></label>
             {approve.isError && <div className="se-alert" role="alert">{errorMessage(approve.error)}</div>}
-            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!slot || approve.isPending} onClick={() => approve.mutate()}>Approve &amp; book inspection</button>
+            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!slot || approve.isPending} onClick={() => approve.mutate()}>{tr('Approve & book inspection')}</button>
         </>
     );
 }
@@ -83,7 +83,7 @@ function Settle({ request, onDone }) {
             {s && <button type="button" className="se-btn se-btn-primary se-btn-block" onClick={onDone}>{tr('Done')}</button>}
             {settle.isError && <div className="se-alert" role="alert">{errorMessage(settle.error)}</div>}
             {!s && <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={settle.isPending}
-                onClick={() => window.confirm(tr('Settle the deposit? This closes the contract and frees the unit.')) && settle.mutate()}>Settle deposit &amp; close</button>}
+                onClick={() => window.confirm(tr('Settle the deposit? This closes the contract and frees the unit.')) && settle.mutate()}>{tr('Settle deposit & close')}</button>}
         </>
     );
 }
