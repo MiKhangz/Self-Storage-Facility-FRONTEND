@@ -3,6 +3,7 @@ import { reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import { formatVnd } from '../components/format.js';
 import { useTerms } from '../components/terms.js';
+import { useT } from '../../i18n/I18n.jsx';
 
 const time = (d) => d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
 
@@ -12,6 +13,7 @@ const time = (d) => d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digi
  */
 export default function CancelBooking({ reservation }) {
     const queryClient = useQueryClient();
+    const t = useT();
     const terms = useTerms().data;
     const cancel = useMutation({
         mutationFn: () => reservationsApi.cancel(reservation.reservationId, { reason: null }),
@@ -22,20 +24,20 @@ export default function CancelBooking({ reservation }) {
     const freeUntil = terms && new Date(Date.parse(reservation.createdAt) + terms.cancelFreeHours * 3_600_000);
     const refundable = freeUntil && new Date() <= freeUntil;
     const outcome = !paid
-        ? 'Bạn chưa đóng cọc nên không mất khoản nào.'
+        ? t('Bạn chưa đóng cọc nên không mất khoản nào.')
         : refundable
-            ? `Huỷ trước ${time(freeUntil)} được hoàn lại ${formatVnd(paid)} tiền cọc.`
-            : `Đã quá ${terms?.cancelFreeHours ?? 24} giờ kể từ lúc đặt nên ${formatVnd(paid)} tiền cọc sẽ không được hoàn.`;
+            ? t('Huỷ trước {time} được hoàn lại {amount} tiền cọc.', { time: time(freeUntil), amount: formatVnd(paid) })
+            : t('Đã quá {hours} giờ kể từ lúc đặt nên {amount} tiền cọc sẽ không được hoàn.', { hours: terms?.cancelFreeHours ?? 24, amount: formatVnd(paid) });
 
     if (cancel.data) {
         const r = cancel.data;
         return (
             <div className="se-alert info" role="status">
-                Đã huỷ đơn {r.reservation.reservationCode}.{' '}
+                {t('Đã huỷ đơn {code}.', { code: r.reservation.reservationCode })}{' '}
                 {r.depositPaid > 0 && (r.depositRefundable
-                    ? `Tiền cọc ${formatVnd(r.depositPaid)} sẽ được hoàn lại; theo dõi ở mục Thanh toán và hóa đơn.`
-                    : `Tiền cọc ${formatVnd(r.depositPaid)} không được hoàn.`)}
-                {' '}<button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['reservations'] })}>Đóng</button>
+                    ? t('Tiền cọc {amount} sẽ được hoàn lại; theo dõi ở mục Thanh toán và hóa đơn.', { amount: formatVnd(r.depositPaid) })
+                    : t('Tiền cọc {amount} không được hoàn.', { amount: formatVnd(r.depositPaid) }))}
+                {' '}<button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => queryClient.invalidateQueries({ queryKey: ['reservations'] })}>{t('Đóng')}</button>
             </div>
         );
     }
@@ -44,8 +46,8 @@ export default function CancelBooking({ reservation }) {
             <p className="se-hint">{outcome}</p>
             {cancel.isError && <div className="se-alert" role="alert">{errorMessage(cancel.error)}</div>}
             <button type="button" className="se-btn se-btn-ghost" disabled={cancel.isPending || !terms}
-                onClick={() => window.confirm(`Huỷ đơn đặt kho ${reservation.reservationCode}? ${outcome}`) && cancel.mutate()}>
-                {cancel.isPending ? 'Đang huỷ…' : 'Huỷ đặt kho'}
+                onClick={() => window.confirm(`${t('Huỷ đơn đặt kho {code}?', { code: reservation.reservationCode })} ${outcome}`) && cancel.mutate()}>
+                {cancel.isPending ? t('Đang huỷ…') : t('Huỷ đặt kho')}
             </button>
         </div>
     );
