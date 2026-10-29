@@ -55,7 +55,7 @@ export default function ReportsPage() {
 
     return (
         <>
-            <PageHeader title={tr('Reports & exports')} subtitle="Revenue, occupancy and collection figures by facility">
+            <PageHeader title={tr('Reports & exports')} subtitle={tr('Revenue, occupancy and collection figures by facility')}>
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => downloadFile(api, '/api/contracts/export', {}, `contracts-${todayIso()}.csv`).catch((e) => setError(errorMessage(e)))}>
                     <Icon name="file" size={16} /> {tr('Contracts CSV')}
                 </button>
@@ -67,13 +67,13 @@ export default function ReportsPage() {
                 <label><span className="se-label">{tr('Period')}</span><div className="se-input"><input type="month" value={month} onChange={(e) => setMonth(e.target.value)} /></div></label>
             </div>
             <div className="sa-stats">
-                <Stat icon="check" label={`Collected (${month})`} value={formatVnd(r.collected ?? 0)} note={r.refunded ? `${formatVnd(r.refunded)} refunded` : ''} />
+                <Stat icon="check" label={tr('Collected ({month})', { month })} value={formatVnd(r.collected ?? 0)} note={r.refunded ? tr('{amount} refunded', { amount: formatVnd(r.refunded) }) : ''} />
                 <Stat icon="card" label="Net revenue" value={formatVnd(r.net ?? 0)} />
-                <Stat icon="clock" tone="bad" label="Outstanding now" value={formatVnd(d.outstandingAmount ?? 0)} note={`${d.openOverdueCases ?? 0} open overdue cases`} />
-                <Stat icon="grid" label="Occupancy now" value={`${Math.round(d.occupancyRate ?? 0)}%`} note={`${d.occupiedUnits ?? 0} of ${d.totalUnits ?? 0} units`} />
+                <Stat icon="clock" tone="bad" label="Outstanding now" value={formatVnd(d.outstandingAmount ?? 0)} note={tr('{n} open overdue cases', { n: d.openOverdueCases ?? 0 })} />
+                <Stat icon="grid" label="Occupancy now" value={`${Math.round(d.occupancyRate ?? 0)}%`} note={tr('{used} of {total} units', { used: d.occupiedUnits ?? 0, total: d.totalUnits ?? 0 })} />
             </div>
             <section className="se-panel" style={{ marginBottom: 20 }}>
-                <div className="sa-card-title"><h2>Net revenue by facility ({month})</h2></div>
+                <div className="sa-card-title"><h2>{tr('Net revenue by facility ({month})', { month })}</h2></div>
                 <div className="sa-occupancy">
                     {rows.map((x) => (
                         <div key={x.facilityId}>

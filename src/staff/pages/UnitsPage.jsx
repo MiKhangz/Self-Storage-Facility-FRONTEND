@@ -61,7 +61,7 @@ function UnitEditor({ unit }) {
                         {unit.status === 'Retired' ? tr('Return to service') : tr('Retire unit')}
                     </button>
                 )}
-                <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save unit'}</button>
+                <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? tr('Saving…') : tr('Save unit')}</button>
             </div>
         </form>
     );

@@ -92,7 +92,7 @@ function DraftTerms({ policy }) {
             <div className="sa-term-actions">
                 {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
                 {save.isSuccess && !save.isPending && <div className="se-alert info">{tr('Terms saved.')}</div>}
-                <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save terms'}</button>
+                <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? tr('Saving…') : tr('Save terms')}</button>
             </div>
         </form>
     );

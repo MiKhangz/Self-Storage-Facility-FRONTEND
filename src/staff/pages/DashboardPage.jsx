@@ -95,7 +95,7 @@ export default function DashboardPage() {
                                 </div>
                             );
                         })}
-                        {!facilities.data?.length && <p className="sa-muted">{facilities.isLoading ? 'Loading…' : 'No facilities.'}</p>}
+                        {!facilities.data?.length && <p className="sa-muted">{facilities.isLoading ? tr('Loading…') : tr('No facilities.')}</p>}
                     </div>
                 </section>
             </div>

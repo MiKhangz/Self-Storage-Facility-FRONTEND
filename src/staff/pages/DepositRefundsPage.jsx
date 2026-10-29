@@ -27,7 +27,7 @@ function PayPanel({ refund, onClose }) {
     return (
         <form className="se-panel sa-side-panel" onSubmit={(e) => {
             e.preventDefault();
-            if (window.confirm(`Mark ${formatVnd(refund.amount)} as paid back to ${refund.customerName}?`)) pay.mutate();
+            if (window.confirm(tr('Mark {amount} as paid back to {name}?', { amount: formatVnd(refund.amount), name: refund.customerName }))) pay.mutate();
         }}>
             <div className="sa-card-title"><h2>{formatVnd(refund.amount)}</h2>
                 <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
@@ -44,7 +44,7 @@ function PayPanel({ refund, onClose }) {
                     <option value="Cash">{tr('Cash at the facility')}</option>
                     <option value="BankTransfer">{tr('Bank transfer')}</option>
                 </select></div></label>
-            <label><span className="se-label">Transfer reference{method === 'BankTransfer' ? ' *' : ' (optional)'}</span>
+            <label><span className="se-label">{tr('Transfer reference')}{method === 'BankTransfer' ? ' *' : tr(' (optional)')}</span>
                 <div className="se-input"><input maxLength={50} value={reference} onChange={(e) => setReference(e.target.value)} /></div></label>
             {pay.isError && <div className="se-alert" role="alert">{errorMessage(pay.error)}</div>}
             <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={needsReference || pay.isPending}>

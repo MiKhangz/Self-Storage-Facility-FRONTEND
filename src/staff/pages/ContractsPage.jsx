@@ -49,23 +49,23 @@ function ContractPanel({ contract, invoices, onClose }) {
                 <h2>{contract.contractNumber} <Status value={contract.status} /></h2>
                 <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button>
             </div>
-            <p className="sa-muted"><Link to={`/admin/customers/${contract.customerId}`} className="se-link">{contract.customerName}</Link> · Unit {contract.unitCode}</p>
+            <p className="sa-muted"><Link to={`/admin/customers/${contract.customerId}`} className="se-link">{contract.customerName}</Link> · {tr('Kho')} {contract.unitCode}</p>
             {due > 0 && (
                 <div className={`sa-eligibility ${oldest ? 'no' : ''}`}>
                     <small>{tr('Total due')}</small><strong>{formatVnd(due)}</strong>
-                    {oldest && <small>{daysBetween(oldest.dueDate, today)} days overdue since {formatDate(oldest.dueDate)}</small>}
+                    {oldest && <small>{tr('{n} days overdue since {date}', { n: daysBetween(oldest.dueDate, today), date: formatDate(oldest.dueDate) })}</small>}
                 </div>
             )}
             <dl className="se-kv">
                 <div><dt>{tr('Period')}</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)}</dd></div>
                 <div><dt>{tr('Monthly rent')}</dt><dd>{formatVnd(contract.monthlyRent)}</dd></div>
                 <div><dt>{tr('Deposit held')}</dt><dd>{formatVnd(contract.depositAmount)}</dd></div>
-                <div><dt>{tr('Payment day')}</dt><dd>Day {contract.paymentDay}</dd></div>
+                <div><dt>{tr('Payment day')}</dt><dd>{tr('Day {day}', { day: contract.paymentDay })}</dd></div>
                 <div><dt>{tr('Signed')}</dt><dd>{contract.signedAt ? formatDate(contract.signedAt) : tr('Not yet')}</dd></div>
             </dl>
             {oldest && policy && (
                 <>
-                    <span className="se-label">Overdue timeline (policy v{policy.version})</span>
+                    <span className="se-label">{tr('Overdue timeline (policy v{version})', { version: policy.version })}</span>
                     <ul className="sa-timeline">
                         {[
                             [0, 'Due date passed'],
@@ -83,7 +83,7 @@ function ContractPanel({ contract, invoices, onClose }) {
             {!!open.length && <Link to={`/admin/payments?invoiceId=${open[0].invoiceId}`} className="se-btn se-btn-primary se-btn-block"><Icon name="card" size={16} /> {tr('Record payment')}</Link>}
             {canTerminate && (
                 <button type="button" className="se-btn se-btn-danger se-btn-block" disabled={terminate.isPending}
-                    onClick={() => window.confirm(`Terminate contract ${contract.contractNumber}? This revokes access and cannot be undone.`) && terminate.mutate()}>
+                    onClick={() => window.confirm(tr('Terminate contract {number}? This revokes access and cannot be undone.', { number: contract.contractNumber })) && terminate.mutate()}>
                     {tr('Terminate contract')}
                 </button>
             )}
@@ -116,16 +116,16 @@ function RenewalRequests() {
                             <tr key={r.renewalId}>
                                 <td className="strong">{r.contractNumber}</td>
                                 <td>{r.unitCode}</td>
-                                <td>{r.extendMonths} month{r.extendMonths > 1 ? 's' : ''}</td>
+                                <td>{tr(r.extendMonths > 1 ? '{n} months' : '{n} month', { n: r.extendMonths })}</td>
                                 <td>{formatDate(r.currentEndDate)} → <strong>{formatDate(r.newEndDate)}</strong></td>
                                 <td>{formatVnd(r.currentMonthlyRent)} → <strong>{formatVnd(r.newMonthlyRent)}</strong></td>
                                 <td>{formatDate(r.requestedAt)}</td>
                                 {canDecide && (
                                     <td className="sa-row-actions">
                                         <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={decide.isPending}
-                                            onClick={() => window.confirm(`Approve? ${r.contractNumber} runs to ${formatDate(r.newEndDate)} at ${formatVnd(r.newMonthlyRent)} a month.`) && decide.mutate({ id: r.renewalId, approve: true })}>{tr('Approve')}</button>{' '}
+                                            onClick={() => window.confirm(tr('Approve? {number} runs to {date} at {rent} a month.', { number: r.contractNumber, date: formatDate(r.newEndDate), rent: formatVnd(r.newMonthlyRent) })) && decide.mutate({ id: r.renewalId, approve: true })}>{tr('Approve')}</button>{' '}
                                         <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={decide.isPending}
-                                            onClick={() => window.confirm(`Reject the renewal of ${r.contractNumber}?`) && decide.mutate({ id: r.renewalId, approve: false })}>{tr('Reject')}</button>
+                                            onClick={() => window.confirm(tr('Reject the renewal of {number}?', { number: r.contractNumber })) && decide.mutate({ id: r.renewalId, approve: false })}>{tr('Reject')}</button>
                                     </td>
                                 )}
                             </tr>

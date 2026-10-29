@@ -85,7 +85,7 @@ function EditUser({ user, managed, onClose }) {
             <div className="sa-card-title"><h2>Edit {user.fullName}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
             <p className="sa-muted">{user.email}</p>
             {isManager ? (
-                <p className="se-hint">{self ? 'Only a system administrator can change your own facilities.' : 'You can add or remove the facilities you manage.'}</p>
+                <p className="se-hint">{self ? tr('Only a system administrator can change your own facilities.') : tr('You can add or remove the facilities you manage.')}</p>
             ) : (<>
             <label><span className="se-label">{tr('Full name')}</span><div className="se-input"><input value={form.fullName} onChange={(e) => setForm({ ...form, fullName: e.target.value })} /></div></label>
             <label><span className="se-label">{tr('Phone')}</span><div className="se-input"><input value={form.phoneNumber} onChange={(e) => setForm({ ...form, phoneNumber: e.target.value })} /></div></label>
@@ -93,11 +93,11 @@ function EditUser({ user, managed, onClose }) {
                 <div className="se-field"><select value={form.role} disabled={self} onChange={(e) => setForm({ ...form, role: e.target.value })}>{ROLE_INFO.map((r) => <option key={r.role} value={r.role}>{tr(r.title)}</option>)}</select></div></label>
             <label><span className="se-label">{tr('Status')}</span>
                 <div className="se-field"><select value={form.status} disabled={self} onChange={(e) => setForm({ ...form, status: e.target.value })}>{STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}</select></div>
-                <p className="se-hint">{self ? 'You cannot change your own role or status.' : 'Disabled accounts cannot sign in or be assigned work.'}</p></label>
+                <p className="se-hint">{self ? tr('You cannot change your own role or status.') : tr('Disabled accounts cannot sign in or be assigned work.')}</p></label>
             </>)}
             <FacilityPicker value={facilityIds} onChange={setFacilityIds} canChange={(id) => !isManager || (!self && managed.includes(id))} />
             {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
-            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={save.isPending || !form.fullName.trim() || (isManager && self)} onClick={() => save.mutate()}>{save.isPending ? 'Saving…' : 'Save changes'}</button>
+            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={save.isPending || !form.fullName.trim() || (isManager && self)} onClick={() => save.mutate()}>{save.isPending ? tr('Saving…') : tr('Save changes')}</button>
         </aside>
     );
 }

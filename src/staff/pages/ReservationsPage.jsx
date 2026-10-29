@@ -112,7 +112,7 @@ function AssignPanel({ reservation, onClose }) {
                                 {i === 0 && <span className="se-badge">{tr('First free')}</span>}
                             </label>
                         ))}
-                        {!candidates.length && <p className="sa-muted">{units.isLoading ? 'Loading units…' : 'No available unit of this size at this facility.'}</p>}
+                        {!candidates.length && <p className="sa-muted">{units.isLoading ? tr('Loading units…') : tr('No available unit of this size at this facility.')}</p>}
                     </div>
                     {assign.isError && <div className="se-alert" role="alert">{errorMessage(assign.error)}</div>}
                     <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!chosen || assign.isPending} onClick={() => assign.mutate()}>

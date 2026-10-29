@@ -77,7 +77,7 @@ export default function AdminLoginPage() {
                         <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
                     </label>
                     {error && <div className="se-alert" role="alert">{error}</div>}
-                    <button type="submit" className="se-btn se-btn-primary se-btn-block se-btn-lg" disabled={busy}>{busy ? 'Signing in…' : 'Sign in'}</button>
+                    <button type="submit" className="se-btn se-btn-primary se-btn-block se-btn-lg" disabled={busy}>{busy ? tr('Signing in…') : tr('Sign in')}</button>
                     <div className="se-auth-note"><Icon name="shield" size={15} /><span>{tr('All sign-ins are recorded. Forgot your password? Ask your System Administrator.')}</span></div>
                     <Link to="/" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Renting storage? Go to the customer site')}</Link>
                 </form>

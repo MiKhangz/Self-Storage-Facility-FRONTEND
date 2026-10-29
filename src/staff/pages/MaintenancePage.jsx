@@ -40,7 +40,7 @@ function NewOrder({ onClose }) {
             <label><span className="se-label">{tr('What needs doing *')}</span><textarea className="se-textarea" rows={3} maxLength={300} value={form.description} onChange={set('description')} required /></label>
             <label><span className="se-label">Planned for (optional)</span><div className="se-input"><input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')} /></div></label>
             {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
-            <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={create.isPending || !form.storageUnitId || !form.description.trim()}>{create.isPending ? 'Creating…' : 'Create order'}</button>
+            <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={create.isPending || !form.storageUnitId || !form.description.trim()}>{create.isPending ? tr('Creating…') : tr('Create order')}</button>
         </form>
     );
 }

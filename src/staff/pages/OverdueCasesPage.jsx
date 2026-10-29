@@ -38,7 +38,7 @@ export default function OverdueCasesPage() {
     const open = current && !current.resolvedAt;
     const canLockOut = open && ['Reminder', 'LateFee'].includes(current.stage);
     const canRestore = open && ['Suspended', 'ClearOut'].includes(current.stage);
-    const run = (action, question) => { if (window.confirm(question)) act.mutate(action); };
+    const run = (action, question) => { if (window.confirm(tr(question))) act.mutate(action); };
 
     return (
         <>

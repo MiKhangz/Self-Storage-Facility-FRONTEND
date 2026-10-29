@@ -255,7 +255,7 @@ function HandoverDesk() {
                             <span className={`se-badge ${r.moveInDate <= today ? 'low' : ''}`}>{r.moveInDate <= today ? 'Due' : formatDate(r.moveInDate)}</span>
                         </button>
                     ))}
-                    {!queue.length && <p className="sa-muted">{reservations.isLoading ? 'Loading…' : 'No confirmed reservations waiting.'}</p>}
+                    {!queue.length && <p className="sa-muted">{reservations.isLoading ? tr('Loading…') : tr('No confirmed reservations waiting.')}</p>}
                 </div>
             </section>
             <div>
@@ -347,7 +347,7 @@ function ActiveRentals() {
                             <Status value={c.status} />
                         </button>
                     ))}
-                    {!list.length && <p className="sa-muted">{contracts.isLoading ? 'Loading…' : 'No active rentals.'}</p>}
+                    {!list.length && <p className="sa-muted">{contracts.isLoading ? tr('Loading…') : tr('No active rentals.')}</p>}
                 </div>
             </section>
             {current && (

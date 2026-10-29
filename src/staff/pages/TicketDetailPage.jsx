@@ -42,7 +42,7 @@ function OrderRepair({ ticket }) {
                         {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
                         <div className="sa-form-actions">
                             <button type="button" className="se-btn se-btn-ghost" onClick={() => setOpen(false)}>{tr('Cancel')}</button>
-                            <button type="submit" className="se-btn se-btn-primary" disabled={!description.trim() || create.isPending}>{create.isPending ? 'Creating…' : 'Create order'}</button>
+                            <button type="submit" className="se-btn se-btn-primary" disabled={!description.trim() || create.isPending}>{create.isPending ? tr('Creating…') : tr('Create order')}</button>
                         </div>
                     </form>
                 </Modal>
@@ -82,7 +82,7 @@ export default function TicketDetailPage() {
         <>
             <Link to="/admin/tickets" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to the ticket board')}</Link>
             <PageHeader title={`${t.ticketCode} · ${t.subject}`} subtitle={`Opened ${formatDateTime(t.createdAt)} by ${t.customerName}${t.unitCode ? ` · unit ${t.unitCode}` : ''} · ${t.facilityName}`}>
-                {isManager && !closed && <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm('Close this ticket?') && move.mutate('Closed')}>{tr('Close ticket')}</button>}
+                {isManager && !closed && <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm(tr('Close this ticket?')) && move.mutate('Closed')}>{tr('Close ticket')}</button>}
                 {(NEXT[t.status] ?? []).includes('Resolved') && <button type="button" className="se-btn se-btn-primary" disabled={move.isPending} onClick={() => move.mutate('Resolved')}><Icon name="check" size={16} /> {tr('Resolve ticket')}</button>}
             </PageHeader>
             {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
@@ -94,7 +94,7 @@ export default function TicketDetailPage() {
                             <li key={m.messageId} className={m.senderId === t.customerId ? '' : 'own'}>
                                 <span className={`se-avatar${m.senderId === t.customerId ? '' : ' staff'}`}>{initials(m.senderName)}</span>
                                 <div className={`se-bubble${m.isInternalNote ? ' internal' : ''}`}>
-                                    <div className="se-bubble-head"><strong>{m.senderName}</strong><small>{formatDateTime(m.sentAt)}{m.isInternalNote ? ' · internal note' : ''}</small></div>
+                                    <div className="se-bubble-head"><strong>{m.senderName}</strong><small>{formatDateTime(m.sentAt)}{m.isInternalNote ? tr(' · internal note') : ''}</small></div>
                                     <p>{m.body}</p>
                                 </div>
                             </li>
@@ -106,7 +106,7 @@ export default function TicketDetailPage() {
                                 <button type="button" role="tab" aria-selected={!internal} className={!internal ? 'active' : ''} onClick={() => setInternal(false)}>{tr('Reply to customer')}</button>
                                 <button type="button" role="tab" aria-selected={internal} className={internal ? 'active' : ''} onClick={() => setInternal(true)}>{tr('Internal note')}</button>
                             </div>
-                            <textarea className="se-textarea" rows={3} maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} placeholder={internal ? 'Only staff can see this note…' : 'Type your reply…'} aria-label={tr('Message')} />
+                            <textarea className="se-textarea" rows={3} maxLength={1000} value={body} onChange={(e) => setBody(e.target.value)} placeholder={internal ? tr('Only staff can see this note…') : tr('Type your reply…')} aria-label={tr('Message')} />
                             <div className="sa-form-actions">
                                 {!internal && !!NEXT[t.status]?.length && (
                                     <label className="sa-filter"><span className="sr-only">{tr('Status after sending')}</span>
@@ -116,7 +116,7 @@ export default function TicketDetailPage() {
                                         </select>
                                     </label>
                                 )}
-                                <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={!body.trim() || send.isPending}>{send.isPending ? 'Sending…' : internal ? 'Save note' : 'Send reply'}</button>
+                                <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={!body.trim() || send.isPending}>{send.isPending ? tr('Sending…') : internal ? tr('Save note') : tr('Send reply')}</button>
                             </div>
                         </form>
                     )}

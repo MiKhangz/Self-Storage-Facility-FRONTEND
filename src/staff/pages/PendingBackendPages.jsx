@@ -78,7 +78,7 @@ export function AddFacilityPage() {
                 </div>
                 {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
                 <div className="sa-form-actions">
-                    <button type="submit" className="se-btn se-btn-primary" disabled={create.isPending}>{create.isPending ? 'Creating…' : 'Create facility'}</button>
+                    <button type="submit" className="se-btn se-btn-primary" disabled={create.isPending}>{create.isPending ? tr('Creating…') : tr('Create facility')}</button>
                 </div>
             </form>
         </>

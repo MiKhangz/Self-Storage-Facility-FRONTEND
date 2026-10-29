@@ -62,7 +62,7 @@ function FloorRow({ floor, onChanged }) {
                 {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
                 <div className="sa-form-actions">
                     <button type="button" className="se-btn se-btn-ghost" onClick={() => setForm(null)}>{tr('Cancel')}</button>
-                    <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save floor'}</button>
+                    <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? tr('Saving…') : tr('Save floor')}</button>
                 </div>
             </form>
         </li>
@@ -125,7 +125,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
             <h3>{tr('Floors')}</h3>
             <ul className="sa-people">
                 {list.map((f) => <FloorRow key={f.floorId} floor={f} onChanged={changed} />)}
-                {!list.length && <li className="sa-muted">{floors.isLoading ? 'Loading…' : 'No floors yet. Add one, then add its units.'}</li>}
+                {!list.length && <li className="sa-muted">{floors.isLoading ? tr('Loading…') : tr('No floors yet. Add one, then add its units.')}</li>}
             </ul>
             </div>
 
@@ -141,7 +141,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
                     </select>
                 </Field>
                 {addFloor.isError && <div className="se-alert" role="alert">{errorMessage(addFloor.error)}</div>}
-                <div className="sa-form-actions"><button type="submit" className="se-btn sa-btn-blue" disabled={addFloor.isPending}>{addFloor.isPending ? 'Adding…' : 'Add floor'}</button></div>
+                <div className="sa-form-actions"><button type="submit" className="se-btn sa-btn-blue" disabled={addFloor.isPending}>{addFloor.isPending ? tr('Adding…') : tr('Add floor')}</button></div>
             </form>
 
             <form className="se-form sa-setup-card orange" onSubmit={(e) => { e.preventDefault(); addUnit.mutate(); }}>
@@ -165,7 +165,7 @@ function FloorsAndUnits({ facilityId, onClose }) {
                 {addUnit.isError && <div className="se-alert" role="alert">{errorMessage(addUnit.error)}</div>}
                 {addUnit.isSuccess && <div className="se-alert info" role="status">Unit {addUnit.data.unitCode} added and available to book.</div>}
                 <p className="se-hint">The rent comes from the size's price in Pricing &amp; Policies.</p>
-                <div className="sa-form-actions"><button type="submit" className="se-btn se-btn-primary" disabled={addUnit.isPending || !list.length}>{addUnit.isPending ? 'Adding…' : 'Add unit'}</button></div>
+                <div className="sa-form-actions"><button type="submit" className="se-btn se-btn-primary" disabled={addUnit.isPending || !list.length}>{addUnit.isPending ? tr('Adding…') : tr('Add unit')}</button></div>
             </form>
             </div>
         </section>
@@ -216,7 +216,7 @@ function EditFacility({ facility, onClose }) {
                         onClick={() => (!active || window.confirm(`Deactivate ${facility.name}? Customers can no longer find or book it.`)) && toggle.mutate()}>
                         {active ? tr('Deactivate facility') : tr('Activate facility')}
                     </button>
-                    <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? 'Saving…' : 'Save facility'}</button>
+                    <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? tr('Saving…') : tr('Save facility')}</button>
                 </div>
             </form>
         </section>

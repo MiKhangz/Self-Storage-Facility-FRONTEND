@@ -51,7 +51,7 @@ export default function TicketsPage() {
                                     </div>
                                 </Link>
                             ))}
-                            {!cards.length && <p className="sa-muted">{tickets.isLoading ? 'Loading…' : 'None'}</p>}
+                            {!cards.length && <p className="sa-muted">{tickets.isLoading ? tr('Loading…') : 'None'}</p>}
                         </section>
                     );
                 })}

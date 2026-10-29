@@ -27,7 +27,7 @@ function Reminders({ invoice, role }) {
             <div className="sa-card-title"><h3>{tr('Reminders')}</h3><span className="se-count">{list.length}</span></div>
             <ul className="sa-people">
                 {list.map((r) => <li key={r.reminderId}><span>{r.channel} · {r.template}</span> <small className="sa-muted">{r.sentAt ? formatDate(r.sentAt) : '—'} · {r.status}</small></li>)}
-                {!list.length && <li className="sa-muted">{history.isLoading ? 'Loading…' : 'No reminder sent yet.'}</li>}
+                {!list.length && <li className="sa-muted">{history.isLoading ? tr('Loading…') : tr('No reminder sent yet.')}</li>}
             </ul>
             {send.isError && <div className="se-alert" role="alert">{errorMessage(send.error)}</div>}
             {[FS, FM, BOM].includes(role) && OPEN.includes(invoice.status) && (
@@ -54,7 +54,7 @@ function Adjust({ invoice }) {
             <label><span className="se-label">{tr('Reason')}</span><div className="se-input"><input maxLength={200} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={tr('e.g. Goodwill credit')} /></div></label>
             <label><span className="se-label">Amount (₫) — negative gives a credit</span><div className="se-input"><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} /></div></label>
             {adjust.isError && <div className="se-alert" role="alert">{errorMessage(adjust.error)}</div>}
-            <button type="submit" className="se-btn se-btn-ghost se-btn-block" disabled={adjust.isPending || !description.trim() || !Number(amount)}>{adjust.isPending ? 'Saving…' : 'Add adjustment'}</button>
+            <button type="submit" className="se-btn se-btn-ghost se-btn-block" disabled={adjust.isPending || !description.trim() || !Number(amount)}>{adjust.isPending ? tr('Saving…') : tr('Add adjustment')}</button>
         </form>
     );
 }
@@ -170,7 +170,7 @@ export default function RecordPaymentPage() {
                                     <div className="se-input"><input maxLength={50} value={reference} onChange={(e) => setReference(e.target.value)} /></div></label>
                                 {!valid && <p className="sa-bad">{tr('Enter an amount between 1 and the outstanding balance.')}</p>}
                                 {pay.isError && <div className="se-alert" role="alert">{errorMessage(pay.error)}</div>}
-                                <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={!valid || pay.isPending}>{pay.isPending ? 'Recording…' : `Record ${formatVnd(value)}`}</button>
+                                <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={!valid || pay.isPending}>{pay.isPending ? tr('Recording…') : `Record ${formatVnd(value)}`}</button>
                             </form>
                         ) : <div className="se-alert info">This invoice is {invoice.status.toLowerCase()}.</div>)}
                         <Payments invoice={invoice} canRefund={role === BOM} />

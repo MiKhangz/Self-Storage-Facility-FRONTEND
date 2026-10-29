@@ -25,9 +25,9 @@ function MarkLeft({ row, onClose }) {
     return (
         <Modal onClose={onClose}>
             <form className="se-panel sa-dialog" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
-                <div className="sa-card-title"><h2>Mark {row.customerName} as left</h2>
+                <div className="sa-card-title"><h2>{tr('Mark {name} as left', { name: row.customerName })}</h2>
                     <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}>×</button></div>
-                <p className="sa-muted">Use this only when the customer left without checking out at the desk. Inside since {time(row.since)}. Their code is replaced, as after any visit.</p>
+                <p className="sa-muted">{tr('Use this only when the customer left without checking out at the desk. Inside since {time}. Their code is replaced, as after any visit.', { time: time(row.since) })}</p>
                 <label><span className="se-label">{tr('When did they leave?')}</span>
                     <div className="se-input"><input type="datetime-local" required value={form.leftAt} max={nowLocal()} onChange={(e) => setForm({ ...form, leftAt: e.target.value })} /></div></label>
                 <label><span className="se-label">{tr('Reason *')}</span>
@@ -35,7 +35,7 @@ function MarkLeft({ row, onClose }) {
                 {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
                 <div className="sa-form-actions">
                     <button type="button" className="se-btn se-btn-ghost" onClick={onClose}>{tr('Cancel')}</button>
-                    <button type="submit" className="se-btn se-btn-primary" disabled={!form.reason.trim() || save.isPending}>{save.isPending ? 'Saving…' : 'Mark as left'}</button>
+                    <button type="submit" className="se-btn se-btn-primary" disabled={!form.reason.trim() || save.isPending}>{save.isPending ? tr('Saving…') : tr('Mark as left')}</button>
                 </div>
             </form>
         </Modal>
@@ -65,7 +65,7 @@ export default function CheckInPage() {
 
     return (
         <>
-            <PageHeader title={tr('Check-in / Check-out')} subtitle={`Today, ${formatDate(todayIso())}`} />
+            <PageHeader title={tr('Check-in / Check-out')} subtitle={tr('Today, {date}', { date: formatDate(todayIso()) })} />
             <div className="sa-stats">
                 <Stat icon="key" label="Inside now" value={rows.filter((r) => r.inside).length} />
                 <Stat icon="file" label="Renting here" value={rows.length} />
@@ -78,16 +78,16 @@ export default function CheckInPage() {
                         <div className="se-input"><Icon name="key" size={16} />
                             <input inputMode="numeric" autoComplete="off" maxLength={20} placeholder={tr('Ask the customer for their code')} value={code}
                                 onChange={(e) => { setCode(e.target.value); find.reset(); }} /></div></label>
-                    <button type="submit" className="se-btn se-btn-primary" disabled={!code.trim() || find.isPending}>{find.isPending ? 'Finding…' : 'Find'}</button>
+                    <button type="submit" className="se-btn se-btn-primary" disabled={!code.trim() || find.isPending}>{find.isPending ? tr('Finding…') : tr('Find')}</button>
                 </form>
                 {find.isError && <div className="se-alert" role="alert">{errorMessage(find.error)}</div>}
                 {found && (
                     <div className={`sa-found ${found.inside ? 'in' : 'out'}`}>
                         <span><strong>{found.customerName}</strong>
-                            <small>Unit {found.unitCode} · {found.inside ? `inside since ${time(found.since)}` : tr('not inside')}</small></span>
+                            <small>{tr('Kho')} {found.unitCode} · {found.inside ? tr('inside since {time}', { time: time(found.since) }) : tr('not inside')}</small></span>
                         {found.inside
-                            ? <button type="button" className="se-btn sa-btn-red" disabled={busy} onClick={() => checkOut.mutate(found.openCheckInId)}>{checkOut.isPending ? 'Checking out…' : 'Check out'}</button>
-                            : <button type="button" className="se-btn sa-btn-green" disabled={busy} onClick={() => checkIn.mutate(found.contractId)}>{checkIn.isPending ? 'Checking in…' : 'Check in'}</button>}
+                            ? <button type="button" className="se-btn sa-btn-red" disabled={busy} onClick={() => checkOut.mutate(found.openCheckInId)}>{checkOut.isPending ? tr('Checking out…') : tr('Check out')}</button>
+                            : <button type="button" className="se-btn sa-btn-green" disabled={busy} onClick={() => checkIn.mutate(found.contractId)}>{checkIn.isPending ? tr('Checking in…') : tr('Check in')}</button>}
                     </div>
                 )}
                 {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
@@ -99,12 +99,12 @@ export default function CheckInPage() {
                     <tbody>
                         {rows.map((r) => (
                             <tr key={r.contractId} className={found?.contractId === r.contractId ? 'active' : ''}>
-                                <td><span className={`sa-presence ${r.inside ? 'in' : 'out'}`}>{r.inside ? 'Inside' : 'Out'}</span></td>
+                                <td><span className={`sa-presence ${r.inside ? 'in' : 'out'}`}>{tr(r.inside ? 'Inside' : 'Out')}</span></td>
                                 <td className="strong">{r.customerName}<div className="sa-muted">{r.customerPhone}</div></td>
                                 <td>{r.unitCode}</td>
                                 <td>{r.facilityName}</td>
                                 <td>{r.since ? time(r.since) : '—'}
-                                    {LEFT_HOW[r.leftHow] && <div className="sa-muted">Left · {tr(LEFT_HOW[r.leftHow])}</div>}
+                                    {LEFT_HOW[r.leftHow] && <div className="sa-muted">{tr('Left')} · {tr(LEFT_HOW[r.leftHow])}</div>}
                                     {!r.canEnter && <div className="sa-muted">{tr('No working code')}</div>}</td>
                                 <td>{r.inside && (
                                     <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setMarking(r)}
@@ -112,7 +112,7 @@ export default function CheckInPage() {
                                 )}</td>
                             </tr>
                         ))}
-                        {!rows.length && <tr><td colSpan={6} className="sa-muted">{board.isLoading ? 'Loading…' : board.isError ? errorMessage(board.error) : 'Nobody is renting at your facilities yet.'}</td></tr>}
+                        {!rows.length && <tr><td colSpan={6} className="sa-muted">{board.isLoading ? tr('Loading…') : board.isError ? errorMessage(board.error) : tr('Nobody is renting at your facilities yet.')}</td></tr>}
                     </tbody>
                 </table>
             </section>

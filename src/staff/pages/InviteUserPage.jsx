@@ -40,7 +40,7 @@ export default function InviteUserPage() {
             <Link to="/admin/users" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to users')}</Link>
             <PageHeader title={tr('Add a staff user')} subtitle="Create a staff account and choose what the person can do">
                 <Link to="/admin/users" className="se-btn se-btn-ghost">{tr('Cancel')}</Link>
-                <button type="submit" form="invite" className="se-btn se-btn-primary" disabled={!valid || create.isPending}>{create.isPending ? 'Creating…' : 'Create account'}</button>
+                <button type="submit" form="invite" className="se-btn se-btn-primary" disabled={!valid || create.isPending}>{create.isPending ? tr('Creating…') : tr('Create account')}</button>
             </PageHeader>
             {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
             <div className="sa-grid-2 sa-grid-flip">
