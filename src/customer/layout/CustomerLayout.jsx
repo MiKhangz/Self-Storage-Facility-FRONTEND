@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../components/Icon.jsx';
+import { LanguageSelect, useT } from '../../i18n/I18n.jsx';
 import './CustomerLayout.css';
 
 const NAV = [
@@ -36,6 +37,7 @@ export const initials = (name = '') => {
 
 export default function CustomerLayout() {
     const { session, logout } = useAuth();
+    const t = useT();
     const navigate = useNavigate();
     const location = useLocation();
     const [menuOpen, setMenuOpen] = useState(false);
@@ -56,32 +58,33 @@ export default function CustomerLayout() {
             <header className="se-header">
                 <div className="se-container se-header-row">
                     <Brand />
-                    <nav id="se-nav" className={`se-nav${menuOpen ? ' open' : ''}`} aria-label="Điều hướng chính">
+                    <nav id="se-nav" className={`se-nav${menuOpen ? ' open' : ''}`} aria-label={t('Điều hướng chính')}>
                         {/* Hash links share the "/" path, so NavLink would mark them all active. */}
                         {NAV.map((item) => item.to.includes('#')
-                            ? <Link key={item.label} to={item.to}>{item.label}</Link>
-                            : <NavLink key={item.label} to={item.to}>{item.label}</NavLink>)}
+                            ? <Link key={item.label} to={item.to}>{t(item.label)}</Link>
+                            : <NavLink key={item.label} to={item.to}>{t(item.label)}</NavLink>)}
                         {/* On phones the header only fits one action; the other moves into the menu. */}
                         {session
-                            ? <button type="button" className="se-nav-extra" onClick={signOut}>Đăng xuất</button>
-                            : <Link to="/login" className="se-nav-extra">Đăng nhập</Link>}
+                            ? <button type="button" className="se-nav-extra" onClick={signOut}>{t('Đăng xuất')}</button>
+                            : <Link to="/login" className="se-nav-extra">{t('Đăng nhập')}</Link>}
                     </nav>
                     <div className="se-header-actions">
+                        <LanguageSelect />
                         {session ? (
                             <>
                                 <Link to="/my-storage" className="se-account">
-                                    <span className="se-avatar">{initials(session.fullName)}</span> Kho của tôi
+                                    <span className="se-avatar">{initials(session.fullName)}</span> {t('Kho của tôi')}
                                 </Link>
-                                <button type="button" className="se-btn se-btn-ghost se-header-secondary" onClick={signOut}>Đăng xuất</button>
+                                <button type="button" className="se-btn se-btn-ghost se-header-secondary" onClick={signOut}>{t('Đăng xuất')}</button>
                             </>
                         ) : (
                             <>
-                                <Link to="/login" className="se-btn se-btn-ghost se-header-secondary">Đăng nhập</Link>
-                                <Link to="/booking" className="se-btn se-btn-outline">Đặt kho ngay</Link>
+                                <Link to="/login" className="se-btn se-btn-ghost se-header-secondary">{t('Đăng nhập')}</Link>
+                                <Link to="/booking" className="se-btn se-btn-outline">{t('Đặt kho ngay')}</Link>
                             </>
                         )}
                         <button type="button" className="se-menu-btn" aria-expanded={menuOpen} aria-controls="se-nav"
-                            aria-label={menuOpen ? 'Đóng menu' : 'Mở menu'} onClick={() => setMenuOpen((o) => !o)}>
+                            aria-label={menuOpen ? t('Đóng menu') : t('Mở menu')} onClick={() => setMenuOpen((o) => !o)}>
                             <Icon name={menuOpen ? 'close' : 'menu'} size={22} />
                         </button>
                     </div>
@@ -95,21 +98,21 @@ export default function CustomerLayout() {
                     <div className="se-footer-grid">
                         <div className="se-footer-about">
                             <Brand />
-                            <p>Kho tự quản dễ thuê, an toàn và tiện lợi.<br />Đặt kho và quản lý trực tuyến tại TP. Hồ Chí Minh.</p>
+                            <p>{t('Kho tự quản dễ thuê, an toàn và tiện lợi.')}<br />{t('Đặt kho và quản lý trực tuyến tại TP. Hồ Chí Minh.')}</p>
                         </div>
                         {FOOTER.map((col) => (
                             <div key={col.title}>
-                                <h4>{col.title}</h4>
-                                <ul>{col.links.map(([label, to]) => <li key={to}><Link to={to}>{label}</Link></li>)}</ul>
+                                <h4>{t(col.title)}</h4>
+                                <ul>{col.links.map(([label, to]) => <li key={to}><Link to={to}>{t(label)}</Link></li>)}</ul>
                             </div>
                         ))}
                         <div>
-                            <h4>Liên hệ</h4>
-                            <ul><li><Link to="/locations">Số điện thoại và giờ mở cửa của từng cơ sở</Link></li></ul>
+                            <h4>{t('Liên hệ')}</h4>
+                            <ul><li><Link to="/locations">{t('Số điện thoại và giờ mở cửa của từng cơ sở')}</Link></li></ul>
                         </div>
                     </div>
                     <div className="se-footer-bottom">
-                        <span>© 2026 StorEase. Đồ án môn SWP391, Trường Đại học FPT. Đây là sản phẩm học tập, không phải dịch vụ thật.</span>
+                        <span>© 2026 StorEase. {t('Đồ án môn SWP391, Trường Đại học FPT. Đây là sản phẩm học tập, không phải dịch vụ thật.')}</span>
                     </div>
                 </div>
             </footer>

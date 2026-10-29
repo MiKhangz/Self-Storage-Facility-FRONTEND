@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Navigate, Outlet, Route, Routes } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AuthProvider } from './features/auth/AuthContext'
+import { LanguageProvider } from './i18n/I18n.jsx'
 import { RequireAuth } from './features/auth/RequireAuth'
 import { ADMIN_PORTAL_ROLES, Roles } from './features/auth/roles'
 import CustomerLayout from './customer/layout/CustomerLayout.jsx'
@@ -73,6 +74,7 @@ createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <BrowserRouter>
+        <LanguageProvider>
         <AuthProvider>
           <Routes>
             <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -134,6 +136,7 @@ createRoot(document.getElementById('root')!).render(
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
+        </LanguageProvider>
       </BrowserRouter>
     </QueryClientProvider>
   </StrictMode>,

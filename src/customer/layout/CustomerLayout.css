@@ -316,3 +316,5 @@
 /* Paying an invoice: the question appears in place of the button. */
 .se-pay-confirm { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .se-pay-error { flex-basis: 100%; color: #d92d20; font-size: 13px; }
+/* Language selector in the header (customer site and staff portal). */
+.se-lang select { height: 36px; padding: 0 28px 0 10px; border: 1px solid var(--se-line); border-radius: 8px; background: #fff; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--se-ink); cursor: pointer; }
