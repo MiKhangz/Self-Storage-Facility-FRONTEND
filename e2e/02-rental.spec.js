@@ -145,6 +145,12 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await find(fresh)
     await expect(staff.getByRole('alert')).toContainText('No working access code matches')
 
+    // The renter sees every visit in their history, including the one staff closed for them.
+    await customer.reload()
+    const history = customer.locator('section').filter({ has: customer.getByRole('heading', { name: 'Lịch sử ra vào' }) })
+    await expect(history).toContainText('nhân viên ghi nhận')
+    await expect(history.getByRole('listitem')).toHaveCount(2) // the handover visit, then the one marked as left
+
     // A renter reports a problem with their unit (needs the ticket categories every database is given).
     await customer.getByRole('link', { name: 'Báo sự cố' }).click()
     await customer.getByRole('radiogroup', { name: 'Loại vấn đề' }).getByRole('radio', { name: 'Hư hỏng / sửa chữa' }).click()

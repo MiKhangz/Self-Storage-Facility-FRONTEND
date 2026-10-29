@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { accessLogsApi, contractsApi, renewalsApi } from '../../api/generated';
+import { checkInsApi, contractsApi, renewalsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import { addMonths, formatDate, formatVnd, todayIso } from '../components/format.js';
@@ -12,7 +12,8 @@ import './MyStoragePage.css';
 import './UnitDetailPage.css';
 
 const RENEW_OPTIONS = [1, 3, 6, 12];
-const ACCESS_RESULT = { Granted: 'Mở cổng thành công', Denied: 'Bị từ chối', Expired: 'Mã đã hết hạn' };
+/** How a visit was closed when the customer did not check out at the desk themselves. */
+const LEFT_HOW = { MarkedByStaff: 'nhân viên ghi nhận', AutoAtClosing: 'tự động lúc đóng cửa' };
 const formatTime = (iso) => new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 
 function AccessCodeCard({ contract }) {
@@ -118,7 +119,8 @@ export default function UnitDetailPage() {
     const contract = useQuery({ queryKey: ['contracts', contractId], queryFn: () => contractsApi.getById(contractId) });
     const reservations = useMyReservations();
     const invoices = useMyInvoices();
-    const logs = useQuery({ queryKey: ['access-logs', 'mine'], queryFn: () => accessLogsApi.mine({ page: 1, pageSize: 50 }) });
+    // Every coming and going is checked in and out at the desk (the handover counts as the first visit).
+    const visits = useQuery({ queryKey: ['check-ins', contractId], queryFn: () => checkInsApi.list({ contractId, page: 1, pageSize: 6 }) });
     const sign = useMutation({
         mutationFn: () => contractsApi.sign(contractId),
         onSuccess: (dto) => {
@@ -134,7 +136,7 @@ export default function UnitDetailPage() {
     const r = reservations.data?.items?.find((x) => x.reservationId === c.reservationId);
     const mine = (invoices.data?.items ?? []).filter((i) => i.contractId === contractId);
     const due = mine.filter((i) => OPEN_INVOICE.includes(i.status)).sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
-    const myLogs = (logs.data?.items ?? []).filter((l) => l.contractId === contractId).slice(0, 6);
+    const myVisits = visits.data?.items ?? [];
     const live = ['Active', 'Overdue', 'Suspended'].includes(c.status);
     // The API renews and moves out only Active contracts; an overdue one must be paid up first.
     const active = c.status === 'Active';
@@ -219,8 +221,13 @@ export default function UnitDetailPage() {
                     <section className="se-panel">
                         <h2>Lịch sử ra vào</h2>
                         <ul className="se-log">
-                            {myLogs.map((l) => <li key={l.accessLogId}><strong>{formatTime(l.accessTime)}</strong> {ACCESS_RESULT[l.result] ?? l.result}</li>)}
-                            {!myLogs.length && <li className="se-hint">Chưa có lượt ra vào nào.</li>}
+                            {myVisits.map((v) => (
+                                <li key={v.checkInId}>
+                                    <span>Vào <strong>{formatTime(v.checkInAt)}</strong>
+                                        {v.checkOutAt ? <> · ra <strong>{formatTime(v.checkOutAt)}</strong>{LEFT_HOW[v.checkOutMethod] ? ` (${LEFT_HOW[v.checkOutMethod]})` : ''}</> : ' · đang ở trong cơ sở'}</span>
+                                </li>
+                            ))}
+                            {!myVisits.length && <li className="se-hint">{visits.isLoading ? 'Đang tải…' : 'Chưa có lượt ra vào nào.'}</li>}
                         </ul>
                     </section>
                 </aside>
