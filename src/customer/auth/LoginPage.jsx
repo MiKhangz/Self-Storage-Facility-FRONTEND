@@ -5,6 +5,7 @@ import { Roles } from '../../features/auth/roles';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import AuthShell, { PasswordInput } from './AuthShell.jsx';
+import { useT } from '../../i18n/I18n.jsx';
 
 const BENEFITS = [
     { icon: 'key', title: 'Mã ra vào cá nhân', text: 'Mở cổng và kho của bạn bằng mã chỉ riêng bạn biết.' },
@@ -14,6 +15,7 @@ const BENEFITS = [
 
 export default function LoginPage() {
     const { login, logout } = useAuth();
+    const t = useT();
     const navigate = useNavigate();
     const location = useLocation();
     const [email, setEmail] = useState('');
@@ -29,7 +31,7 @@ export default function LoginPage() {
             const session = await login(email, password);
             if (session.role !== Roles.StorageCustomer) {
                 logout();
-                setError('Đây là tài khoản nhân viên. Vui lòng đăng nhập ở Cổng quản trị.');
+                setError(t('Đây là tài khoản nhân viên. Vui lòng đăng nhập ở Cổng quản trị.'));
                 return;
             }
             navigate(location.state?.from ?? '/my-storage', { replace: true });
@@ -42,8 +44,8 @@ export default function LoginPage() {
 
     return (
         <AuthShell title="Quản lý kho của bạn trực tuyến." benefits={BENEFITS}>
-            <h1>Chào mừng bạn trở lại</h1>
-            <p className="se-auth-lead">Đăng nhập để quản lý kho, hóa đơn và yêu cầu hỗ trợ.</p>
+            <h1>{t('Chào mừng bạn trở lại')}</h1>
+            <p className="se-auth-lead">{t('Đăng nhập để quản lý kho, hóa đơn và yêu cầu hỗ trợ.')}</p>
             <form className="se-form" onSubmit={submit}>
                 <label>
                     <span>Email</span>
@@ -52,18 +54,18 @@ export default function LoginPage() {
                     </div>
                 </label>
                 <label>
-                    <span>Mật khẩu</span>
+                    <span>{t('Mật khẩu')}</span>
                     <PasswordInput value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="current-password" />
                 </label>
                 <div className="se-form-split">
                     <span />
-                    <Link to="/forgot-password">Quên mật khẩu?</Link>
+                    <Link to="/forgot-password">{t('Quên mật khẩu?')}</Link>
                 </div>
                 {error && <div className="se-alert" role="alert">{error}</div>}
-                <button type="submit" className="se-btn se-btn-primary" disabled={submitting}>{submitting ? 'Đang đăng nhập…' : 'Đăng nhập'}</button>
+                <button type="submit" className="se-btn se-btn-primary" disabled={submitting}>{submitting ? t('Đang đăng nhập…') : t('Đăng nhập')}</button>
             </form>
-            <p className="se-auth-switch">Chưa có tài khoản?<Link to="/register">Đăng ký ngay</Link></p>
-            <div className="se-auth-note"><Icon name="shield" size={15} /><span>Tài khoản nhân viên và quản trị đăng nhập tại <Link to="/admin/login">Cổng quản trị</Link>.</span></div>
+            <p className="se-auth-switch">{t('Chưa có tài khoản?')}<Link to="/register">{t('Đăng ký ngay')}</Link></p>
+            <div className="se-auth-note"><Icon name="shield" size={15} /><span>{t('Tài khoản nhân viên và quản trị đăng nhập tại')} <Link to="/admin/login">{t('Cổng quản trị')}</Link>.</span></div>
         </AuthShell>
     );
 }

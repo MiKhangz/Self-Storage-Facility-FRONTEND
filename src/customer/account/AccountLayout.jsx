@@ -1,6 +1,7 @@
 import { NavLink, Outlet, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../components/Icon.jsx';
+import { useT } from '../../i18n/I18n.jsx';
 import { initials } from '../layout/CustomerLayout.jsx';
 import './AccountLayout.css';
 
@@ -15,6 +16,7 @@ const LINKS = [
 /** Left sidebar shared by the signed-in customer pages (U09, U13–U16). */
 export default function AccountLayout() {
     const { session, logout } = useAuth();
+    const t = useT();
     const navigate = useNavigate();
 
     return (
@@ -23,14 +25,14 @@ export default function AccountLayout() {
                 <aside className="se-account-side">
                     <div className="se-account-who">
                         <span className="se-avatar lg">{initials(session?.fullName)}</span>
-                        <div><strong>{session?.fullName}</strong><small>Khách thuê kho</small></div>
+                        <div><strong>{session?.fullName}</strong><small>{t('Khách thuê kho')}</small></div>
                     </div>
-                    <nav aria-label="Tài khoản">
+                    <nav aria-label={t('Tài khoản')}>
                         {LINKS.map((l) => (
-                            <NavLink key={l.to} to={l.to}><Icon name={l.icon} size={17} />{l.label}</NavLink>
+                            <NavLink key={l.to} to={l.to}><Icon name={l.icon} size={17} />{t(l.label)}</NavLink>
                         ))}
                         <button type="button" onClick={() => { logout(); navigate('/', { replace: true }); }}>
-                            <Icon name="arrowLeft" size={17} />Đăng xuất
+                            <Icon name="arrowLeft" size={17} />{t('Đăng xuất')}
                         </button>
                     </nav>
                 </aside>
