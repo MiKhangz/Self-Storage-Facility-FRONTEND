@@ -74,7 +74,7 @@ export default function CheckInPage() {
 
             <section className="se-panel sa-checkin-find">
                 <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) find.mutate(); }}>
-                    <label><span className="se-label">Customer's access code (coming in or going out; it changes after each visit)</span>
+                    <label><span className="se-label">{tr("Customer's access code (coming in or going out; it changes after each visit)")}</span>
                         <div className="se-input"><Icon name="key" size={16} />
                             <input inputMode="numeric" autoComplete="off" maxLength={20} placeholder={tr('Ask the customer for their code')} value={code}
                                 onChange={(e) => { setCode(e.target.value); find.reset(); }} /></div></label>

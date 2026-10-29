@@ -164,11 +164,11 @@ export default function PricingPage() {
                         <div className="sa-card-title">
                             <h2>{tr('Version {version}', { version: policy.version })} <Status value={policy.status} /></h2>
                         </div>
-                        {editable && <p className="sa-muted">Set the prices (Save each row), then the rental terms (Save terms), then Publish.</p>}
+                        {editable && <p className="sa-muted">{tr("Set the prices (Save each row), then the rental terms (Save terms), then Publish.")}</p>}
                         <h3 className="sa-pricing-step">{tr('1 · Prices per size')}</h3>
                         <div className="se-table-wrap">
                             <table className="se-table">
-                                <thead><tr><th>{tr('Size')}</th><th>{tr('Area')}</th><th>1 month (₫)</th><th>3+ months (discount %)</th><th>6+ months (discount %)</th><th>12+ months (discount %)</th><th /></tr></thead>
+                                <thead><tr><th>{tr('Size')}</th><th>{tr('Area')}</th><th>{tr("1 month (₫)")}</th><th>{tr("3+ months (discount %)")}</th><th>{tr("6+ months (discount %)")}</th><th>{tr("12+ months (discount %)")}</th><th /></tr></thead>
                                 <tbody>
                                     {types.map((t) => (
                                         <PriceRow key={`${policy.pricingPolicyId}-${t.unitTypeId}`} policy={policy} type={t} editable={editable}

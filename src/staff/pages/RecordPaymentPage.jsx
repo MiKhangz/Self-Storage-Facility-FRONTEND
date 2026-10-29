@@ -52,7 +52,7 @@ function Adjust({ invoice }) {
         <form onSubmit={(e) => { e.preventDefault(); adjust.mutate(); }}>
             <h3>{tr('Adjust invoice')}</h3>
             <label><span className="se-label">{tr('Reason')}</span><div className="se-input"><input maxLength={200} value={description} onChange={(e) => setDescription(e.target.value)} placeholder={tr('e.g. Goodwill credit')} /></div></label>
-            <label><span className="se-label">Amount (₫) — negative gives a credit</span><div className="se-input"><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} /></div></label>
+            <label><span className="se-label">{tr("Amount (₫) — negative gives a credit")}</span><div className="se-input"><input type="number" value={amount} onChange={(e) => setAmount(e.target.value)} /></div></label>
             {adjust.isError && <div className="se-alert" role="alert">{errorMessage(adjust.error)}</div>}
             <button type="submit" className="se-btn se-btn-ghost se-btn-block" disabled={adjust.isPending || !description.trim() || !Number(amount)}>{adjust.isPending ? tr('Saving…') : tr('Add adjustment')}</button>
         </form>
@@ -83,7 +83,7 @@ function Payments({ invoice, canRefund }) {
                 ))}
             </ul>
             {canRefund && list.some((p) => p.status === 'Succeeded') && (
-                <label><span className="se-label">Refund reason (optional)</span><div className="se-input"><input maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} /></div></label>
+                <label><span className="se-label">{tr("Refund reason (optional)")}</span><div className="se-input"><input maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} /></div></label>
             )}
             {refund.isError && <div className="se-alert" role="alert">{errorMessage(refund.error)}</div>}
         </section>
@@ -164,9 +164,9 @@ export default function RecordPaymentPage() {
                         </dl>
                         {canRecord && (OPEN.includes(invoice.status) ? (
                             <form onSubmit={(e) => { e.preventDefault(); if (valid) pay.mutate(); }}>
-                                <label><span className="se-label">Amount received (₫)</span>
+                                <label><span className="se-label">{tr("Amount received (₫)")}</span>
                                     <div className="se-input"><input type="number" min="1" max={invoice.outstandingAmount} value={amount === '' ? invoice.outstandingAmount : amount} onChange={(e) => setAmount(e.target.value)} required /></div></label>
-                                <label><span className="se-label">Receipt / transfer reference (optional)</span>
+                                <label><span className="se-label">{tr("Receipt / transfer reference (optional)")}</span>
                                     <div className="se-input"><input maxLength={50} value={reference} onChange={(e) => setReference(e.target.value)} /></div></label>
                                 {!valid && <p className="sa-bad">{tr('Enter an amount between 1 and the outstanding balance.')}</p>}
                                 {pay.isError && <div className="se-alert" role="alert">{errorMessage(pay.error)}</div>}

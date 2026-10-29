@@ -102,7 +102,7 @@ export default function DashboardPage() {
 
             <div className="sa-grid-2">
                 <section className="se-panel">
-                    <div className="sa-card-title"><h2>Today&apos;s schedule</h2><Link to="/admin/handover" className="se-link">{tr('Open handover desk')} <Icon name="arrow" size={14} /></Link></div>
+                    <div className="sa-card-title"><h2>{tr("Today's schedule")}</h2><Link to="/admin/handover" className="se-link">{tr('Open handover desk')} <Icon name="arrow" size={14} /></Link></div>
                     <div className="se-table-wrap">
                         <table className="se-table">
                             <thead><tr><th>{tr('Time')}</th><th>{tr('Type')}</th><th>{tr('Reference')}</th><th>{tr('Staff')}</th><th>{tr('Status')}</th></tr></thead>

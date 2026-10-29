@@ -38,7 +38,7 @@ function NewOrder({ onClose }) {
                 </select></div>
                 <p className="se-hint">{tr('Only free units are listed. For a customer\'s unit, order the work from their support ticket.')}</p></label>
             <label><span className="se-label">{tr('What needs doing *')}</span><textarea className="se-textarea" rows={3} maxLength={300} value={form.description} onChange={set('description')} required /></label>
-            <label><span className="se-label">Planned for (optional)</span><div className="se-input"><input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')} /></div></label>
+            <label><span className="se-label">{tr("Planned for (optional)")}</span><div className="se-input"><input type="datetime-local" value={form.scheduledAt} onChange={set('scheduledAt')} /></div></label>
             {create.isError && <div className="se-alert" role="alert">{errorMessage(create.error)}</div>}
             <button type="submit" className="se-btn se-btn-primary se-btn-block" disabled={create.isPending || !form.storageUnitId || !form.description.trim()}>{create.isPending ? tr('Creating…') : tr('Create order')}</button>
         </form>
@@ -88,7 +88,7 @@ function OrderPanel({ order, canWrite, onClose }) {
                     {order.status === 'InProgress' && (
                         <>
                             <p className="se-hint">{tr('The unit is out of service until the work is done.')}</p>
-                            <label><span className="se-label">Cost (₫) *</span><div className="se-input"><input type="number" min="0" value={cost} onChange={(e) => setCost(e.target.value)} /></div></label>
+                            <label><span className="se-label">{tr("Cost (₫) *")}</span><div className="se-input"><input type="number" min="0" value={cost} onChange={(e) => setCost(e.target.value)} /></div></label>
                             <label><span className="se-label">{tr('Work note *')}</span><textarea className="se-textarea" rows={3} maxLength={500} value={workNote} onChange={(e) => setWorkNote(e.target.value)} /></label>
                             <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={cost === '' || !workNote.trim() || move.isPending} onClick={() => move.mutate('Done')}>{tr('Mark done')}</button>
                         </>

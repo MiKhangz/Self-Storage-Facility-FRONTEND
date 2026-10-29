@@ -131,7 +131,7 @@ function SignContract({ reservation, contract, locked }) {
                     : tr('Draft the contract for this unit, then print it for signing.')}</small></span>
             {!locked && !contract && (
                 <div className="sa-inline-form">
-                    <label><span className="se-label">Rent due on day of month (1–28)</span>
+                    <label><span className="se-label">{tr("Rent due on day of month (1–28)")}</span>
                         <div className="se-input"><input type="number" min={1} max={28} value={paymentDay} onChange={(e) => setPaymentDay(Number(e.target.value))} /></div></label>
                     <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={draft.isPending || !(paymentDay >= 1 && paymentDay <= 28)} onClick={() => draft.mutate()}>
                         {draft.isPending ? tr('Drafting…') : tr('Draft contract')}
@@ -215,7 +215,7 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
                             {lockGiven && <small className="sa-muted">Lock {reservation.unitCode} given to the customer.</small>}
                         </div>
                     </div>
-                    <label><span className="se-label">Condition note (optional, shown again at the return inspection)</span><textarea className="se-textarea" rows={2} maxLength={300} value={form.conditionNote} onChange={(e) => set({ conditionNote: e.target.value })} /></label>
+                    <label><span className="se-label">{tr("Condition note (optional, shown again at the return inspection)")}</span><textarea className="se-textarea" rows={2} maxLength={300} value={form.conditionNote} onChange={(e) => set({ conditionNote: e.target.value })} /></label>
                 </li>
             </ol>
             {handover.isError && <div className="se-alert" role="alert">{errorMessage(handover.error)}</div>}
@@ -252,7 +252,7 @@ function HandoverDesk() {
                     {queue.map((r) => (
                         <button key={r.reservationId} type="button" className={`sa-queue-item${current?.reservationId === r.reservationId ? ' active' : ''}`} onClick={() => setSelected(r.reservationId)}>
                             <span><strong>{r.customerName}</strong><small>{r.unitCode} · {r.unitTypeName}</small></span>
-                            <span className={`se-badge ${r.moveInDate <= today ? 'low' : ''}`}>{r.moveInDate <= today ? 'Due' : formatDate(r.moveInDate)}</span>
+                            <span className={`se-badge ${r.moveInDate <= today ? 'low' : ''}`}>{r.moveInDate <= today ? tr('Due') : formatDate(r.moveInDate)}</span>
                         </button>
                     ))}
                     {!queue.length && <p className="sa-muted">{reservations.isLoading ? tr('Loading…') : tr('No confirmed reservations waiting.')}</p>}
@@ -381,7 +381,7 @@ export default function HandoverPage() {
 
     return (
         <>
-            <PageHeader title={tr('Handover')} subtitle={`Today, ${formatDate(todayIso())}`} />
+            <PageHeader title={tr('Handover')} subtitle={tr('Today, {date}', { date: formatDate(todayIso()) })} />
             <div className="sa-stats">
                 <Stat icon="key" label="Waiting for handover" value={reservations.data?.length ?? 0} />
                 <Stat icon="file" label="Active rentals" value={active.data?.length ?? 0} />

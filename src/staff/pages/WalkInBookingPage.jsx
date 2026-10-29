@@ -51,7 +51,7 @@ function CustomerStep({ value, onChange }) {
                     <label><span className="se-label">{tr('Full name *')}</span><div className="se-input"><input value={value.customer.fullName} onChange={set('fullName')} maxLength={100} /></div></label>
                     <label><span className="se-label">{tr('Phone *')}</span><div className="se-input"><input type="tel" value={value.customer.phoneNumber} onChange={set('phoneNumber')} maxLength={20} /></div></label>
                     <label><span className="se-label">{tr('Email *')}</span><div className="se-input"><input type="email" value={value.customer.email} onChange={set('email')} maxLength={100} /></div></label>
-                    <label><span className="se-label">Citizen ID (CCCD)</span><div className="se-input"><input inputMode="numeric" value={value.customer.citizenId} onChange={set('citizenId')} maxLength={12} /></div></label>
+                    <label><span className="se-label">{tr("Citizen ID (CCCD)")}</span><div className="se-input"><input inputMode="numeric" value={value.customer.citizenId} onChange={set('citizenId')} maxLength={12} /></div></label>
                 </div>
             )}
         </section>
@@ -147,7 +147,7 @@ export default function WalkInBookingPage() {
                 {quote.data && (
                     <dl className="se-kv">
                         <div><dt>{tr('Monthly rent')}</dt><dd>{formatVnd(quote.data.monthlyRent)}</dd></div>
-                        <div><dt>Deposit (cash now)</dt><dd>{formatVnd(quote.data.depositAmount)}</dd></div>
+                        <div><dt>{tr("Deposit (cash now)")}</dt><dd>{formatVnd(quote.data.depositAmount)}</dd></div>
                     </dl>
                 )}
             </section>

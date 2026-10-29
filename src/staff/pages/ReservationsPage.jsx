@@ -51,7 +51,7 @@ function CloseBooking({ reservation }) {
     return (
         <>
             <span className="se-label">{tr('End this booking')}</span>
-            <label><span className="se-label">Reason (optional)</span>
+            <label><span className="se-label">{tr("Reason (optional)")}</span>
                 <div className="se-input"><input maxLength={200} value={reason} onChange={(e) => setReason(e.target.value)} /></div></label>
             {close.isError && <div className="se-alert" role="alert">{errorMessage(close.error)}</div>}
             <div className="sa-form-actions">
