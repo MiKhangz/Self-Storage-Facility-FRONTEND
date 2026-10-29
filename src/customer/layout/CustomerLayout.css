@@ -313,3 +313,6 @@
     .se-stack td.se-stack-action .se-btn { width: 100%; }
     .se-stack td.se-empty { display: block; text-align: center; }
 }
+/* Paying an invoice: the question appears in place of the button. */
+.se-pay-confirm { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.se-pay-error { flex-basis: 100%; color: #d92d20; font-size: 13px; }
