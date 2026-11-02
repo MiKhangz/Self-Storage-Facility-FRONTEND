@@ -37,6 +37,7 @@ import HandoverPage from './staff/pages/HandoverPage.jsx'
 import CheckInPage from './staff/pages/CheckInPage.jsx'
 import ContractsPage from './staff/pages/ContractsPage.jsx'
 import PricingPage from './staff/pages/PricingPage.jsx'
+import UnitSizesPage from './staff/pages/UnitSizesPage.jsx'
 import TicketsPage from './staff/pages/TicketsPage.jsx'
 import UsersPage from './staff/pages/UsersPage.jsx'
 import TicketDetailPageAdmin from './staff/pages/TicketDetailPage.jsx'
@@ -87,6 +88,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/check-in" element={<CheckInPage />} />
               <Route path="/admin/contracts" element={<ContractsPage />} />
               <Route path="/admin/pricing" element={<PricingPage />} />
+              <Route path="/admin/unit-sizes" element={<UnitSizesPage />} />
               <Route path="/admin/tickets" element={<TicketsPage />} />
               <Route path="/admin/users" element={<UsersPage />} />
               <Route path="/admin/users/invite" element={<InviteUserPage />} />

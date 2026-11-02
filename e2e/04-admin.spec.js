@@ -117,3 +117,35 @@ test('E16 an admin copies the live price version into a draft, then deletes the 
   await expect(versions.locator('option')).toHaveCount(before)
   await expect(page.getByRole('button', { name: /^Copy version \d+ to a new draft$/ })).toBeVisible()
 })
+
+test('E19 ops add, edit and delete a unit size', async ({ page }) => {
+  page.on('dialog', (d) => d.accept())
+  const code = `T${Date.now() % 100000}`
+  await loginStaff(page, ACCOUNTS.ops)
+  await page.getByRole('navigation').getByRole('link', { name: 'Unit Sizes' }).click()
+
+  await page.getByRole('button', { name: 'New size' }).click()
+  await page.getByLabel('Code').fill(code)
+  await page.getByLabel('Name').fill('Test size')
+  await page.getByLabel('Area (m²)').fill('7.5')
+  await page.getByLabel('Width (m)').fill('2.5')
+  await page.getByLabel('Depth (m)').fill('3')
+  await page.getByLabel('Height (m)').fill('2.4')
+  await page.getByRole('button', { name: 'Save size' }).click()
+  const row = page.getByRole('row', { name: new RegExp(code) })
+  await expect(row.getByRole('link', { name: 'Set a price' })).toBeVisible()
+
+  await row.getByRole('cell', { name: 'Test size' }).click()
+  await page.getByLabel('Name').fill('Renamed size')
+  await page.getByRole('button', { name: 'Save size' }).click()
+  await expect(row.getByRole('cell', { name: 'Renamed size' })).toBeVisible()
+
+  await row.getByRole('cell', { name: 'Renamed size' }).click()
+  await page.getByRole('button', { name: 'Delete size' }).click()
+  await expect(row).toBeHidden()
+
+  // A size in use stays: units and prices refer to it.
+  await page.locator('tbody tr').first().click()
+  await page.getByRole('button', { name: 'Delete size' }).click()
+  await expect(page.getByRole('alert')).toContainText('cannot be deleted')
+})
