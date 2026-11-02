@@ -322,6 +322,7 @@
     .se-stack td.se-empty { display: block; text-align: center; }
 }
 /* Paying an invoice: the question appears in place of the button. */
+.se-resend { margin: 12px 0; }
 .se-panel .se-pay-lines { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 10px 16px; margin: 0 0 20px; padding: 0; }
 .se-pay-lines dt { color: var(--se-muted); }
 .se-pay-lines dd { margin: 0; text-align: right; font-weight: 600; overflow-wrap: anywhere; color: var(--se-ink); }

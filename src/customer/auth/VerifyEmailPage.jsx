@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { authApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
+import ResendVerification from './ResendVerification.jsx';
 import './ForgotPasswordPage.css';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -21,6 +22,7 @@ export default function VerifyEmailPage() {
                     : verify.isPending ? <h1>{t('Đang kích hoạt tài khoản…')}</h1>
                         : verify.isError ? <><h1>{t('Kích hoạt không thành công')}</h1><div className="se-alert" role="alert">{errorMessage(verify.error)}</div></>
                             : <><h1>{t('Đã xác nhận email')}</h1><p className="se-auth-lead">{t('Tài khoản của bạn đã được kích hoạt. Bạn có thể đăng nhập ngay.')}</p></>}
+                {(!token || verify.isError) && <ResendVerification />}
                 <Link to="/login" className="se-btn se-btn-primary se-btn-block">{t('Đến trang đăng nhập')}</Link>
             </div>
         </div>

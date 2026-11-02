@@ -5,6 +5,7 @@ import { Roles } from '../../features/auth/roles';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import AuthShell, { PasswordInput } from './AuthShell.jsx';
+import ResendVerification from './ResendVerification.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 
 const BENEFITS = [
@@ -22,10 +23,13 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
+    // 403 is an account that cannot sign in yet; the API sends a link only if it is really waiting for one.
+    const [blockedEmail, setBlockedEmail] = useState(null);
 
     const submit = async (e) => {
         e.preventDefault();
         setError('');
+        setBlockedEmail(null);
         setSubmitting(true);
         try {
             const session = await login(email, password);
@@ -37,6 +41,7 @@ export default function LoginPage() {
             navigate(location.state?.from ?? '/my-storage', { replace: true });
         } catch (err) {
             setError(errorMessage(err));
+            if (err.response?.status === 403) setBlockedEmail(email.trim());
         } finally {
             setSubmitting(false);
         }
@@ -64,6 +69,7 @@ export default function LoginPage() {
                 {error && <div className="se-alert" role="alert">{error}</div>}
                 <button type="submit" className="se-btn se-btn-primary" disabled={submitting}>{submitting ? t('Đang đăng nhập…') : t('Đăng nhập')}</button>
             </form>
+            {blockedEmail && <ResendVerification key={blockedEmail} email={blockedEmail} />}
             <p className="se-auth-switch">{t('Chưa có tài khoản?')}<Link to="/register">{t('Đăng ký ngay')}</Link></p>
             <div className="se-auth-note"><Icon name="shield" size={15} /><span>{t('Tài khoản nhân viên và quản trị đăng nhập tại')} <Link to="/admin/login">{t('Cổng quản trị')}</Link>.</span></div>
         </AuthShell>

@@ -5,6 +5,7 @@ import { authApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import AuthShell, { PasswordInput } from './AuthShell.jsx';
+import ResendVerification from './ResendVerification.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 
 const BENEFITS = [
@@ -94,6 +95,7 @@ export default function RegisterPage() {
                     {register.isPending ? t('Đang tạo tài khoản…') : t('Tạo tài khoản')}
                 </button>
             </form>
+            {register.data?.status === 'Pending' && <ResendVerification email={register.data.email} />}
             <p className="se-auth-switch">{t('Đã có tài khoản?')}<Link to="/login">{t('Đăng nhập')}</Link></p>
         </AuthShell>
     );
