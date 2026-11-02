@@ -321,7 +321,7 @@
 .se-pay-lines dt { color: var(--se-muted); }
 .se-pay-lines dd { margin: 0; text-align: right; font-weight: 600; overflow-wrap: anywhere; color: var(--se-ink); }
 .se-pay-amount { font-size: 20px; font-weight: 700; color: var(--se-primary) !important; }
-.se-pay-done { text-align: center; }
+.se-panel.se-pay-done, .se-panel.se-pay-done h2 { text-align: center; justify-content: center; }
 .se-pay-done .se-confirm-icon { margin-top: 0; }
 .se-pay-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
 /* Language selector in the header (customer site and staff portal). */
