@@ -8,7 +8,7 @@ import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd, rentalEndDate, todayIso } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
-import { PageHeader, Status, TableState } from '../components/ui.jsx';
+import { Modal, PageHeader, Status, TableState } from '../components/ui.jsx';
 import { useReservations, useUnits } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -88,10 +88,10 @@ function AssignPanel({ reservation, onClose }) {
     const pending = waitingForUnit(reservation);
 
     return (
-        <aside className="se-panel sa-side-panel">
+        <div className="se-panel sa-side-panel">
             <div className="sa-card-title">
                 <h2>{reservation.reservationCode} <Status value={reservation.status} /></h2>
-                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button>
+                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="close" size={16} /></button>
             </div>
             <p className="sa-muted">{tr('Created {time}', { time: formatDateTime(reservation.createdAt) })}</p>
             <dl className="se-kv">
@@ -121,7 +121,7 @@ function AssignPanel({ reservation, onClose }) {
                 </>
             )}
             {['Pending', 'Confirmed'].includes(reservation.status) && <CloseBooking reservation={reservation} />}
-        </aside>
+        </div>
     );
 }
 
@@ -149,28 +149,26 @@ export default function ReservationsPage() {
                     </button>
                 ))}
             </div>
-            <div className={`sa-split${current ? ' open' : ''}`}>
-                <div className="se-card se-table-wrap">
-                    <table className="se-table sa-table">
-                        <thead><tr><th>{tr('Code')}</th><th>{tr('Customer')}</th><th>{tr('Requested')}</th><th>{tr('Facility')}</th><th>{tr('Move-in')}</th><th>{tr('Period')}</th><th /></tr></thead>
-                        <tbody>
-                            {shown.map((r) => (
-                                <tr key={r.reservationId} className={selected === r.reservationId ? 'active' : ''} onClick={() => setSelected(r.reservationId)}>
-                                    <td className="strong">{r.reservationCode}</td>
-                                    <td>{r.customerName}</td>
-                                    <td>{r.unitTypeName}{r.unitCode ? ` · ${r.unitCode}` : ''}</td>
-                                    <td>{r.facilityName}</td>
-                                    <td>{formatDate(r.moveInDate)}</td>
-                                    <td>{tr('{n} month{n:s}', { n: r.rentalMonths })}</td>
-                                    <td>{waitingForUnit(r) && canAssign && <button type="button" className="se-btn se-btn-outline se-btn-sm">{tr('Assign')}</button>}</td>
-                                </tr>
-                            ))}
-                            <TableState query={reservations} rows={shown} cols={7} empty="No reservations in this list." />
-                        </tbody>
-                    </table>
-                </div>
-                {current && canAssign && <AssignPanel key={current.reservationId} reservation={current} onClose={() => setSelected(null)} />}
+            <div className="se-card se-table-wrap">
+                <table className="se-table sa-table">
+                    <thead><tr><th>{tr('Code')}</th><th>{tr('Customer')}</th><th>{tr('Requested')}</th><th>{tr('Facility')}</th><th>{tr('Move-in')}</th><th>{tr('Period')}</th><th /></tr></thead>
+                    <tbody>
+                        {shown.map((r) => (
+                            <tr key={r.reservationId} className={selected === r.reservationId ? 'active' : ''} onClick={() => setSelected(r.reservationId)}>
+                                <td className="strong">{r.reservationCode}</td>
+                                <td>{r.customerName}</td>
+                                <td>{r.unitTypeName}{r.unitCode ? ` · ${r.unitCode}` : ''}</td>
+                                <td>{r.facilityName}</td>
+                                <td>{formatDate(r.moveInDate)}</td>
+                                <td>{tr('{n} month{n:s}', { n: r.rentalMonths })}</td>
+                                <td>{waitingForUnit(r) && canAssign && <button type="button" className="se-btn se-btn-outline se-btn-sm">{tr('Assign')}</button>}</td>
+                            </tr>
+                        ))}
+                        <TableState query={reservations} rows={shown} cols={7} empty="No reservations in this list." />
+                    </tbody>
+                </table>
             </div>
+            {current && canAssign && <Modal key={current.reservationId} narrow onClose={() => setSelected(null)}><AssignPanel reservation={current} onClose={() => setSelected(null)} /></Modal>}
         </>
     );
 }
