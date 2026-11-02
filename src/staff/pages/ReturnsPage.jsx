@@ -7,6 +7,7 @@ import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
+import HandoverPhotos from '../components/HandoverPhotos.jsx';
 import { Modal, PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
 import { humanize, useReturns } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
@@ -158,6 +159,7 @@ export default function ReturnsPage() {
                             <div><dt>{tr('Refund to')}</dt><dd>{tr(humanize(current.refundMethod))}{current.refundAccount ? ` · ${current.refundAccount}` : ''}</dd></div>
                             {current.inspection && <div><dt>{tr('Inspection')}</dt><dd>{tr(humanize(current.inspection.conditionResult))} · refund {formatVnd(current.inspection.refundAmount)}</dd></div>}
                         </dl>
+                        {handedOver && <HandoverPhotos handover={handedOver} />}
                         {current.accessLockedAt && <div className="se-alert" role="alert">Past the move-out deadline: access was locked on {formatDateTime(current.accessLockedAt)}. Clear the unit out, then inspect it.</div>}
                         {current.status === 'Requested' && isStaff && <Approve request={current} onDone={done} />}
                         {current.status === 'Approved' && isStaff && <Inspect request={current} onDone={done} />}

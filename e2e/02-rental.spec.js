@@ -3,6 +3,9 @@ import { ACCOUNTS, PASSWORD, apiAs, loginStaff, openAdmin, uniqueEmail } from '.
 
 // One rental from booking to handover, each step a test. Later steps use what earlier ones made, so they run in order
 // and stop at the first failure. The customer and the staff member each have their own browser window.
+// One pixel: enough to prove a photo goes up and comes back.
+const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=', 'base64')
+
 test.describe.serial('rental: book, deposit, assign, contract, check in, rent, renew, hand back', () => {
   const name = `Khách E2E ${Date.now()}`
   const email = uniqueEmail('rental')
@@ -103,6 +106,8 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
 
   test('E05 staff complete the handover and the contract becomes Active', async () => {
     await staff.getByRole('button', { name: 'Confirm lock given' }).click()
+    await staff.getByLabel('Add photos').setInputFiles({ name: 'unit.png', mimeType: 'image/png', buffer: PNG })
+    await expect.poll(() => staff.getByRole('img', { name: 'unit.png' }).evaluate((i) => i.naturalWidth)).toBeGreaterThan(0)
     await staff.getByRole('button', { name: 'Complete handover' }).click()
 
     await expect(staff.getByRole('heading', { name: /Handover complete/ })).toBeVisible()
@@ -208,6 +213,8 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await staff.getByRole('button', { name: 'Approve & book inspection' }).click()
     await staff.getByRole('tab', { name: /Approved/ }).click()
     await staff.getByRole('row', { name: new RegExp(name) }).click()
+    // The photo from the handover is there to compare with how the unit came back.
+    await expect.poll(() => staff.getByRole('img', { name: 'unit.png' }).evaluate((i) => i.naturalWidth)).toBeGreaterThan(0)
     await staff.getByRole('radiogroup', { name: 'Unit condition' }).getByRole('radio', { name: 'Good' }).click()
     await staff.getByRole('button', { name: 'Save inspection' }).click()
 

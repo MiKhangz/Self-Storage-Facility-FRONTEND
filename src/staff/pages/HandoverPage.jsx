@@ -4,6 +4,7 @@ import { accessCodesApi, handoversApi, contractsApi, reservationsApi } from '../
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
+import HandoverPhotos, { PhotoPicker, uploadPhoto } from '../components/HandoverPhotos.jsx';
 import { PageHeader, Stat, Status } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useUnits } from '../queries.js';
 import { esc, printDocument } from '../print.js';
@@ -178,9 +179,16 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
     const [lockFor, setLockFor] = useState(null);
     const lockGiven = lockFor === reservation.storageUnitId;
     const [form, setForm] = useState({ conditionNote: '' });
+    const [photos, setPhotos] = useState([]);
     const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const handover = useMutation({
-        mutationFn: () => handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, lockSerial: reservation.unitCode, ...form }),
+        // A photo belongs to a handover, so photos go up after it exists. A failed photo must not undo the handover.
+        mutationFn: async () => {
+            const done = await handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, lockSerial: reservation.unitCode, ...form });
+            const failedPhotos = [];
+            for (const file of photos) await uploadPhoto(done.handoverId, file).catch(() => failedPhotos.push(file.name));
+            return { ...done, failedPhotos };
+        },
         onSuccess: onCompleted,
     });
 
@@ -216,6 +224,7 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
                         </div>
                     </div>
                     <label><span className="se-label">{tr("Condition note (optional, shown again at the return inspection)")}</span><textarea className="se-textarea" rows={2} maxLength={300} value={form.conditionNote} onChange={(e) => set({ conditionNote: e.target.value })} /></label>
+                    <PhotoPicker files={photos} onChange={setPhotos} />
                 </li>
             </ol>
             {handover.isError && <div className="se-alert" role="alert">{errorMessage(handover.error)}</div>}
@@ -265,6 +274,7 @@ function HandoverDesk() {
                         <h2>{tr('Handover complete — unit {code} is now occupied', { code: done.unitCode })}</h2>
                         <p className="sa-muted">{tr('Give the customer this access code. They are now checked in. The code changes each time they leave; they find the current one in their account.')}</p>
                         <div className="se-code-digits dark">{(done.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
+                        {done.failedPhotos.length > 0 && <div className="se-alert" role="alert">{tr('Could not upload {names}. Add them again under Active rentals & access.', { names: done.failedPhotos.join(', ') })}</div>}
                         <button type="button" className="se-btn se-btn-primary" onClick={() => {
                             ['reservations', 'contracts', 'storage-units', 'check-ins'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
                             setDone(null);
@@ -335,6 +345,8 @@ function ActiveRentals() {
     const owing = current && (invoices.data ?? []).filter((i) => i.contractId === current.contractId && ['Issued', 'Overdue'].includes(i.status));
     const overdue = owing?.some((i) => i.status === 'Overdue');
     const eligible = current && !overdue && code.data?.isActive;
+    const handovers = useQuery({ queryKey: ['handovers', 'Completed'], queryFn: () => handoversApi.list({ status: 'Completed', page: 1, pageSize: 100 }) });
+    const handover = current && handovers.data?.items?.find((h) => h.contractId === current.contractId);
 
     return (
         <div className="sa-split open sa-desk">
@@ -362,6 +374,7 @@ function ActiveRentals() {
                         <small>{tr('Access eligibility')}</small>
                         <strong>{eligible ? tr('Eligible for access') : tr('Not eligible — check payment or access code')}</strong>
                     </div>
+                    {handover && <HandoverPhotos handover={handover} canAdd />}
                     {code.data?.isActive && <RevokeCode key={code.data.accessCodeId} contractId={current.contractId} accessCodeId={code.data.accessCodeId} />}
                     <CancelHandover key={current.contractId} contractId={current.contractId} />
                 </section>
