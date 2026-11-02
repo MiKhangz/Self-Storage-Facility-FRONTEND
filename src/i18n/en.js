@@ -54,6 +54,8 @@ export default {
     "Thông tin và thanh toán": "Details & payment",
     "Xác nhận": "Confirm",
     "Xác nhận thanh toán": "Confirm payment",
+    "Tiền cọc của bạn đã được thanh toán.": "Your deposit has been paid.",
+    "Đã nhận thanh toán của bạn.": "Your payment has been received.",
     "Thanh toán tiền cọc": "Pay deposit",
     "Các bước đặt kho": "Booking steps",
     "Bạn không có quyền truy cập trang này.": "You don't have access to this page.",

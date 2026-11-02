@@ -51,6 +51,8 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     reservationCode = (await customer.locator('.se-ticket-head strong').innerText()).trim()
     await customer.getByRole('button', { name: 'Thanh toán tiền cọc ngay' }).click()
     await customer.getByRole('button', { name: 'Xác nhận', exact: true }).click()
+    await expect(customer.getByText('Tiền cọc của bạn đã được thanh toán.')).toBeVisible()
+    await customer.getByRole('button', { name: 'Đóng' }).click()
     await expect(customer.getByText('Đã thanh toán')).toBeVisible()
 
     const reservation = await staffApi.get(`/api/reservations/${reservationId}`)
@@ -169,6 +171,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await customer.getByRole('link', { name: 'Thanh toán và hóa đơn' }).click()
     await customer.getByRole('button', { name: 'Thanh toán ngay' }).click()
     await customer.getByRole('button', { name: 'Xác nhận', exact: true }).click()
+    await customer.getByRole('button', { name: 'Đóng' }).click()
     await expect.poll(async () => {
       const invoices = (await staffApi.get('/api/invoices?page=1&pageSize=100')).items.filter((i) => i.contractId === contract.contractId)
       return invoices.length > 0 && invoices.every((i) => i.status === 'Paid')

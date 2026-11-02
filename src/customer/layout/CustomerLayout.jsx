@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
+import { PaidPopup } from '../account/PayInvoiceButton.jsx';
 import Icon from '../components/Icon.jsx';
 import { LanguageSelect, useT } from '../../i18n/I18n.jsx';
 import './CustomerLayout.css';
@@ -91,7 +92,7 @@ export default function CustomerLayout() {
                 </div>
             </header>
 
-            <main><Outlet /></main>
+            <main><PaidPopup><Outlet /></PaidPopup></main>
 
             <footer className="se-footer">
                 <div className="se-container">
