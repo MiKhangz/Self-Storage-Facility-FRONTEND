@@ -252,6 +252,7 @@
 /* Pop-up: the panel inside keeps its own look; the dialog only centres it over a dimmed page. */
 .sa-modal { padding: 0; border: 0; background: transparent; width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); overflow: auto; border-radius: 16px; }
 .sa-modal.wide { width: min(1100px, calc(100vw - 32px)); }
+.sa-modal.narrow { width: min(440px, calc(100vw - 32px)); }
 .sa-modal > .se-panel { margin: 0; box-shadow: 0 24px 64px rgb(15 23 42 / 0.35); }
 .sa-modal::backdrop { background: rgb(15 23 42 / 0.55); }
 @keyframes sa-pop { from { opacity: 0; transform: translateY(12px) scale(0.98); } }

@@ -45,7 +45,7 @@ export default function BookingConfirmedPage() {
                                 </dl>
                                 {r.depositInvoiceId && r.depositStatus !== 'Paid' && (
                                     <PayInvoiceButton invoice={{ invoiceId: r.depositInvoiceId, outstandingAmount: r.depositAmount, invoiceNumber: `DEP${r.reservationCode}` }}
-                                        className="se-btn se-btn-primary se-btn-block">{t('Thanh toán tiền cọc ngay')}</PayInvoiceButton>
+                                        title="Thanh toán tiền cọc" className="se-btn se-btn-primary se-btn-block">{t('Thanh toán tiền cọc ngay')}</PayInvoiceButton>
                                 )}
                             </div>
 

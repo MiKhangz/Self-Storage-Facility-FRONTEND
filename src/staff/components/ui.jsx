@@ -9,13 +9,13 @@ const text = (tr, value) => (typeof value === 'string' ? tr(value) : value);
 
 /**
  * A pop-up over a dimmed page (native <dialog>: focus stays inside, Esc closes). A click on the dimmed backdrop
- * closes it too. `wide` fits a form laid out in columns.
+ * closes it too. `wide` fits a form laid out in columns, `narrow` a short confirmation.
  */
-export function Modal({ onClose, wide, children }) {
+export function Modal({ onClose, wide, narrow, children }) {
     const ref = useRef(null);
     useEffect(() => { ref.current?.showModal(); }, []);
     return (
-        <dialog ref={ref} className={`sa-modal${wide ? ' wide' : ''}`} onClose={onClose}
+        <dialog ref={ref} className={`sa-modal${wide ? ' wide' : ''}${narrow ? ' narrow' : ''}`} onClose={onClose}
             onClick={(e) => { if (e.target === ref.current) ref.current.close(); }}>
             {children}
         </dialog>

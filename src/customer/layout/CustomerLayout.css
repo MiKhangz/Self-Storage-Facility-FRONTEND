@@ -317,7 +317,10 @@
     .se-stack td.se-empty { display: block; text-align: center; }
 }
 /* Paying an invoice: the question appears in place of the button. */
-.se-pay-confirm { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.se-pay-error { flex-basis: 100%; color: #d92d20; font-size: 13px; }
+.se-panel .se-pay-lines { display: grid; grid-template-columns: auto 1fr; align-items: baseline; gap: 10px 16px; margin: 0 0 20px; padding: 0; }
+.se-pay-lines dt { color: var(--se-muted); }
+.se-pay-lines dd { margin: 0; text-align: right; font-weight: 600; overflow-wrap: anywhere; color: var(--se-ink); }
+.se-pay-amount { font-size: 20px; font-weight: 700; color: var(--se-primary) !important; }
+.se-pay-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
 /* Language selector in the header (customer site and staff portal). */
 .se-lang select { height: 36px; padding: 0 28px 0 10px; border: 1px solid var(--se-line); border-radius: 8px; background: #fff; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--se-ink); cursor: pointer; }
