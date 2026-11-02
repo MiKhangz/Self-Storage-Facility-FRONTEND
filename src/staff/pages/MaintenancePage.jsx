@@ -6,7 +6,7 @@ import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
-import { Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
+import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize, useFacilities, useUnits } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -30,7 +30,7 @@ function NewOrder({ onClose }) {
     });
     return (
         <form className="se-panel sa-side-panel" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
-            <div className="sa-card-title"><h2>{tr('New maintenance order')}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+            <div className="sa-card-title"><h2>{tr('New maintenance order')}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
             <label><span className="se-label">{tr('Unit *')}</span><div className="se-field">
                 <select value={form.storageUnitId} onChange={set('storageUnitId')} required>
                     <option value="">{tr('Choose a unit')}</option>
@@ -65,7 +65,7 @@ function OrderPanel({ order, canWrite, onClose }) {
 
     return (
         <aside className="se-panel sa-side-panel">
-            <div className="sa-card-title"><h2>{tr('Unit')} {order.unitCode} <Status value={order.status} /></h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+            <div className="sa-card-title"><h2>{tr('Unit')} {order.unitCode} <Status value={order.status} /></h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
             <p>{order.description}</p>
             <dl className="se-kv">
                 <div><dt>{tr('Planned for')}</dt><dd>{order.scheduledAt ? formatDate(order.scheduledAt) : '—'}</dd></div>
@@ -132,7 +132,7 @@ export default function MaintenancePage() {
                 <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search unit or description')} />
                 <SelectFilter label="Status" value={status} onChange={setStatus} all="All statuses" options={STATUSES.map((s) => ({ value: s, label: humanize(s) }))} />
             </Filters>
-            <div className={`sa-split${current || creating ? ' open' : ''}`}>
+            <div className="sa-split">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Unit')}</th><th>{tr('Description')}</th><th>{tr('Planned')}</th><th>{tr('Cost')}</th><th>{tr('Status')}</th></tr></thead>
@@ -150,8 +150,8 @@ export default function MaintenancePage() {
                         </tbody>
                     </table>
                 </div>
-                {creating && <NewOrder onClose={() => setCreating(false)} />}
-                {current && !creating && <OrderPanel key={`${current.maintenanceOrderId}-${current.status}`} order={current} canWrite={canWrite} onClose={() => setSelected(null)} />}
+                {creating && <Modal narrow onClose={() => setCreating(false)}><NewOrder onClose={() => setCreating(false)} /></Modal>}
+                {current && !creating && <Modal narrow onClose={() => setSelected(null)}><OrderPanel key={`${current.maintenanceOrderId}-${current.status}`} order={current} canWrite={canWrite} onClose={() => setSelected(null)} /></Modal>}
             </div>
         </>
     );

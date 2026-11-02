@@ -7,7 +7,7 @@ import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
-import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
+import { Modal, PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
 import { humanize, useReturns } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -102,7 +102,10 @@ export default function ReturnsPage() {
     // What staff noted when the unit was handed over, to compare with how it comes back.
     const handovers = useQuery({ queryKey: ['handovers', 'Completed'], queryFn: () => handoversApi.list({ status: 'Completed', page: 1, pageSize: 100 }) });
     const handedOver = current && handovers.data?.items?.find((h) => h.contractId === current.contractId);
-    const done = () => ['returns', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+    const done = () => {
+        ['returns', 'contracts', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+        setSelected(null);
+    };
     const isStaff = [Roles.FacilityStaff, Roles.FacilityManager].includes(session?.role);
 
     return (
@@ -121,7 +124,7 @@ export default function ReturnsPage() {
                     </button>
                 ))}
             </div>
-            <div className={`sa-split${current ? ' open' : ''}`}>
+            <div className="sa-split">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Contract')}</th><th>{tr('Return date')}</th><th>{tr('Move out by')}</th><th>{tr('Inspection')}</th><th>{tr('Status')}</th></tr></thead>
@@ -142,9 +145,9 @@ export default function ReturnsPage() {
                     </table>
                 </div>
                 {current && (
-                    <aside className="se-panel sa-side-panel">
+                    <Modal narrow onClose={() => setSelected(null)}><aside className="se-panel sa-side-panel">
                         <div className="sa-card-title"><h2>{tr('Unit')} {current.unitCode} <Status value={current.status} /></h2>
-                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
                         <p className="sa-muted">{current.customerName} · {current.contractNumber}</p>
                         <dl className="se-kv">
                             <div><dt>{tr('Requested')}</dt><dd>{formatDateTime(current.requestedAt)}</dd></div>
@@ -160,7 +163,7 @@ export default function ReturnsPage() {
                         {current.status === 'Approved' && isStaff && <Inspect request={current} onDone={done} />}
                         {current.status === 'Inspected' && session?.role === Roles.BusinessOperationsManager && <Settle request={current} onDone={done} />}
                         {current.status === 'Inspected' && session?.role !== Roles.BusinessOperationsManager && <p className="sa-muted">{tr('A Business Operations Manager settles the deposit.')}</p>}
-                    </aside>
+                    </aside></Modal>
                 )}
             </div>
         </>

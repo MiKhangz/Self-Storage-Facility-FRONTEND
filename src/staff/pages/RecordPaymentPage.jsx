@@ -7,7 +7,7 @@ import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
-import { Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
+import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { humanize, useContracts, useInvoices } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -126,7 +126,7 @@ export default function RecordPaymentPage() {
                 <Stat icon="clock" tone="bad" label="Overdue" value={open.filter((i) => i.status === 'Overdue').length} />
                 <Stat icon="check" label="Paid invoices" value={all.filter((i) => i.status === 'Paid').length} />
             </div>
-            <div className={`sa-split${invoice ? ' open' : ''}`}>
+            <div className="sa-split">
                 <div>
                     <Filters>
                         <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search customer, unit or invoice')} />
@@ -152,9 +152,9 @@ export default function RecordPaymentPage() {
                     </div>
                 </div>
                 {invoice && (
-                    <aside className="se-panel sa-side-panel">
+                    <Modal narrow onClose={() => setSelected(null)}><aside className="se-panel sa-side-panel">
                         <div className="sa-card-title"><h2>{invoice.invoiceNumber} <Status value={invoice.status} /></h2>
-                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
                         {contractOf[invoice.contractId] && <p className="sa-muted"><Link to={`/admin/customers/${contractOf[invoice.contractId].customerId}`} className="se-link">{contractOf[invoice.contractId].customerName}</Link> · Unit {contractOf[invoice.contractId].unitCode}</p>}
                         <dl className="se-kv">
                             {invoice.items?.map((it) => <div key={it.invoiceItemId}><dt>{it.description}</dt><dd>{formatVnd(it.lineAmount)}</dd></div>)}
@@ -176,7 +176,7 @@ export default function RecordPaymentPage() {
                         <Payments invoice={invoice} canRefund={role === BOM} />
                         {role === BOM && invoice.status !== 'WrittenOff' && <Adjust invoice={invoice} />}
                         {[FS, FM, BOM, ADMIN].includes(role) && <Reminders invoice={invoice} role={role} />}
-                    </aside>
+                    </aside></Modal>
                 )}
             </div>
         </>

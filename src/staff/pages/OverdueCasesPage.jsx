@@ -7,7 +7,7 @@ import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
-import { Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
+import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -53,7 +53,7 @@ export default function OverdueCasesPage() {
                 <SelectFilter label="Stage" value={stage} onChange={setStage} all="All stages" options={STAGES.map((s) => ({ value: s, label: humanize(s) }))} />
                 <label className="se-check"><input type="checkbox" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} /><span>{tr('Open cases only')}</span></label>
             </Filters>
-            <div className={`sa-split${current ? ' open' : ''}`}>
+            <div className="sa-split">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Invoice')}</th><th>{tr('Outstanding')}</th><th>{tr('Days overdue')}</th><th>{tr('Late fee')}</th><th>{tr('Stage')}</th></tr></thead>
@@ -74,9 +74,9 @@ export default function OverdueCasesPage() {
                     </table>
                 </div>
                 {current && (
-                    <aside className="se-panel sa-side-panel">
+                    <Modal narrow onClose={() => setSelected(null)}><aside className="se-panel sa-side-panel">
                         <div className="sa-card-title"><h2>{current.customerName}</h2>
-                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
                         <p className="sa-muted"><Link to={`/admin/customers/${current.customerId}`} className="se-link">{tr('Customer profile')}</Link> · Unit {current.unitCode} · {current.contractNumber}</p>
                         <dl className="se-kv">
                             <div><dt>{tr('Stage')}</dt><dd><Status value={current.resolvedAt ? 'Resolved' : current.stage} /></dd></div>
@@ -101,7 +101,7 @@ export default function OverdueCasesPage() {
                                 <Icon name="key" size={16} /> {act.isPending ? tr('Restoring…') : tr('Restore access')}
                             </button>
                         )}
-                    </aside>
+                    </aside></Modal>
                 )}
             </div>
         </>

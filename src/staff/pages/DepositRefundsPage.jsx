@@ -7,7 +7,7 @@ import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
-import { Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
+import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -30,7 +30,7 @@ function PayPanel({ refund, onClose }) {
             if (window.confirm(tr('Mark {amount} as paid back to {name}?', { amount: formatVnd(refund.amount), name: refund.customerName }))) pay.mutate();
         }}>
             <div className="sa-card-title"><h2>{formatVnd(refund.amount)}</h2>
-                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
             <p className="sa-muted"><Link to={`/admin/customers/${refund.customerId}`} className="se-link">{refund.customerName}</Link> · {refund.customerPhone}</p>
             <dl className="se-kv">
                 <div><dt>{tr('Why')}</dt><dd>{tr(SOURCE[refund.source])}</dd></div>
@@ -77,7 +77,7 @@ export default function DepositRefundsPage() {
                 <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search customer, phone, booking or facility')} />
                 <SelectFilter label="Status" value={status} onChange={(v) => { setStatus(v); setSelected(null); }} all="All" options={['Pending', 'Paid'].map((s) => ({ value: s, label: humanize(s) }))} />
             </Filters>
-            <div className={`sa-split${current && canPay && current.status === 'Pending' ? ' open' : ''}`}>
+            <div className="sa-split">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Customer')}</th><th>{tr('Why')}</th><th>{tr('Booking')}</th><th>{tr('Amount')}</th><th>{tr('Owed since')}</th><th>{tr('Paid')}</th><th>{tr('Status')}</th></tr></thead>
@@ -97,7 +97,7 @@ export default function DepositRefundsPage() {
                         </tbody>
                     </table>
                 </div>
-                {current && canPay && current.status === 'Pending' && <PayPanel key={current.depositRefundId} refund={current} onClose={() => setSelected(null)} />}
+                {current && canPay && current.status === 'Pending' && <Modal narrow onClose={() => setSelected(null)}><PayPanel key={current.depositRefundId} refund={current} onClose={() => setSelected(null)} /></Modal>}
             </div>
         </>
     );

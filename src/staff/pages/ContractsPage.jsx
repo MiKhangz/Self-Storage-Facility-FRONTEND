@@ -9,7 +9,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { addDays, formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { periodUsed } from '../../customer/account/queries.js';
-import { PageHeader, SearchFilter, Filters, Status, TableState, downloadFile, matches } from '../components/ui.jsx';
+import { Modal, PageHeader, SearchFilter, Filters, Status, TableState, downloadFile, matches } from '../components/ui.jsx';
 import { useContracts, useInvoices } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -47,7 +47,7 @@ function ContractPanel({ contract, invoices, onClose }) {
         <aside className="se-panel sa-side-panel">
             <div className="sa-card-title">
                 <h2>{contract.contractNumber} <Status value={contract.status} /></h2>
-                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button>
+                <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="close" size={16} /></button>
             </div>
             <p className="sa-muted"><Link to={`/admin/customers/${contract.customerId}`} className="se-link">{contract.customerName}</Link> · {tr('Kho')} {contract.unitCode}</p>
             {due > 0 && (
@@ -175,7 +175,7 @@ export default function ContractsPage() {
                 ))}
             </div>
             <Filters><SearchFilter value={search} onChange={setSearch} placeholder={tr('Search contract, customer or unit')} /></Filters>
-            <div className={`sa-split${current ? ' open' : ''}`}>
+            <div className="sa-split">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Contract')}</th><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Period')}</th><th>{tr('Balance due')}</th><th>{tr('Status')}</th></tr></thead>
@@ -194,7 +194,7 @@ export default function ContractsPage() {
                         </tbody>
                     </table>
                 </div>
-                {current && <ContractPanel key={current.contractId} contract={current} invoices={allInvoices.filter((i) => i.contractId === current.contractId)} onClose={() => setSelected(null)} />}
+                {current && <Modal narrow onClose={() => setSelected(null)}><ContractPanel key={current.contractId} contract={current} invoices={allInvoices.filter((i) => i.contractId === current.contractId)} onClose={() => setSelected(null)} /></Modal>}
             </div>
         </>
     );

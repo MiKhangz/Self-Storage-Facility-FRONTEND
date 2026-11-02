@@ -6,7 +6,7 @@ import { Roles } from '../../features/auth/roles';
 import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
-import { Filters, PageHeader, SearchFilter, SelectFilter, Status, TableState, matches } from '../components/ui.jsx';
+import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Status, TableState, matches } from '../components/ui.jsx';
 import { humanize, useContracts, useFacilities, useSizePrices, useUnitTypes, useUnits } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 
@@ -106,7 +106,7 @@ export default function UnitsPage() {
                     options={(facilities.data ?? []).map((f) => ({ value: f.facilityId, label: f.name }))} />
                 <SelectFilter label="Size" value={size} onChange={setSize} options={sizes} all="All sizes" />
             </Filters>
-            <div className={`sa-split${unit ? ' open' : ''}`}>
+            <div className="sa-split">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Unit')}</th><th>{tr('Size')}</th><th>{tr('Floor')}</th><th>{tr('Price / mo')}</th><th>{tr('Status')}</th><th>{tr('Customer')}</th><th>{tr('Contract end')}</th></tr></thead>
@@ -130,9 +130,9 @@ export default function UnitsPage() {
                     </table>
                 </div>
                 {unit && (
-                    <aside className="se-panel sa-side-panel">
+                    <Modal narrow onClose={() => setSelected(null)}><aside className="se-panel sa-side-panel">
                         <div className="sa-card-title"><h2>{tr('Unit')} {unit.unitCode} <Status value={unit.status} /></h2>
-                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+                            <button type="button" className="sa-close" onClick={() => setSelected(null)} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
                         <dl className="se-kv">
                             <div><dt>{tr('Size')}</dt><dd>{unit.unitTypeName} · {unit.areaM2} m²</dd></div>
                             <div><dt>{tr('Floor / zone')}</dt><dd>{unit.floorName}{unit.zone ? ` · ${unit.zone}` : ''}</dd></div>
@@ -142,7 +142,7 @@ export default function UnitsPage() {
                             {contract && <div><dt>{tr('Period')}</dt><dd>{formatDate(contract.startDate)} → {formatDate(contract.endDate)}</dd></div>}
                         </dl>
                         {canEdit && <UnitEditor key={unit.storageUnitId} unit={unit} />}
-                    </aside>
+                    </aside></Modal>
                 )}
             </div>
         </>

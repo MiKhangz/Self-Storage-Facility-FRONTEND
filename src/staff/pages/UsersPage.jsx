@@ -82,7 +82,7 @@ function EditUser({ user, managed, onClose }) {
 
     return (
         <aside className="se-panel sa-side-panel">
-            <div className="sa-card-title"><h2>{tr('Edit {name}', { name: user.fullName })}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="arrowLeft" size={16} /></button></div>
+            <div className="sa-card-title"><h2>{tr('Edit {name}', { name: user.fullName })}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
             <p className="sa-muted">{user.email}</p>
             {isManager ? (
                 <p className="se-hint">{self ? tr('Only a system administrator can change your own facilities.') : tr('You can add or remove the facilities you manage.')}</p>
@@ -129,7 +129,7 @@ export default function UsersPage() {
                 <SelectFilter label="Role" value={role} onChange={setRole} all="All roles" options={ROLE_INFO.map((r) => ({ value: r.role, label: r.title }))} />
             </Filters>
             {help && <PermissionHelp onClose={() => setHelp(false)} />}
-            <div className={`sa-split${current ? ' open' : ''}`}>
+            <div className="sa-split">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('User')}</th><th>{tr('Role')}</th><th>{tr('Facilities')}</th><th>{tr('Status')}</th><th>{tr('Created')}</th></tr></thead>
@@ -147,7 +147,7 @@ export default function UsersPage() {
                         </tbody>
                     </table>
                 </div>
-                {current && <EditUser key={current.userId} user={current} managed={managed} onClose={() => setSelected(null)} />}
+                {current && <Modal narrow onClose={() => setSelected(null)}><EditUser key={current.userId} user={current} managed={managed} onClose={() => setSelected(null)} /></Modal>}
             </div>
         </>
     );
