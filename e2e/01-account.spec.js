@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { PASSWORD, loginCustomer, uniqueEmail } from './helpers.js'
+import { ACCOUNTS, PASSWORD, loginCustomer, loginStaff, uniqueEmail } from './helpers.js'
 
 test('E01 a new customer registers and signs in', async ({ page }) => {
   const email = uniqueEmail('register')
@@ -36,4 +36,26 @@ test('E20 a customer asks for a new verification email from a bad link and from 
   await page.getByRole('button', { name: 'Đăng nhập', exact: true }).click()
   await page.getByRole('button', { name: 'Gửi lại email xác nhận' }).click()
   await expect(page.getByRole('status')).toContainText('liên kết mới')
+})
+
+test('E21 two windows of one browser keep their own staff sign-in, through a reload and a log out', async ({ context }) => {
+  const staff = await context.newPage()
+  await loginStaff(staff, ACCOUNTS.staff)
+  const admin = await context.newPage()
+  await loginStaff(admin, ACCOUNTS.admin)
+  const person = (page) => page.getByText(/^(Facility staff|System administrator)$/)
+
+  await staff.reload()
+  await admin.reload()
+  await expect(person(staff)).toHaveText('Facility staff')
+  await expect(person(admin)).toHaveText('System administrator')
+
+  // A window opened afterwards starts from the latest sign-in.
+  const third = await context.newPage()
+  await third.goto('/admin')
+  await expect(person(third)).toHaveText('System administrator')
+
+  await staff.getByRole('button', { name: 'Log out' }).click()
+  await admin.reload()
+  await expect(person(admin)).toHaveText('System administrator')
 })

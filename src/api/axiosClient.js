@@ -20,8 +20,27 @@ let onUnauthorized = null
  */
 export const portalOf = (path) => (path.startsWith('/admin') ? 'staff' : 'customer')
 
+/**
+ * This window's id: sessionStorage is per window, so each window keeps its own session cookie on the API.
+ * @returns {string|undefined} undefined where storage is blocked; the window then uses the shared session.
+ */
+function tabId() {
+  try {
+    let id = sessionStorage.getItem('storease.tab')
+    if (!id) {
+      id = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, '0')).join('')
+      sessionStorage.setItem('storease.tab', id)
+    }
+    return id
+  } catch {
+    return undefined
+  }
+}
+
 api.interceptors.request.use((config) => {
   config.headers['X-Portal'] = portalOf(window.location.pathname)
+  const tab = tabId()
+  if (tab) config.headers['X-Tab'] = tab
   // LanguageProvider keeps this attribute on the language in use; the API answers its errors in it.
   config.headers['Accept-Language'] = document.documentElement.lang
   return config
