@@ -187,6 +187,11 @@
     flex: 1; min-width: 0; border: 0; outline: 0; background: transparent;
     font-family: inherit; font-size: 15px; color: var(--se-ink);
 }
+/* Native selects draw their own box in some browsers, inside the field's border; this keeps one box and one arrow. */
+.se-field select, .se-input select {
+    appearance: none; -webkit-appearance: none; padding: 0 22px 0 0; cursor: pointer; text-overflow: ellipsis;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2378716c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E") no-repeat right center;
+}
 .se-input-eye { border: 0; background: none; padding: 4px; cursor: pointer; color: var(--se-muted); display: grid; }
 .se-textarea {
     width: 100%; padding: 12px 14px; border: 1px solid var(--se-line); border-radius: 8px; resize: vertical;
