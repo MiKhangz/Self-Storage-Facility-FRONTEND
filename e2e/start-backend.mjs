@@ -14,6 +14,8 @@ const port = process.env.E2E_API_PORT ?? '5208'
 const env = {
   ...process.env,
   ASPNETCORE_ENVIRONMENT: 'Development',
+  // Tests never send real email, even when a developer has SMTP in appsettings.Development.json.
+  Smtp__Host: '',
   ConnectionStrings__DefaultConnection: process.env.E2E_DB_CONNECTION
     ?? 'Server=localhost\\SQLEXPRESS;Database=StorEase_E2E;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True',
   // Tests run billing on purpose (with a chosen date); the background job would race them.
