@@ -6,7 +6,7 @@ import { api } from '../axiosClient.js'
 export const activityLogsApi = {
   /**
    * GET /api/activity-logs
-   * @param {{ userId?: number, role?: string, search?: string, action?: string, from?: string, to?: string, signIns?: boolean, page?: number, pageSize?: number }} [params] query string
+   * @param {{ userId?: number, role?: string, search?: string, action?: string, areas?: string, from?: string, to?: string, signIns?: boolean, page?: number, pageSize?: number }} [params] query string
    * @returns {Promise<ActivityLogDtoPagedResult>}
    */
   list: (params) =>

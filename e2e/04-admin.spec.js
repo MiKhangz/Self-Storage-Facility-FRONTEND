@@ -158,7 +158,7 @@ test('E22 an admin checks the log of users of every role, from the log, the User
   await loginStaff(page, ACCOUNTS.admin)
   await openAdmin(page, 'Activity Log')
   await page.getByLabel('Role').selectOption('StorageCustomer')
-  const rows = page.locator('tbody tr')
+  const rows = page.locator('tbody tr:not(.sa-day-row)') // day headings are not entries
   await expect(rows.first()).toContainText('Storage customer')
   await expect(rows.filter({ hasNotText: 'Storage customer' })).toHaveCount(0)
   await expect(rows.filter({ hasText: 'Signed in' }).first()).toBeVisible()

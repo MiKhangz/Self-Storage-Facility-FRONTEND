@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { activityLogsApi, facilitiesApi } from '../../api/generated';
@@ -9,11 +9,10 @@ import { formatDate } from '../../customer/components/format.js';
 import { Filters, PageHeader, SearchFilter, SelectFilter, Status, TableState } from '../components/ui.jsx';
 import { ROLE_INFO } from '../permissions.js';
 import { humanize } from '../queries.js';
+import { AREAS, describe, isThisComputer } from '../activityLabels.js';
 import { useT } from '../../i18n/I18n.jsx';
 
 const LOG_PAGE_SIZE = 50;
-// 'POST Auth.Login' rows are older duplicates of a sign-in; the backend no longer writes them.
-const SIGN_LABELS = { LOGIN: 'Signed in', 'POST Auth.Login': 'Signed in', 'POST Auth.Logout': 'Signed out' };
 const LOG_ROLES = [...ROLE_INFO.map((r) => ({ value: r.role, label: r.title })), { value: Roles.StorageCustomer, label: 'Storage customer' }];
 
 /** A16: system activity log — every write by a signed-in user of any role, plus sign-ins. `?userId=` opens one person's log. */
@@ -21,20 +20,23 @@ export function ActivityLogPage() {
     const tr = useT();
     const [params, setParams] = useSearchParams();
     const userId = Number(params.get('userId')) || undefined;
-    const [filters, setFilters] = useState({ search: '', role: '', action: '', signIns: true });
+    const [filters, setFilters] = useState({ search: '', role: '', areas: '', signIns: true });
     const [page, setPage] = useState(1);
     const change = (key, value) => { setFilters({ ...filters, [key]: value }); setPage(1); };
     const logs = useQuery({
         queryKey: ['activity-logs', userId, filters, page],
         queryFn: () => activityLogsApi.list({
             userId, role: filters.role || undefined, search: filters.search.trim() || undefined,
-            action: filters.action.trim() || undefined, signIns: filters.signIns, page, pageSize: LOG_PAGE_SIZE,
+            areas: filters.areas || undefined, signIns: filters.signIns, page, pageSize: LOG_PAGE_SIZE,
         }),
         placeholderData: keepPreviousData,
     });
     const rows = logs.data?.items ?? [];
     const pages = Math.max(1, Math.ceil((logs.data?.totalCount ?? 0) / LOG_PAGE_SIZE));
     const person = rows[0]?.userName;
+    const today = formatDate(new Date().toISOString());
+    const yesterday = formatDate(new Date(Date.now() - 864e5).toISOString());
+    const dayOf = (iso) => { const d = formatDate(iso); return d === today ? tr('Today') : d === yesterday ? tr('Yesterday') : d; };
     return (
         <>
             <PageHeader title={tr('Activity log')} subtitle="Every action taken in the system by users of every role, with result" />
@@ -47,28 +49,34 @@ export function ActivityLogPage() {
             <Filters>
                 {!userId && <SearchFilter value={filters.search} onChange={(v) => change('search', v)} placeholder="Search name or email" />}
                 <SelectFilter label="Role" value={filters.role} onChange={(v) => change('role', v)} all="All roles" options={LOG_ROLES} />
-                <div className="se-field sa-search"><Icon name="search" />
-                    <input type="search" value={filters.action} onChange={(e) => change('action', e.target.value)} placeholder={tr('Filter by action')} aria-label={tr('Filter by action')} />
-                </div>
+                <SelectFilter label="Action type" value={filters.areas} onChange={(v) => change('areas', v)} all="All actions" options={AREAS} />
                 <label className="se-check"><input type="checkbox" checked={filters.signIns} onChange={(e) => change('signIns', e.target.checked)} /><span>{tr('Include sign-ins')}</span></label>
             </Filters>
             <div className="se-card se-table-wrap">
                 <table className="se-table">
-                    <thead><tr><th>{tr('Time')}</th><th>{tr('User')}</th><th>{tr('Role')}</th><th>{tr('Action')}</th><th>{tr('Entity')}</th><th>{tr('IP')}</th><th>{tr('Result')}</th></tr></thead>
+                    <thead><tr><th>{tr('Time')}</th><th>{tr('User')}</th><th>{tr('What happened')}</th><th>{tr('From')}</th><th>{tr('Result')}</th></tr></thead>
                     <tbody>
-                        {rows.map((l) => (
-                            <tr key={l.logId}>
-                                <td>{formatDate(l.createdAt)} {new Date(l.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</td>
-                                <td>{userId ? l.userName : <Link to={`?userId=${l.userId}`} onClick={() => setPage(1)}>{l.userName}</Link>}<br /><small className="sa-muted">{l.userEmail}</small></td>
-                                <td><span className="se-badge info">{tr(humanize(l.userRole))}</span></td>
-                                <td>{SIGN_LABELS[l.action] ? tr(SIGN_LABELS[l.action]) : l.action}</td>
-                                <td>{l.entityName}{l.entityId ? ` #${l.entityId}` : ''}
-                                    {l.subject && <><br /><small className="sa-muted">{tr('For')} {l.subjectUserId && l.subjectUserId !== userId ? <Link to={`?userId=${l.subjectUserId}`} onClick={() => setPage(1)}>{l.subject}</Link> : l.subject}</small></>}</td>
-                                <td>{l.ipAddress ?? '—'}</td>
-                                <td><Status value={l.result} /></td>
-                            </tr>
-                        ))}
-                        <TableState query={logs} rows={rows} cols={7} empty="No activity to show." />
+                        {rows.map((l, i) => {
+                            const d = describe(l);
+                            const day = dayOf(l.createdAt);
+                            return (
+                                <Fragment key={l.logId}>
+                                    {(i === 0 || dayOf(rows[i - 1].createdAt) !== day) && <tr className="sa-day-row"><th colSpan={5} scope="rowgroup">{day}</th></tr>}
+                                    <tr className={l.result === 'Failure' ? 'sa-row-failed' : ''}>
+                                        <td>{new Date(l.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</td>
+                                        <td>{userId ? <strong>{l.userName}</strong> : <Link to={`?userId=${l.userId}`} onClick={() => setPage(1)}><strong>{l.userName}</strong></Link>}
+                                            <br /><small className="sa-muted">{l.userEmail}</small>
+                                            <br /><span className="se-badge info">{tr(humanize(l.userRole))}</span></td>
+                                        <td><strong title={d.raw}>{tr(d.label)}</strong>
+                                            {d.record && <><br /><small className="sa-muted">{d.link ? <Link to={d.link}>{tr(d.record)} #{d.recordId}</Link> : `${tr(d.record)}${d.recordId ? ` #${d.recordId}` : ''}`}</small></>}
+                                            {l.subject && <><br /><small className="sa-muted">{tr('For')} {l.subjectUserId && l.subjectUserId !== userId ? <Link to={`?userId=${l.subjectUserId}`} onClick={() => setPage(1)}>{l.subject}</Link> : l.subject}</small></>}</td>
+                                        <td title={l.ipAddress ?? undefined}>{isThisComputer(l.ipAddress) ? tr('This computer') : (l.ipAddress ?? '—')}</td>
+                                        <td>{l.result === 'Failure' ? <span className="se-badge none">{tr('Failed')}</span> : <Status value={l.result} />}</td>
+                                    </tr>
+                                </Fragment>
+                            );
+                        })}
+                        <TableState query={logs} rows={rows} cols={5} empty="No activity to show." />
                     </tbody>
                 </table>
             </div>

@@ -311,3 +311,7 @@
 .sa-facility-list li { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--se-line); border-radius: 10px; }
 .sa-facility-list .se-check > span { display: grid; gap: 2px; } .sa-facility-list small { color: var(--se-muted); }
 .sa-facility-list .locked { opacity: 0.55; }
+
+/* Activity log: a heading row per day, and failed actions tinted. */
+.se-table tr.sa-day-row th { padding: 8px 18px; font-size: 12px; text-transform: none; letter-spacing: 0; color: var(--se-dark); }
+.se-table tr.sa-row-failed td { background: #fef6f5; }

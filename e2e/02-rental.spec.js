@@ -180,8 +180,13 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     // Staff recorded the visits, yet they show in the customer's log, naming them and the unit.
     await admin.getByRole('link', { name: 'View activity log' }).click()
     const entries = admin.locator('tbody tr')
-    await expect(entries.filter({ hasText: 'POST CheckIns.CheckIn' }).first()).toContainText(`For ${name} · ${contract.unitCode}`)
-    await expect(entries.filter({ hasText: 'POST CheckIns.MarkLeft' })).toContainText(/Facility staff/)
+    await expect(entries.filter({ hasText: 'Checked a customer in' }).first()).toContainText(`For ${name} · ${contract.unitCode}`)
+    await expect(entries.filter({ hasText: 'Marked a customer as left' })).toContainText(/Facility staff/)
+    // Plain choices narrow the log; the booking shows the record it made.
+    await admin.getByLabel('Action type').selectOption({ label: 'Bookings' })
+    await expect(entries.filter({ hasText: 'Booked a unit' }).first()).toContainText(/Booking #\d+/)
+    await expect(entries.filter({ hasText: 'Checked a customer in' })).toHaveCount(0)
+    await expect(admin.getByRole('rowheader').first()).toBeVisible() // the day heading
     await admin.context().close()
   })
 
