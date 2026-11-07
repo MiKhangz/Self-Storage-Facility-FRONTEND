@@ -11,5 +11,7 @@ export default defineConfig({
     // The browser only ever talks to localhost:5173, so no dev-certificate warning and no CORS preflight.
     // secure:false lets this local proxy accept the backend's self-signed .NET dev certificate.
     proxy: { '/api': { target: backend, changeOrigin: true, secure: false } },
+    // The E2E backend writes uploads there while tests run; watching them can crash the dev server (EBUSY).
+    watch: { ignored: ['**/e2e/.backend/**', '**/e2e-report/**', '**/test-results/**'] },
   },
 })

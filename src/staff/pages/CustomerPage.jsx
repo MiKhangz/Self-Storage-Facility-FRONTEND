@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { customersApi } from '../../api/generated';
+import { checkInsApi, customersApi } from '../../api/generated';
+import { LEFT_HOW } from './CheckInPage.jsx';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
@@ -13,6 +14,10 @@ import { useContracts, useInvoices, useReservations, useTickets } from '../queri
 import { useT } from '../../i18n/I18n.jsx';
 
 const TABS = ['Contracts', 'Reservations', 'Payments', 'Support requests'];
+const VISITS_TAB = 'Check-ins & check-outs';
+// Facility Staff work the desk itself; the visit history is for those who oversee it.
+const SEE_VISITS = [Roles.SystemAdministrator, Roles.BusinessOperationsManager, Roles.FacilityManager];
+const formatDateTimeShort = (iso) => (iso ? `${formatDate(iso)} ${new Date(iso).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : '');
 
 /** On-time share of paid invoices: paid ones whose due date had not passed when last paid. */
 export function onTimeShare(invoices) {
@@ -27,8 +32,15 @@ export function onTimeShare(invoices) {
  */
 export default function CustomerPage() {
     const tr = useT();
-    const isAdmin = useAuth().session?.role === Roles.SystemAdministrator;
+    const role = useAuth().session?.role;
+    const isAdmin = role === Roles.SystemAdministrator;
+    const seeVisits = SEE_VISITS.includes(role);
     const customerId = Number(useParams().customerId);
+    const visits = useQuery({
+        queryKey: ['check-ins', 'customer', customerId],
+        queryFn: () => checkInsApi.list({ customerId, page: 1, pageSize: 100 }),
+        enabled: seeVisits,
+    });
     const [tab, setTab] = useState('Contracts');
     const customer = useQuery({ queryKey: ['customers', customerId], queryFn: () => customersApi.getById(customerId) });
     const contracts = (useContracts().data ?? []).filter((c) => c.customerId === customerId);
@@ -56,7 +68,7 @@ export default function CustomerPage() {
             </div>
             <div className="sa-person sa-person-lg"><span className="se-avatar">{initials(name)}</span><span><strong>{name}</strong><small>{customer.isError ? tr('Contact details could not be loaded.') : contact}</small></span></div>
             <div className="se-tabs se-tabs-line" role="tablist">
-                {TABS.map((t) => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{tr(t)}</button>)}
+                {(seeVisits ? [...TABS, VISITS_TAB] : TABS).map((t) => <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => setTab(t)}>{tr(t)}</button>)}
             </div>
             <div className="se-card se-table-wrap">
                 {tab === 'Contracts' && (
@@ -85,6 +97,22 @@ export default function CustomerPage() {
                         <tbody>
                             {tickets.map((t) => <tr key={t.ticketId}><td className="strong"><Link to={`/admin/tickets/${t.ticketId}`}>{t.ticketCode}</Link></td><td>{t.subject}</td><td>{formatDateTime(t.createdAt)}</td><td><Status value={t.priority} /></td><td><Status value={t.status} /></td></tr>)}
                             <TableState query={ticketsQuery} rows={tickets} cols={5} empty="No support requests." />
+                        </tbody></table>
+                )}
+                {tab === VISITS_TAB && (
+                    <table className="se-table"><thead><tr><th>{tr('Unit')}</th><th>{tr('Checked in')}</th><th>{tr('Checked out')}</th><th>{tr('Recorded by')}</th><th>{tr('Note')}</th></tr></thead>
+                        <tbody>
+                            {(visits.data?.items ?? []).map((v) => (
+                                <tr key={v.checkInId}>
+                                    <td className="strong">{v.unitCode}<br /><small className="sa-muted">{v.contractNumber}</small></td>
+                                    <td>{formatDateTimeShort(v.checkInAt)}</td>
+                                    <td>{v.checkOutAt ? formatDateTimeShort(v.checkOutAt) : <span className="se-badge info">{tr('Still inside')}</span>}
+                                        {LEFT_HOW[v.checkOutMethod] && <><br /><small className="sa-muted">{tr(LEFT_HOW[v.checkOutMethod])}{v.checkOutReason ? ` · ${v.checkOutReason}` : ''}</small></>}</td>
+                                    <td>{v.recordedByName}</td>
+                                    <td>{v.note ?? '—'}</td>
+                                </tr>
+                            ))}
+                            <TableState query={visits} rows={visits.data?.items} cols={5} empty="No check-ins yet." />
                         </tbody></table>
                 )}
             </div>

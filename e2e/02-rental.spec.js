@@ -168,6 +168,23 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await customer.goto('/my-storage')
   })
 
+  test('E05c an admin sees the customer\'s check-ins and check-outs on their page and in their activity log', async ({ browser }) => {
+    const admin = await (await browser.newContext()).newPage()
+    await loginStaff(admin, ACCOUNTS.admin)
+    await admin.goto(`/admin/customers/${contract.customerId}`)
+    await admin.getByRole('tab', { name: 'Check-ins & check-outs' }).click()
+    const visits = admin.locator('tbody tr')
+    await expect(visits.first()).toContainText(contract.unitCode)
+    await expect(visits.filter({ hasText: 'marked by staff' })).toContainText('Forgot to check out at the desk')
+
+    // Staff recorded the visits, yet they show in the customer's log, naming them and the unit.
+    await admin.getByRole('link', { name: 'View activity log' }).click()
+    const entries = admin.locator('tbody tr')
+    await expect(entries.filter({ hasText: 'POST CheckIns.CheckIn' }).first()).toContainText(`For ${name} · ${contract.unitCode}`)
+    await expect(entries.filter({ hasText: 'POST CheckIns.MarkLeft' })).toContainText(/Facility staff/)
+    await admin.context().close()
+  })
+
   test('E06 the billing run issues rent and the customer pays it online', async ({ baseURL }) => {
     const ops = await apiAs(baseURL, ACCOUNTS.ops)
     await ops.post(`/api/billing/run?date=${today}`)

@@ -33,7 +33,7 @@ export const checkInsApi = {
     api.post(`/api/check-ins/${id}/mark-left`, body).then((r) => r.data),
   /**
    * GET /api/check-ins
-   * @param {{ contractId?: number, page?: number, pageSize?: number }} [params] query string
+   * @param {{ contractId?: number, customerId?: number, page?: number, pageSize?: number }} [params] query string
    * @returns {Promise<CheckInDtoPagedResult>}
    */
   list: (params) =>

@@ -10,7 +10,7 @@ import { useT } from '../../i18n/I18n.jsx';
 const time = (iso) => iso && new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 /** Now, as the value of a datetime-local input in Vietnam time. */
 const nowLocal = () => new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 16);
-const LEFT_HOW = { MarkedByStaff: 'marked by staff', AutoAtClosing: 'auto at closing' };
+export const LEFT_HOW = { MarkedByStaff: 'marked by staff', AutoAtClosing: 'auto at closing' };
 
 /** The customer left without checking out: staff record roughly when, and why. The activity log keeps who did it. */
 function MarkLeft({ row, onClose }) {

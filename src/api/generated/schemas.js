@@ -57,6 +57,8 @@
  * @property {(string|null)} [ipAddress]
  * @property {ActivityResult} [result]
  * @property {string} [createdAt] date-time
+ * @property {(number|null)} [subjectUserId] int32
+ * @property {(string|null)} [subject]
  */
 
 /**

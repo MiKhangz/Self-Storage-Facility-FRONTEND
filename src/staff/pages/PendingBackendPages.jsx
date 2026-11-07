@@ -62,7 +62,8 @@ export function ActivityLogPage() {
                                 <td>{userId ? l.userName : <Link to={`?userId=${l.userId}`} onClick={() => setPage(1)}>{l.userName}</Link>}<br /><small className="sa-muted">{l.userEmail}</small></td>
                                 <td><span className="se-badge info">{tr(humanize(l.userRole))}</span></td>
                                 <td>{SIGN_LABELS[l.action] ? tr(SIGN_LABELS[l.action]) : l.action}</td>
-                                <td>{l.entityName}{l.entityId ? ` #${l.entityId}` : ''}</td>
+                                <td>{l.entityName}{l.entityId ? ` #${l.entityId}` : ''}
+                                    {l.subject && <><br /><small className="sa-muted">{tr('For')} {l.subjectUserId && l.subjectUserId !== userId ? <Link to={`?userId=${l.subjectUserId}`} onClick={() => setPage(1)}>{l.subject}</Link> : l.subject}</small></>}</td>
                                 <td>{l.ipAddress ?? '—'}</td>
                                 <td><Status value={l.result} /></td>
                             </tr>
