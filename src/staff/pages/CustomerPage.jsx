@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { customersApi } from '../../api/generated';
+import { useAuth } from '../../features/auth/AuthContext';
+import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
@@ -25,6 +27,7 @@ export function onTimeShare(invoices) {
  */
 export default function CustomerPage() {
     const tr = useT();
+    const isAdmin = useAuth().session?.role === Roles.SystemAdministrator;
     const customerId = Number(useParams().customerId);
     const [tab, setTab] = useState('Contracts');
     const customer = useQuery({ queryKey: ['customers', customerId], queryFn: () => customersApi.getById(customerId) });
@@ -42,7 +45,9 @@ export default function CustomerPage() {
     return (
         <>
             <Link to="/admin/contracts" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to customers & contracts')}</Link>
-            <PageHeader title={name} subtitle={`${tr('Customer')} #${customerId}`} />
+            <PageHeader title={name} subtitle={`${tr('Customer')} #${customerId}`}>
+                {isAdmin && <Link to={`/admin/activity?userId=${customerId}`} className="se-btn se-btn-ghost"><Icon name="clock" size={16} /> {tr('View activity log')}</Link>}
+            </PageHeader>
             <div className="sa-stats">
                 <Stat icon="box" label="Active units" value={active.length} note={active.map((c) => c.unitCode).join(' · ') || '—'} />
                 <Stat icon="card" label="Lifetime paid" value={formatVnd(invoices.reduce((s, i) => s + (i.paidAmount ?? 0), 0))} note={tr('{n} invoice{n:s}', { n: invoices.length })} />

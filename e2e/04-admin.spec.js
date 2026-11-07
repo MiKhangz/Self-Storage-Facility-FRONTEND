@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { ACCOUNTS, PASSWORD, apiAs, loginStaff, openAdmin, uniqueEmail } from './helpers.js'
+import { ACCOUNTS, PASSWORD, apiAs, loginCustomer, loginStaff, openAdmin, uniqueEmail } from './helpers.js'
 
 test('E11 an admin opens a facility with a floor and a unit, and customers can see it', async ({ page, browser }) => {
   const stamp = Date.now().toString().slice(-6)
@@ -148,4 +148,31 @@ test('E19 ops add, edit and delete a unit size', async ({ page }) => {
   await page.locator('tbody tr').first().click()
   await page.getByRole('button', { name: 'Delete size' }).click()
   await expect(page.getByRole('alert')).toContainText('cannot be deleted')
+})
+
+test('E22 an admin checks the log of users of every role, from the log, the Users page and a customer page', async ({ page, browser }) => {
+  // A sign-in each, so a fresh database holds a customer's and a staff member's log.
+  await loginCustomer(await (await browser.newContext()).newPage())
+  await loginStaff(await (await browser.newContext()).newPage(), ACCOUNTS.staff)
+
+  await loginStaff(page, ACCOUNTS.admin)
+  await openAdmin(page, 'Activity Log')
+  await page.getByLabel('Role').selectOption('StorageCustomer')
+  const rows = page.locator('tbody tr')
+  await expect(rows.first()).toContainText('Storage customer')
+  await expect(rows.filter({ hasNotText: 'Storage customer' })).toHaveCount(0)
+  await expect(rows.filter({ hasText: 'Signed in' }).first()).toBeVisible()
+  await page.getByLabel('Include sign-ins').uncheck()
+  await expect(rows.filter({ hasText: 'Signed in' })).toHaveCount(0)
+
+  await openAdmin(page, 'Users & Roles')
+  await page.getByRole('row', { name: new RegExp(ACCOUNTS.staff) }).click()
+  await page.getByRole('link', { name: 'View activity log' }).click()
+  await expect(page.getByText(/^Showing the log of/)).toBeVisible()
+  await expect(rows.filter({ hasNotText: ACCOUNTS.staff })).toHaveCount(0)
+
+  await page.getByRole('button', { name: 'Show everyone' }).click()
+  await page.getByRole('link', { name: 'Khách Demo' }).first().click()
+  await expect(page).toHaveURL(/userId=\d+/)
+  await expect(rows.filter({ hasNotText: ACCOUNTS.customer })).toHaveCount(0)
 })

@@ -1,5 +1,16 @@
 /** English text on screen (staff portal) → Vietnamese. Text missing here shows in English. */
 export default {
+    "Every action taken in the system by users of every role, with result": "Mọi thao tác trong hệ thống của người dùng thuộc mọi vai trò, kèm kết quả",
+    "Showing the log of {name}": "Đang xem nhật ký của {name}",
+    "Show everyone": "Xem tất cả mọi người",
+    "Include sign-ins": "Gồm cả lượt đăng nhập",
+    "Signed in": "Đăng nhập",
+    "Signed out": "Đăng xuất",
+    "Storage customer": "Khách thuê kho",
+    "View activity log": "Xem nhật ký hoạt động",
+    "Previous": "Trước",
+    "Next": "Sau",
+    "Page {page} of {pages}": "Trang {page} / {pages}",
     "Unit Sizes": "Kích thước kho",
     "Unit sizes": "Kích thước kho",
     "The sizes units come in. Prices are set in Pricing & Policies": "Các kích thước kho. Giá được đặt ở Giá & Chính sách",

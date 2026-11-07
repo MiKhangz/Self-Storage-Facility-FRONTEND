@@ -84,6 +84,7 @@ function EditUser({ user, managed, onClose }) {
         <aside className="se-panel sa-side-panel">
             <div className="sa-card-title"><h2>{tr('Edit {name}', { name: user.fullName })}</h2><button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>
             <p className="sa-muted">{user.email}</p>
+            {!isManager && <Link to={`/admin/activity?userId=${user.userId}`} className="se-btn se-btn-ghost"><Icon name="clock" size={16} /> {tr('View activity log')}</Link>}
             {isManager ? (
                 <p className="se-hint">{self ? tr('Only a system administrator can change your own facilities.') : tr('You can add or remove the facilities you manage.')}</p>
             ) : (<>

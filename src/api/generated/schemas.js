@@ -49,6 +49,7 @@
  * @property {number} [userId] int32
  * @property {(string|null)} [userName]
  * @property {(string|null)} [userEmail]
+ * @property {(string|null)} [userRole]
  * @property {(number|null)} [facilityId] int32
  * @property {(string|null)} [action]
  * @property {(string|null)} [entityName]
