@@ -464,6 +464,26 @@
  */
 
 /**
+ * @typedef {Object} FacilityPriceListDto
+ * @property {number} [facilityId] int32
+ * @property {(string|null)} [facilityName]
+ * @property {(number|null)} [standardVersion] int32
+ * @property {(Array<FacilitySizePriceDto>|null)} [standard]
+ * @property {(Array<FacilityPriceVersionDto>|null)} [versions]
+ */
+
+/**
+ * @typedef {Object} FacilityPriceVersionDto
+ * @property {number} [facilityPriceVersionId] int32
+ * @property {number} [facilityId] int32
+ * @property {number} [version] int32
+ * @property {string} [effectiveFrom] date
+ * @property {(string|null)} [effectiveTo] date
+ * @property {PricingPolicyStatus} [status]
+ * @property {(Array<FacilitySizePriceDto>|null)} [prices]
+ */
+
+/**
  * @typedef {Object} FacilityRequest
  * @property {(string|null)} [code]
  * @property {(string|null)} [name]
@@ -472,6 +492,17 @@
  * @property {(string|null)} [phone]
  * @property {(string|null)} [openingHours]
  * @property {(number|null)} [managerId] int32
+ */
+
+/**
+ * @typedef {Object} FacilitySizePriceDto
+ * @property {number} [unitTypeId] int32
+ * @property {(string|null)} [unitTypeCode]
+ * @property {(string|null)} [unitTypeName]
+ * @property {number} [basePricePerMonth] double
+ * @property {number} [discount3Month] double
+ * @property {number} [discount6Month] double
+ * @property {number} [discount12Month] double
  */
 
 /** @typedef {"Active"|"Inactive"} FacilityStatus */
@@ -849,7 +880,6 @@
  * @property {PricingPolicyStatus} [status]
  * @property {(Array<UnitPriceDto>|null)} [unitPrices]
  * @property {(Array<FeeTypeDto>|null)} [fees]
- * @property {(Array<UnitPriceDto>|null)} [facilityPrices]
  */
 
 /**
@@ -1322,8 +1352,6 @@
  * @property {number} [discount3Month] double
  * @property {number} [discount6Month] double
  * @property {number} [discount12Month] double
- * @property {(number|null)} [facilityId] int32
- * @property {(string|null)} [facilityName]
  */
 
 /**

@@ -6,6 +6,9 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
 import { PageHeader, Status } from '../components/ui.jsx';
 import { humanize, useFacilities, useUnitTypes } from '../queries.js';
+import { useAuth } from '../../features/auth/AuthContext';
+import { Roles } from '../../features/auth/roles';
+import FacilityPriceList from './FacilityPriceList.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 
 const TERMS = [
@@ -23,49 +26,35 @@ const TERM_KEYS = TERMS.flatMap((t) => t.rows.map(([k]) => k));
 /** Price after a percentage discount, rounded to whole đồng. */
 export const discounted = (base, pct) => Math.round(base * (1 - (pct ?? 0) / 100));
 
-/**
- * One size's price. With `facilityId` it is that facility's own price: it starts from the company price (`fallback`)
- * until saved, and "Use company price" removes it again.
- */
-function PriceRow({ policy, type, price, editable, facilityId, fallback }) {
+function PriceRow({ policy, type, price, editable }) {
     const tr = useT();
     const queryClient = useQueryClient();
-    const shown = price ?? fallback;
-    const initial = { basePricePerMonth: shown?.basePricePerMonth ?? 0, discount3Month: shown?.discount3Month ?? 5, discount6Month: shown?.discount6Month ?? 10, discount12Month: shown?.discount12Month ?? 10 };
+    const initial = { basePricePerMonth: price?.basePricePerMonth ?? 0, discount3Month: price?.discount3Month ?? 5, discount6Month: price?.discount6Month ?? 10, discount12Month: price?.discount12Month ?? 10 };
     const [row, setRow] = useState(initial);
     const changed = Object.keys(initial).some((k) => Number(row[k]) !== initial[k]);
-    const refresh = () => queryClient.invalidateQueries({ queryKey: ['pricing-policies'] });
-    const body = () => Object.fromEntries(Object.entries(row).map(([k, v]) => [k, Number(v)]));
     const save = useMutation({
-        mutationFn: () => (facilityId
-            ? pricingPoliciesApi.putFacilitiesUnitPrices(policy.pricingPolicyId, facilityId, type.unitTypeId, body())
-            : pricingPoliciesApi.unitPrices(policy.pricingPolicyId, type.unitTypeId, body())),
-        onSuccess: refresh,
+        mutationFn: () => pricingPoliciesApi.unitPrices(policy.pricingPolicyId, type.unitTypeId, Object.fromEntries(Object.entries(row).map(([k, v]) => [k, Number(v)]))),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['pricing-policies'] }),
     });
-    const reset = useMutation({ mutationFn: () => pricingPoliciesApi.deleteFacilitiesUnitPrices(policy.pricingPolicyId, facilityId, type.unitTypeId), onSuccess: refresh });
     const num = (key, step = 1000) => (editable
         ? <input type="number" min="0" step={step} className="sa-num" value={row[key]} onChange={(e) => setRow({ ...row, [key]: e.target.value })} aria-label={`${type.code} ${key}`} />
         : key === 'basePricePerMonth' ? formatVnd(row[key]) : `${row[key]}%`);
 
     return (
         <tr>
-            <td className="strong">{type.code}
-                {facilityId && <div><span className={`se-badge ${price ? 'info' : 'muted'}`}>{price ? tr('Own price') : tr('Company price')}</span></div>}</td>
+            <td className="strong">{type.code}</td>
             <td>{type.areaM2} m²</td>
             <td>{num('basePricePerMonth')}</td>
             <td>{num('discount3Month', 1)}<div className="sa-muted">{formatVnd(discounted(row.basePricePerMonth, row.discount3Month))}</div></td>
             <td>{num('discount6Month', 1)}<div className="sa-muted">{formatVnd(discounted(row.basePricePerMonth, row.discount6Month))}</div></td>
             <td>{num('discount12Month', 1)}<div className="sa-muted">{formatVnd(discounted(row.basePricePerMonth, row.discount12Month))}</div></td>
             <td>
-                {editable && (changed || (!price && !facilityId)) && (
+                {editable && (changed || !price) && (
                     <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={save.isPending || !Number(row.basePricePerMonth)} onClick={() => save.mutate()}>
                         {save.isPending ? tr('Saving…') : tr('Save')}
                     </button>
                 )}
-                {editable && facilityId && price && !changed && (
-                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={reset.isPending} onClick={() => reset.mutate()}>{tr('Use company price')}</button>
-                )}
-                {(save.isError || reset.isError) && <div className="sa-bad">{errorMessage(save.error ?? reset.error)}</div>}
+                {save.isError && <div className="sa-bad">{errorMessage(save.error)}</div>}
             </td>
         </tr>
     );
@@ -112,45 +101,8 @@ function DraftTerms({ policy }) {
     );
 }
 
-/** A facility's own prices for some sizes; the rest of its sizes use the company price above. */
-function FacilityPrices({ policy, types, editable }) {
-    const tr = useT();
-    const facilities = useFacilities({ includeInactive: true }).data ?? [];
-    const [facilityId, setFacilityId] = useState('');
-    const own = policy.facilityPrices ?? [];
-    const counts = own.reduce((m, p) => ({ ...m, [p.facilityId]: (m[p.facilityId] ?? 0) + 1 }), {});
-    const id = Number(facilityId);
-    return (
-        <>
-            <h3 className="sa-pricing-step">{tr('Prices at one facility')}</h3>
-            <p className="sa-muted">{tr('A facility can charge its own price for a size. Sizes without one use the company price.')}</p>
-            <div className="sa-filters">
-                <label className="sa-version-pick"><span className="se-label">{tr('Facility')}</span>
-                    <div className="se-field"><select value={facilityId} onChange={(e) => setFacilityId(e.target.value)} aria-label={tr('Facility')}>
-                        <option value="">{tr('Choose a facility')}</option>
-                        {facilities.map((f) => <option key={f.facilityId} value={f.facilityId}>{f.name}{counts[f.facilityId] ? ` · ${tr('{n} own price{n:s}', { n: counts[f.facilityId] })}` : ''}</option>)}
-                    </select></div>
-                </label>
-            </div>
-            {id > 0 && (
-                <div className="se-table-wrap">
-                    <table className="se-table" aria-label={tr('Prices at one facility')}>
-                        <thead><tr><th>{tr('Size')}</th><th>{tr('Area')}</th><th>{tr("1 month (₫)")}</th><th>{tr("3+ months (discount %)")}</th><th>{tr("6+ months (discount %)")}</th><th>{tr("12+ months (discount %)")}</th><th /></tr></thead>
-                        <tbody>
-                            {types.map((t) => {
-                                const price = own.find((p) => p.facilityId === id && p.unitTypeId === t.unitTypeId);
-                                return <PriceRow key={`${policy.pricingPolicyId}-${id}-${t.unitTypeId}-${price?.unitPriceId ?? 'company'}`} policy={policy} type={t} editable={editable}
-                                    facilityId={id} price={price} fallback={policy.unitPrices?.find((u) => u.unitTypeId === t.unitTypeId)} />;
-                            })}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-        </>
-    );
-}
-
-export default function PricingPage() {
+/** The company standard: rental rules and the default price of every size, in versions. */
+function CompanyStandard({ picker }) {
     const tr = useT();
     const queryClient = useQueryClient();
     const policies = useQuery({ queryKey: ['pricing-policies'], queryFn: () => pricingPoliciesApi.list({ page: 1, pageSize: 50 }) });
@@ -198,6 +150,7 @@ export default function PricingPage() {
                     </button>
                 )}
             </PageHeader>
+            {picker}
             {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
             {policies.isError && <div className="se-alert" role="alert">{errorMessage(policies.error)}</div>}
             <div className="se-alert info sa-not-wired"><Icon name="shield" size={14} /> {tr('New prices apply to new contracts and renewals only — existing contracts keep the rent agreed at signing.')}</div>
@@ -230,7 +183,6 @@ export default function PricingPage() {
                             </table>
                         </div>
                         {!editable && <p className="sa-muted">{tr('Published versions are read-only. To change these prices, or bring them back later, copy this version to a new draft.')}</p>}
-                        <FacilityPrices policy={policy} types={types} editable={editable} />
                         {!!policy.fees?.length && (
                             <>
                                 <span className="se-label" style={{ marginTop: 16 }}>{tr('Extra fees')}</span>
@@ -256,4 +208,31 @@ export default function PricingPage() {
             )}
         </>
     );
+}
+
+/**
+ * A08: prices by price list. The company standard holds the rental rules and every size's default price; each
+ * facility may keep its own list in versions, which wins there for the sizes it prices. Managers read their facilities.
+ */
+export default function PricingPage() {
+    const tr = useT();
+    const role = useAuth().session?.role;
+    const canEdit = [Roles.BusinessOperationsManager, Roles.SystemAdministrator].includes(role);
+    const facilities = useFacilities().data ?? [];
+    const [scope, setScope] = useState(canEdit ? 'standard' : '');
+    const current = scope || String(facilities[0]?.facilityId ?? '');
+    const picker = (
+        <div className="sa-filters">
+            <label className="sa-version-pick"><span className="se-label">{tr('Price list')}</span>
+                <div className="se-field"><select value={current} onChange={(e) => setScope(e.target.value)} aria-label={tr('Price list')}>
+                    {canEdit && <option value="standard">{tr('Company standard')}</option>}
+                    {facilities.map((f) => <option key={f.facilityId} value={f.facilityId}>{f.name}</option>)}
+                </select></div>
+            </label>
+        </div>
+    );
+    if (current === 'standard') return <CompanyStandard picker={picker} />;
+    return current
+        ? <FacilityPriceList key={current} facilityId={Number(current)} canEdit={canEdit} picker={picker} />
+        : <PageHeader title={tr('Pricing & rental policies')} />;
 }

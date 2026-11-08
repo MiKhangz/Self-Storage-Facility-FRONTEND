@@ -78,25 +78,6 @@ export const pricingPoliciesApi = {
   unitPrices: (id, unitTypeId, body) =>
     api.put(`/api/pricing-policies/${id}/unit-prices/${unitTypeId}`, body).then((r) => r.data),
   /**
-   * PUT /api/pricing-policies/{id}/facilities/{facilityId}/unit-prices/{unitTypeId}
-   * @param {number} id
-   * @param {number} facilityId
-   * @param {number} unitTypeId
-   * @param {UpsertUnitPriceRequest} body
-   * @returns {Promise<UnitPriceDto>}
-   */
-  putFacilitiesUnitPrices: (id, facilityId, unitTypeId, body) =>
-    api.put(`/api/pricing-policies/${id}/facilities/${facilityId}/unit-prices/${unitTypeId}`, body).then((r) => r.data),
-  /**
-   * DELETE /api/pricing-policies/{id}/facilities/{facilityId}/unit-prices/{unitTypeId}
-   * @param {number} id
-   * @param {number} facilityId
-   * @param {number} unitTypeId
-   * @returns {Promise<void>}
-   */
-  deleteFacilitiesUnitPrices: (id, facilityId, unitTypeId) =>
-    api.delete(`/api/pricing-policies/${id}/facilities/${facilityId}/unit-prices/${unitTypeId}`).then((r) => r.data),
-  /**
    * POST /api/pricing-policies/{id}/fee-types
    * @param {number} id
    * @param {FeeTypeRequest} body

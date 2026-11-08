@@ -177,31 +177,38 @@ test('E22 an admin checks the log of users of every role, from the log, the User
   await expect(rows.filter({ hasNotText: ACCOUNTS.customer })).toHaveCount(0)
 })
 
-test('E23 ops give one facility its own price for a size in a draft, then put it back to the company price', async ({ page }) => {
+test('E23 ops publish their own prices for one facility; its quote changes and another facility keeps the standard', async ({ page, baseURL }) => {
   page.on('dialog', (d) => d.accept())
+  // E11's facility: no other test books there, so its own prices change nothing elsewhere.
+  const ops = await apiAs(baseURL, ACCOUNTS.ops)
+  const facilities = (await ops.get('/api/facilities?page=1&pageSize=100')).items
+  const mine = facilities.find((f) => f.name.startsWith('StorEase E2E'))
+  const size = (await ops.get(`/api/facilities/${mine.facilityId}`)).unitTypes.find((t) => t.availableUnits > 0)
+  // Another facility with a free unit of that size, to quote the standard price.
+  let other
+  for (const f of facilities.filter((x) => x.facilityId !== mine.facilityId)) {
+    if ((await ops.get(`/api/facilities/${f.facilityId}`)).unitTypes.some((t) => t.unitTypeId === size.unitTypeId && t.availableUnits > 0)) { other = f; break }
+  }
+  const moveInDate = new Date(Date.now() + 2 * 864e5).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' })
+  const quote = async (facilityId) => (await ops.get(`/api/unit-types/${size.unitTypeId}/quote?facilityId=${facilityId}&moveInDate=${moveInDate}&rentalMonths=1`)).monthlyRent
+  const standard = await quote(other.facilityId)
+
   await loginStaff(page, ACCOUNTS.ops)
   await openAdmin(page, 'Pricing & Policies')
-  await page.getByRole('button', { name: /^Copy version \d+ to a new draft$/ }).click()
-  await expect(page.getByRole('button', { name: /^Publish version/ })).toBeVisible()
+  await page.getByLabel('Price list').selectOption({ label: mine.name })
+  await expect(page.getByText(/uses the company standard prices/)).toBeVisible()
+  await page.getByRole('button', { name: 'Edit prices' }).click()
 
-  await page.getByLabel('Facility', { exact: true }).selectOption({ index: 1 })
-  const table = page.getByRole('table', { name: 'Prices at one facility' })
-  const s5 = table.getByRole('row').filter({ hasText: 'S5' })
-  // It starts from the company price until the facility sets its own.
-  await expect(s5).toContainText('Company price')
-  await expect(table.getByLabel('S5 basePricePerMonth')).toHaveValue('900000')
+  const row = page.getByRole('table', { name: 'Facility prices' }).getByRole('row').filter({ hasText: size.code }).first()
+  await row.getByRole('checkbox').check()
+  await row.getByRole('spinbutton').first().fill('1234000')
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  await expect(page.getByRole('button', { name: 'Save changes' })).toBeDisabled()
+  await page.getByRole('button', { name: 'Publish' }).click()
+  await expect(page.getByText(/version 1 live since/)).toBeVisible()
+  await expect(row).toContainText('Own price')
 
-  await table.getByLabel('S5 basePricePerMonth').fill('1200000')
-  await s5.getByRole('button', { name: 'Save' }).click()
-  await expect(s5).toContainText('Own price')
-  await expect(page.getByLabel('Facility', { exact: true }).locator('option:checked')).toContainText('1 own price')
-  // The company price for the size is untouched.
-  await expect(page.getByLabel('S5 basePricePerMonth').first()).toHaveValue('900000')
-
-  await s5.getByRole('button', { name: 'Use company price' }).click()
-  await expect(s5).toContainText('Company price')
-  await expect(table.getByLabel('S5 basePricePerMonth')).toHaveValue('900000')
-
-  await page.getByRole('button', { name: 'Delete draft' }).click()
-  await expect(page.getByRole('button', { name: /^Copy version \d+ to a new draft$/ })).toBeVisible()
+  expect(await quote(mine.facilityId)).toBe(1234000)
+  expect(await quote(other.facilityId)).toBe(standard)
+  await ops.dispose()
 })
