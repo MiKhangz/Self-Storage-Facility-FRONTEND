@@ -12,6 +12,7 @@ import { Modal, PageHeader, Status } from '../components/ui.jsx';
 import { humanize } from '../queries.js';
 import '../../customer/support/Support.css';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 // Moves staff may make, per the backend's ticket status rules; Closed is left to the customer or a manager.
 const NEXT = { New: ['InProgress'], InProgress: ['WaitingForCustomer', 'Resolved'], WaitingForCustomer: ['InProgress', 'Resolved'], Resolved: ['InProgress'] };
@@ -82,7 +83,7 @@ export default function TicketDetailPage() {
         <>
             <Link to="/admin/tickets" className="se-back"><Icon name="arrowLeft" size={16} /> {tr('Back to the ticket board')}</Link>
             <PageHeader title={`${t.ticketCode} · ${t.subject}`} subtitle={`Opened ${formatDateTime(t.createdAt)} by ${t.customerName}${t.unitCode ? ` · unit ${t.unitCode}` : ''} · ${t.facilityName}`}>
-                {isManager && !closed && <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm(tr('Close this ticket?')) && move.mutate('Closed')}>{tr('Close ticket')}</button>}
+                {isManager && !closed && <button type="button" className="se-btn se-btn-ghost" onClick={() => confirmAction(tr('Close this ticket?')).then((ok) => ok && move.mutate('Closed'))}>{tr('Close ticket')}</button>}
                 {(NEXT[t.status] ?? []).includes('Resolved') && <button type="button" className="se-btn se-btn-primary" disabled={move.isPending} onClick={() => move.mutate('Resolved')}><Icon name="check" size={16} /> {tr('Resolve ticket')}</button>}
             </PageHeader>
             {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}

@@ -10,6 +10,7 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { humanize, useContracts, useInvoices } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const OPEN = ['Issued', 'Overdue'];
 const { FacilityStaff: FS, FacilityManager: FM, BusinessOperationsManager: BOM, SystemAdministrator: ADMIN } = Roles;
@@ -77,7 +78,7 @@ function Payments({ invoice, canRefund }) {
                         <small className="sa-muted"> {p.paidAt ? formatDate(p.paidAt) : '—'}{p.referenceNo ? ` · ${p.referenceNo}` : ''}</small>
                         {canRefund && p.status === 'Succeeded' && (
                             <button type="button" className="se-btn se-btn-ghost" disabled={refund.isPending}
-                                onClick={() => window.confirm(tr('Refund {amount}? The invoice reopens for that amount.', { amount: formatVnd(p.amount) })) && refund.mutate(p.paymentId)}>{tr('Refund')}</button>
+                                onClick={() => confirmAction(tr('Refund {amount}? The invoice reopens for that amount.', { amount: formatVnd(p.amount) })).then((ok) => ok && refund.mutate(p.paymentId))}>{tr('Refund')}</button>
                         )}
                     </li>
                 ))}

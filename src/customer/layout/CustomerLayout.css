@@ -332,3 +332,9 @@
 .se-pay-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; }
 /* Language selector in the header (customer site and staff portal). */
 .se-lang select { height: 36px; padding: 0 28px 0 10px; border: 1px solid var(--se-line); border-radius: 8px; background: #fff; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--se-ink); cursor: pointer; }
+
+/* Yes/no question (confirmAction): the page's own dialog instead of window.confirm. */
+.se-confirm { font-family: 'Be Vietnam Pro', system-ui, sans-serif; font-size: 15px; border: 0; border-radius: 16px; padding: 24px; width: min(440px, calc(100vw - 32px)); box-shadow: 0 20px 50px rgba(15, 23, 42, .25); color: var(--se-dark); }
+.se-confirm::backdrop { background: rgba(15, 23, 42, .45); }
+.se-confirm p { margin: 0 0 20px; line-height: 1.5; }
+.se-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }

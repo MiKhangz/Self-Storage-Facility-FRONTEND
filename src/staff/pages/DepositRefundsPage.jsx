@@ -10,6 +10,7 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const SOURCE = { Cancellation: 'Booking cancelled', Return: 'Unit handed back' };
 
@@ -27,7 +28,7 @@ function PayPanel({ refund, onClose }) {
     return (
         <form className="se-panel sa-side-panel" onSubmit={(e) => {
             e.preventDefault();
-            if (window.confirm(tr('Mark {amount} as paid back to {name}?', { amount: formatVnd(refund.amount), name: refund.customerName }))) pay.mutate();
+            confirmAction(tr('Mark {amount} as paid back to {name}?', { amount: formatVnd(refund.amount), name: refund.customerName })).then((ok) => { if (ok) pay.mutate(); });
         }}>
             <div className="sa-card-title"><h2>{formatVnd(refund.amount)}</h2>
                 <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}><Icon name="close" size={16} /></button></div>

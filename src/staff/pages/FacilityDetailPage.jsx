@@ -13,6 +13,7 @@ import { humanize, useShifts, useSizePrices, useStaff, useTickets, useUnitTypes,
 import { FACILITY_FIELDS } from './PendingBackendPages.jsx';
 import { occupancy } from './DashboardPage.jsx';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 /** Rented / total per group, with the occupancy of the rentable units in it. */
 function group(units, key) {
@@ -78,7 +79,7 @@ function FloorRow({ floor, onChanged }) {
             <button type="button" className="se-btn se-btn-ghost sa-btn-sm" aria-label={`Remove floor ${floor.floorNumber}`}
                 disabled={rented || remove.isPending}
                 title={rented ? tr('Customers still hold units on this floor') : undefined}
-                onClick={() => window.confirm(tr('Remove floor {floor}? Its {n} unit(s) go too, or are retired if they have past bookings.', { floor: floor.floorNumber, n: floor.unitCount })) && remove.mutate()}>{tr('Remove')}</button>
+                onClick={() => confirmAction(tr('Remove floor {floor}? Its {n} unit(s) go too, or are retired if they have past bookings.', { floor: floor.floorNumber, n: floor.unitCount })).then((ok) => ok && remove.mutate())}>{tr('Remove')}</button>
             {remove.error && <div className="se-alert" role="alert">{errorMessage(remove.error)}</div>}
         </li>
     );
@@ -213,7 +214,7 @@ function EditFacility({ facility, onClose }) {
                 {save.isSuccess && <div className="se-alert info" role="status">{tr('Facility saved.')}</div>}
                 <div className="sa-form-actions">
                     <button type="button" className="se-btn se-btn-ghost" disabled={toggle.isPending}
-                        onClick={() => (!active || window.confirm(tr('Deactivate {name}? Customers can no longer find or book it.', { name: facility.name }))) && toggle.mutate()}>
+                        onClick={() => (active ? confirmAction(tr('Deactivate {name}? Customers can no longer find or book it.', { name: facility.name })) : Promise.resolve(true)).then((ok) => ok && toggle.mutate())}>
                         {active ? tr('Deactivate facility') : tr('Activate facility')}
                     </button>
                     <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? tr('Saving…') : tr('Save facility')}</button>

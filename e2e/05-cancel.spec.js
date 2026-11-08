@@ -1,5 +1,5 @@
 import { test, expect, request } from '@playwright/test'
-import { ACCOUNTS, PASSWORD, apiAs, loginCustomer, loginStaff, openAdmin, uniqueEmail } from './helpers.js'
+import { ACCOUNTS, PASSWORD, apiAs, loginCustomer, loginStaff, openAdmin, uniqueEmail, autoConfirm } from './helpers.js'
 
 const today = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' })
 
@@ -29,7 +29,7 @@ async function owedRefund(baseURL, reservationId) {
 
 test('E13 a customer cancels a fresh booking and the deposit is owed back', async ({ page, baseURL }) => {
   const { email, reservation } = await bookedCustomer(baseURL)
-  page.on('dialog', (d) => d.accept())
+  await autoConfirm(page)
 
   await loginCustomer(page, email)
   await page.getByRole('link', { name: 'Xem đơn đặt kho' }).click()
@@ -45,7 +45,7 @@ test('E13 a customer cancels a fresh booking and the deposit is owed back', asyn
 
 test('E14 staff cancel a booking from Reservations and the deposit is owed back', async ({ page, baseURL }) => {
   const { name, reservation } = await bookedCustomer(baseURL)
-  page.on('dialog', (d) => d.accept())
+  await autoConfirm(page)
 
   await loginStaff(page, ACCOUNTS.staff)
   await openAdmin(page, 'Reservations')
@@ -65,7 +65,7 @@ test('E15 ops pay a cancellation refund by bank transfer and the customer sees i
   const me = await apiAs(baseURL, email)
   await me.post(`/api/reservations/${reservation.reservationId}/cancel`, { reason: null })
   await me.dispose()
-  page.on('dialog', (d) => d.accept())
+  await autoConfirm(page)
 
   await loginStaff(page, ACCOUNTS.ops)
   await openAdmin(page, 'Deposit Refunds')

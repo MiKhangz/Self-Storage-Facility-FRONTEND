@@ -12,6 +12,7 @@ import { periodUsed } from '../../customer/account/queries.js';
 import { Modal, PageHeader, SearchFilter, Filters, Status, TableState, downloadFile, matches } from '../components/ui.jsx';
 import { useContracts, useInvoices } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const ENDED = ['Closed', 'Terminated'];
 const TABS = [
@@ -83,7 +84,7 @@ function ContractPanel({ contract, invoices, onClose }) {
             {!!open.length && <Link to={`/admin/payments?invoiceId=${open[0].invoiceId}`} className="se-btn se-btn-primary se-btn-block"><Icon name="card" size={16} /> {tr('Record payment')}</Link>}
             {canTerminate && (
                 <button type="button" className="se-btn se-btn-danger se-btn-block" disabled={terminate.isPending}
-                    onClick={() => window.confirm(tr('Terminate contract {number}? This revokes access and cannot be undone.', { number: contract.contractNumber })) && terminate.mutate()}>
+                    onClick={() => confirmAction(tr('Terminate contract {number}? This revokes access and cannot be undone.', { number: contract.contractNumber })).then((ok) => ok && terminate.mutate())}>
                     {tr('Terminate contract')}
                 </button>
             )}
@@ -123,9 +124,9 @@ function RenewalRequests() {
                                 {canDecide && (
                                     <td className="sa-row-actions">
                                         <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={decide.isPending}
-                                            onClick={() => window.confirm(tr('Approve? {number} runs to {date} at {rent} a month.', { number: r.contractNumber, date: formatDate(r.newEndDate), rent: formatVnd(r.newMonthlyRent) })) && decide.mutate({ id: r.renewalId, approve: true })}>{tr('Approve')}</button>{' '}
+                                            onClick={() => confirmAction(tr('Approve? {number} runs to {date} at {rent} a month.', { number: r.contractNumber, date: formatDate(r.newEndDate), rent: formatVnd(r.newMonthlyRent) })).then((ok) => ok && decide.mutate({ id: r.renewalId, approve: true }))}>{tr('Approve')}</button>{' '}
                                         <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={decide.isPending}
-                                            onClick={() => window.confirm(tr('Reject the renewal of {number}?', { number: r.contractNumber })) && decide.mutate({ id: r.renewalId, approve: false })}>{tr('Reject')}</button>
+                                            onClick={() => confirmAction(tr('Reject the renewal of {number}?', { number: r.contractNumber })).then((ok) => ok && decide.mutate({ id: r.renewalId, approve: false }))}>{tr('Reject')}</button>
                                     </td>
                                 )}
                             </tr>

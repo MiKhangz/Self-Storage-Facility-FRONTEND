@@ -10,6 +10,7 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const STAGES = ['Reminder', 'LateFee', 'Suspended', 'ClearOut'];
 
@@ -38,7 +39,7 @@ export default function OverdueCasesPage() {
     const open = current && !current.resolvedAt;
     const canLockOut = open && ['Reminder', 'LateFee'].includes(current.stage);
     const canRestore = open && ['Suspended', 'ClearOut'].includes(current.stage);
-    const run = (action, question) => { if (window.confirm(tr(question))) act.mutate(action); };
+    const run = (action, question) => { confirmAction(tr(question)).then((ok) => { if (ok) act.mutate(action); }); };
 
     return (
         <>

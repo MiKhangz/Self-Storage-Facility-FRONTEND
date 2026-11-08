@@ -11,6 +11,7 @@ import { PRIORITY_TONE, formatDateTime, ticketBadge } from './support.js';
 const PRIORITY_LABEL = { Low: 'Không gấp', Normal: 'Bình thường', High: 'Cao', Urgent: 'Khẩn cấp' };
 import './Support.css';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../components/confirm.js';
 
 /** U16: one support request — the conversation, replies and closing it. */
 export default function TicketDetailPage() {
@@ -49,7 +50,7 @@ export default function TicketDetailPage() {
                     <p>{[t.ticketCode, tr('gửi lúc {time}', { time: formatDateTime(t.createdAt) }), t.unitCode && `${tr('Kho')} ${t.unitCode}`, t.facilityName].filter(Boolean).join(' · ')}</p>
                 </div>
                 {!closed && (
-                    <button type="button" className="se-btn se-btn-ghost" onClick={() => window.confirm(tr('Đóng yêu cầu này? Sau khi đóng, bạn không thể trả lời thêm.')) && close.mutate()} disabled={close.isPending}>
+                    <button type="button" className="se-btn se-btn-ghost" onClick={() => confirmAction(tr('Đóng yêu cầu này? Sau khi đóng, bạn không thể trả lời thêm.')).then((ok) => ok && close.mutate())} disabled={close.isPending}>
                         <Icon name="check" size={16} /> {tr('Đóng yêu cầu')}
                     </button>
                 )}

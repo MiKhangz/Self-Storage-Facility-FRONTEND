@@ -6,6 +6,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { PageHeader, Status } from '../components/ui.jsx';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const FIELDS = ['basePricePerMonth', 'discount3Month', 'discount6Month', 'discount12Month'];
 const discounted = (base, pct) => Math.round(Number(base) * (1 - (Number(pct) || 0) / 100));
@@ -66,12 +67,12 @@ export default function FacilityPriceList({ facilityId, canEdit, picker }) {
                 )}
                 {editing && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={discard.isPending}
-                        onClick={() => window.confirm(tr('Discard these unpublished changes?')) && discard.mutate()}>{tr('Discard draft')}</button>
+                        onClick={() => confirmAction(tr('Discard these unpublished changes?')).then((ok) => ok && discard.mutate())}>{tr('Discard draft')}</button>
                 )}
                 {editing && (
                     <button type="button" className="se-btn se-btn-primary" disabled={publish.isPending || changed.length > 0}
                         title={changed.length ? tr('Save your changes first') : undefined}
-                        onClick={() => window.confirm(tr('Publish these prices for {name} from today? Existing bookings keep the price they were quoted.', { name: list.data?.facilityName ?? '' })) && publish.mutate()}>
+                        onClick={() => confirmAction(tr('Publish these prices for {name} from today? Existing bookings keep the price they were quoted.', { name: list.data?.facilityName ?? '' })).then((ok) => ok && publish.mutate())}>
                         <Icon name="check" size={16} /> {tr('Publish')}
                     </button>
                 )}

@@ -11,6 +11,7 @@ import { formatDateTime } from '../../customer/support/support.js';
 import { Modal, PageHeader, Status, TableState } from '../components/ui.jsx';
 import { useReservations, useUnits } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const TABS = [
     { status: 'Pending', label: 'Pending assignment' },
@@ -56,11 +57,11 @@ function CloseBooking({ reservation }) {
             {close.isError && <div className="se-alert" role="alert">{errorMessage(close.error)}</div>}
             <div className="sa-form-actions">
                 <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
-                    onClick={() => window.confirm(`${tr('Cancel {code}?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit will be owed back.', { amount: formatVnd(paid) })}` : ''}`) && close.mutate(false)}>
+                    onClick={() => confirmAction(`${tr('Cancel {code}?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit will be owed back.', { amount: formatVnd(paid) })}` : ''}`).then((ok) => ok && close.mutate(false))}>
                     {tr('Cancel booking')}</button>
                 {late && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
-                        onClick={() => window.confirm(`${tr('Mark {code} as a no-show?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit is kept.', { amount: formatVnd(paid) })}` : ''}`) && close.mutate(true)}>
+                        onClick={() => confirmAction(`${tr('Mark {code} as a no-show?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit is kept.', { amount: formatVnd(paid) })}` : ''}`).then((ok) => ok && close.mutate(true))}>
                         {tr('Mark no-show')}</button>
                 )}
             </div>

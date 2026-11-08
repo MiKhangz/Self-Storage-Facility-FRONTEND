@@ -10,6 +10,7 @@ import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import FacilityPriceList from './FacilityPriceList.jsx';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const TERMS = [
     { title: 'Deposit', icon: 'shield', rows: [['depositMonths', 'Deposit amount', 'month(s) rent']] },
@@ -139,13 +140,13 @@ function CompanyStandard({ picker }) {
                 )}
                 {editable && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={removeDraft.isPending}
-                        onClick={() => window.confirm(tr('Delete draft version {version}? Its prices and fees are removed; published versions are not touched.', { version: policy.version })) && removeDraft.mutate()}>
+                        onClick={() => confirmAction(tr('Delete draft version {version}? Its prices and fees are removed; published versions are not touched.', { version: policy.version })).then((ok) => ok && removeDraft.mutate())}>
                         {tr('Delete draft')}
                     </button>
                 )}
                 {editable && (
                     <button type="button" className="se-btn se-btn-primary" disabled={activate.isPending}
-                        onClick={() => window.confirm(tr('Publish version {version}? It replaces the active policy for new contracts and renewals.', { version: policy.version })) && activate.mutate()}>
+                        onClick={() => confirmAction(tr('Publish version {version}? It replaces the active policy for new contracts and renewals.', { version: policy.version })).then((ok) => ok && activate.mutate())}>
                         <Icon name="check" size={16} /> {tr('Publish version {version}', { version: policy.version })}
                     </button>
                 )}

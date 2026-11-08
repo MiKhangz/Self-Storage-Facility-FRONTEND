@@ -11,6 +11,7 @@ import HandoverPhotos from '../components/HandoverPhotos.jsx';
 import { Modal, PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
 import { humanize, useReturns } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const TABS = ['Requested', 'Approved', 'Inspected', 'Completed', 'Cancelled'];
 const CONDITIONS = ['Good', 'MinorDamage', 'MajorDamage'];
@@ -84,7 +85,7 @@ function Settle({ request, onDone }) {
             {s && <button type="button" className="se-btn se-btn-primary se-btn-block" onClick={onDone}>{tr('Done')}</button>}
             {settle.isError && <div className="se-alert" role="alert">{errorMessage(settle.error)}</div>}
             {!s && <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={settle.isPending}
-                onClick={() => window.confirm(tr('Settle the deposit? This closes the contract and frees the unit.')) && settle.mutate()}>{tr('Settle deposit & close')}</button>}
+                onClick={() => confirmAction(tr('Settle the deposit? This closes the contract and frees the unit.')).then((ok) => ok && settle.mutate())}>{tr('Settle deposit & close')}</button>}
         </>
     );
 }

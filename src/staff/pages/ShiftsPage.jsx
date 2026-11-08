@@ -10,6 +10,7 @@ import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { PageHeader, SelectFilter } from '../components/ui.jsx';
 import { useFacilities, useShifts, useStaff, useTasks } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const TIMES = { Morning: ['07:00', '15:00'], Afternoon: ['15:00', '23:00'], Night: ['23:00', '07:00'] };
 
@@ -95,7 +96,7 @@ export default function ShiftsPage() {
                                                 <div key={s.shiftId} className={`sa-shift ${s.shiftType}`}>
                                                     <strong>{s.startTime.slice(0, 5)}–{s.endTime.slice(0, 5)}</strong>
                                                     <small>{tr('{n} task{n:s}', { n: tasks.filter((t) => t.shiftId === s.shiftId).length })}</small>
-                                                    {canWrite && <button type="button" aria-label={tr("Remove {name}'s shift on {date}", { name, date: formatDate(d) })} onClick={() => window.confirm(tr('Remove this shift?')) && remove.mutate(s.shiftId)}>×</button>}
+                                                    {canWrite && <button type="button" aria-label={tr("Remove {name}'s shift on {date}", { name, date: formatDate(d) })} onClick={() => confirmAction(tr('Remove this shift?')).then((ok) => ok && remove.mutate(s.shiftId))}>×</button>}
                                                 </div>
                                             ))}
                                             {!mine.length && <span className="sa-off">{tr('Off')}</span>}

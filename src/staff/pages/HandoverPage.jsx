@@ -9,6 +9,7 @@ import { PageHeader, Stat, Status } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useUnits } from '../queries.js';
 import { esc, printDocument } from '../print.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 /** Checked at the desk before anyone walks to the unit. */
 const CHECKS = [
@@ -42,7 +43,7 @@ function ViewUnit({ reservation, viewed, onViewed }) {
             {!viewed && !picking && (
                 <div className="sa-form-actions">
                     <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={cancel.isPending}
-                        onClick={() => window.confirm(tr('Cancel this booking? The unit is freed and the full deposit is owed back to the customer.')) && cancel.mutate()}>
+                        onClick={() => confirmAction(tr('Cancel this booking? The unit is freed and the full deposit is owed back to the customer.')).then((ok) => ok && cancel.mutate())}>
                         {tr('Cancel booking')}
                     </button>
                     <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setPicking(true)}>{tr('Show another unit')}</button>
@@ -156,7 +157,7 @@ function SignContract({ reservation, contract, locked }) {
                             <Icon name="card" size={14} /> {tr('Print deposit receipt')}</button>}
                         {!contract.signedAt && (
                             <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={sign.isPending}
-                                onClick={() => window.confirm(tr('Confirm the customer signed the paper contract in front of you?')) && sign.mutate()}>
+                                onClick={() => confirmAction(tr('Confirm the customer signed the paper contract in front of you?')).then((ok) => ok && sign.mutate())}>
                                 {tr('Customer signed on paper')}
                             </button>
                         )}
@@ -302,7 +303,7 @@ function CancelHandover({ contractId }) {
         <>
             {cancel.isError && <div className="se-alert" role="alert">{errorMessage(cancel.error)}</div>}
             <button type="button" className="se-btn se-btn-ghost" disabled={cancel.isPending}
-                onClick={() => window.confirm(tr('Cancel this handover? The contract is terminated, the code revoked and the unit freed; the reservation waits for a unit again.')) && cancel.mutate()}>
+                onClick={() => confirmAction(tr('Cancel this handover? The contract is terminated, the code revoked and the unit freed; the reservation waits for a unit again.')).then((ok) => ok && cancel.mutate())}>
                 {tr('Cancel handover')}
             </button>
         </>
@@ -318,7 +319,7 @@ function RevokeCode({ contractId, accessCodeId }) {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts', contractId, 'access-code'] }),
     });
     const confirmAndRevoke = () => {
-        if (window.confirm(tr('Revoke this access code? The customer cannot open the unit until they request a new code.'))) revoke.mutate();
+        confirmAction(tr('Revoke this access code? The customer cannot open the unit until they request a new code.')).then((ok) => { if (ok) revoke.mutate(); });
     };
     return (
         <>

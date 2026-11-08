@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { ACCOUNTS, PASSWORD, apiAs, loginCustomer, loginStaff, openAdmin, uniqueEmail } from './helpers.js'
+import { ACCOUNTS, PASSWORD, apiAs, loginCustomer, loginStaff, openAdmin, uniqueEmail, autoConfirm } from './helpers.js'
 
 test('E11 an admin opens a facility with a floor and a unit, and customers can see it', async ({ page, browser }) => {
   const stamp = Date.now().toString().slice(-6)
@@ -100,7 +100,7 @@ test('E12 an admin creates a staff account; a manager can change only their own 
 })
 
 test('E16 an admin copies the live price version into a draft, then deletes the draft', async ({ page }) => {
-  page.on('dialog', (d) => d.accept())
+  await autoConfirm(page)
   await loginStaff(page, ACCOUNTS.admin)
   await openAdmin(page, 'Pricing & Policies')
   const versions = page.getByLabel('Policy version')
@@ -119,7 +119,7 @@ test('E16 an admin copies the live price version into a draft, then deletes the 
 })
 
 test('E19 ops add, edit and delete a unit size', async ({ page }) => {
-  page.on('dialog', (d) => d.accept())
+  await autoConfirm(page)
   const code = `T${Date.now() % 100000}`
   await loginStaff(page, ACCOUNTS.ops)
   await page.getByRole('navigation').getByRole('link', { name: 'Unit Sizes' }).click()
@@ -178,7 +178,7 @@ test('E22 an admin checks the log of users of every role, from the log, the User
 })
 
 test('E23 ops publish their own prices for one facility; its quote changes and another facility keeps the standard', async ({ page, baseURL }) => {
-  page.on('dialog', (d) => d.accept())
+  await autoConfirm(page)
   // E11's facility: no other test books there, so its own prices change nothing elsewhere.
   const ops = await apiAs(baseURL, ACCOUNTS.ops)
   const facilities = (await ops.get('/api/facilities?page=1&pageSize=100')).items

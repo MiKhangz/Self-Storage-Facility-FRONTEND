@@ -9,6 +9,7 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize, useFacilities, useUnits } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const STATUSES = ['Open', 'Scheduled', 'InProgress', 'Done', 'Cancelled'];
 const LIVE = ['Open', 'Scheduled', 'InProgress'];
@@ -95,7 +96,7 @@ function OrderPanel({ order, canWrite, onClose }) {
                     )}
                     {move.isError && <div className="se-alert" role="alert">{errorMessage(move.error)}</div>}
                     <button type="button" className="se-btn se-btn-ghost se-btn-block" disabled={move.isPending}
-                        onClick={() => window.confirm(tr('Cancel this maintenance order?')) && move.mutate('Cancelled')}>{tr('Cancel order')}</button>
+                        onClick={() => confirmAction(tr('Cancel this maintenance order?')).then((ok) => ok && move.mutate('Cancelled'))}>{tr('Cancel order')}</button>
                 </>
             )}
         </aside>

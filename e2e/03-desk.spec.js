@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { ACCOUNTS, apiAs, loginStaff, openAdmin, uniqueEmail } from './helpers.js'
+import { ACCOUNTS, apiAs, loginStaff, openAdmin, uniqueEmail, autoConfirm } from './helpers.js'
 
 // A walk-in customer becomes a running rental at the desk, then falls behind on rent and is locked out.
 test.describe.serial('front desk: walk-in, then overdue rent', () => {
@@ -10,7 +10,7 @@ test.describe.serial('front desk: walk-in, then overdue rent', () => {
 
   test.beforeAll(async ({ browser, baseURL }) => {
     staff = await (await browser.newContext()).newPage()
-    staff.on('dialog', (d) => d.accept())
+    await autoConfirm(staff)
     staffApi = await apiAs(baseURL, ACCOUNTS.staff)
   })
 
@@ -54,7 +54,7 @@ test.describe.serial('front desk: walk-in, then overdue rent', () => {
     await ops.dispose()
 
     const manager = await (await browser.newContext()).newPage()
-    manager.on('dialog', (d) => d.accept())
+    await autoConfirm(manager)
     await loginStaff(manager, ACCOUNTS.manager)
     await openAdmin(manager, 'Overdue Cases')
     await manager.getByRole('row', { name: new RegExp(name) }).click()

@@ -8,6 +8,7 @@ import { formatVnd } from '../../customer/components/format.js';
 import { Modal, PageHeader, TableState } from '../components/ui.jsx';
 import { useUnitTypes } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../../customer/components/confirm.js';
 
 const EMPTY = { code: '', name: '', areaM2: '', width: '', depth: '', height: '', isClimateControlled: false };
 const DIMENSIONS = [['width', 'Width (m)'], ['depth', 'Depth (m)'], ['height', 'Height (m)']];
@@ -53,7 +54,7 @@ function SizeForm({ size, onClose }) {
             <div className="sa-form-actions">
                 {size && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={remove.isPending}
-                        onClick={() => window.confirm(tr('Delete size {code}?', { code: size.code })) && remove.mutate()}>{tr('Delete size')}</button>
+                        onClick={() => confirmAction(tr('Delete size {code}?', { code: size.code })).then((ok) => ok && remove.mutate())}>{tr('Delete size')}</button>
                 )}
                 <button type="submit" className="se-btn se-btn-primary" disabled={save.isPending}>{save.isPending ? tr('Saving…') : tr('Save size')}</button>
             </div>

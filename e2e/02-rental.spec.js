@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import { ACCOUNTS, PASSWORD, apiAs, loginStaff, openAdmin, uniqueEmail } from './helpers.js'
+import { ACCOUNTS, PASSWORD, apiAs, loginStaff, openAdmin, uniqueEmail, autoConfirm } from './helpers.js'
 
 // One rental from booking to handover, each step a test. Later steps use what earlier ones made, so they run in order
 // and stop at the first failure. The customer and the staff member each have their own browser window.
@@ -15,8 +15,8 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
   test.beforeAll(async ({ browser, baseURL }) => {
     customer = await (await browser.newContext()).newPage()
     staff = await (await browser.newContext()).newPage()
-    // window.confirm() guards money and contract actions; the tests always mean yes.
-    for (const page of [customer, staff]) page.on('dialog', (d) => d.accept())
+    // Money and contract actions ask to confirm first; the tests always mean yes.
+    for (const page of [customer, staff]) await autoConfirm(page)
     staffApi = await apiAs(baseURL, ACCOUNTS.staff)
   })
 
@@ -213,10 +213,11 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await customer.getByRole('button', { name: 'Gửi yêu cầu gia hạn' }).click()
 
     const manager = await (await browser.newContext()).newPage()
-    manager.on('dialog', (d) => d.accept())
     await loginStaff(manager, ACCOUNTS.manager)
     await openAdmin(manager, 'Customers & Contracts')
     await manager.getByRole('row', { name: new RegExp(contract.contractNumber) }).getByRole('button', { name: 'Approve' }).click()
+    // Answer the question here: nothing below acts on the page, so autoConfirm's handler would not run.
+    await manager.locator('dialog.se-confirm').getByRole('button', { name: 'Confirm' }).click()
 
     await expect.poll(async () => (await staffApi.get(`/api/contracts/${contract.contractId}`)).endDate).not.toBe(contract.endDate)
     await manager.context().close()
@@ -241,7 +242,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await staff.getByRole('button', { name: 'Save inspection' }).click()
 
     const ops = await (await browser.newContext()).newPage()
-    ops.on('dialog', (d) => d.accept())
+    await autoConfirm(ops)
     await loginStaff(ops, ACCOUNTS.ops)
     await openAdmin(ops, 'Returns')
     await ops.getByRole('tab', { name: /Inspected/ }).click()

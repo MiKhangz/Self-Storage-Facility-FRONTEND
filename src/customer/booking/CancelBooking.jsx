@@ -4,6 +4,7 @@ import { errorMessage } from '../../api/axiosClient';
 import { formatVnd } from '../components/format.js';
 import { useTerms } from '../components/terms.js';
 import { useT } from '../../i18n/I18n.jsx';
+import { confirmAction } from '../components/confirm.js';
 
 const time = (d) => d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
 
@@ -46,7 +47,7 @@ export default function CancelBooking({ reservation }) {
             <p className="se-hint">{outcome}</p>
             {cancel.isError && <div className="se-alert" role="alert">{errorMessage(cancel.error)}</div>}
             <button type="button" className="se-btn se-btn-ghost" disabled={cancel.isPending || !terms}
-                onClick={() => window.confirm(`${t('Huỷ đơn đặt kho {code}?', { code: reservation.reservationCode })} ${outcome}`) && cancel.mutate()}>
+                onClick={() => confirmAction(`${t('Huỷ đơn đặt kho {code}?', { code: reservation.reservationCode })} ${outcome}`).then((ok) => ok && cancel.mutate())}>
                 {cancel.isPending ? t('Đang huỷ…') : t('Huỷ đặt kho')}
             </button>
         </div>
