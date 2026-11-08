@@ -849,6 +849,7 @@
  * @property {PricingPolicyStatus} [status]
  * @property {(Array<UnitPriceDto>|null)} [unitPrices]
  * @property {(Array<FeeTypeDto>|null)} [fees]
+ * @property {(Array<UnitPriceDto>|null)} [facilityPrices]
  */
 
 /**
@@ -1321,6 +1322,8 @@
  * @property {number} [discount3Month] double
  * @property {number} [discount6Month] double
  * @property {number} [discount12Month] double
+ * @property {(number|null)} [facilityId] int32
+ * @property {(string|null)} [facilityName]
  */
 
 /**

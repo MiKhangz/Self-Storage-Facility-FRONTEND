@@ -1,5 +1,11 @@
 /** English text on screen (staff portal) → Vietnamese. Text missing here shows in English. */
 export default {
+    "Prices at one facility": "Giá riêng tại một cơ sở",
+    "A facility can charge its own price for a size. Sizes without one use the company price.": "Một cơ sở có thể đặt giá riêng cho từng kích thước. Kích thước chưa có giá riêng dùng giá chung của công ty.",
+    "{n} own price{n:s}": "{n} giá riêng",
+    "Own price": "Giá riêng",
+    "Company price": "Giá chung",
+    "Use company price": "Dùng giá chung",
     "Revoked an access code": "Thu hồi mã ra vào",
     "Ran monthly billing": "Chạy lập hoá đơn tháng",
     "Checked a customer in": "Ghi nhận khách vào",

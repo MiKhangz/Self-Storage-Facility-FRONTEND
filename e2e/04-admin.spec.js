@@ -176,3 +176,32 @@ test('E22 an admin checks the log of users of every role, from the log, the User
   await expect(page).toHaveURL(/userId=\d+/)
   await expect(rows.filter({ hasNotText: ACCOUNTS.customer })).toHaveCount(0)
 })
+
+test('E23 ops give one facility its own price for a size in a draft, then put it back to the company price', async ({ page }) => {
+  page.on('dialog', (d) => d.accept())
+  await loginStaff(page, ACCOUNTS.ops)
+  await openAdmin(page, 'Pricing & Policies')
+  await page.getByRole('button', { name: /^Copy version \d+ to a new draft$/ }).click()
+  await expect(page.getByRole('button', { name: /^Publish version/ })).toBeVisible()
+
+  await page.getByLabel('Facility', { exact: true }).selectOption({ index: 1 })
+  const table = page.getByRole('table', { name: 'Prices at one facility' })
+  const s5 = table.getByRole('row').filter({ hasText: 'S5' })
+  // It starts from the company price until the facility sets its own.
+  await expect(s5).toContainText('Company price')
+  await expect(table.getByLabel('S5 basePricePerMonth')).toHaveValue('900000')
+
+  await table.getByLabel('S5 basePricePerMonth').fill('1200000')
+  await s5.getByRole('button', { name: 'Save' }).click()
+  await expect(s5).toContainText('Own price')
+  await expect(page.getByLabel('Facility', { exact: true }).locator('option:checked')).toContainText('1 own price')
+  // The company price for the size is untouched.
+  await expect(page.getByLabel('S5 basePricePerMonth').first()).toHaveValue('900000')
+
+  await s5.getByRole('button', { name: 'Use company price' }).click()
+  await expect(s5).toContainText('Company price')
+  await expect(table.getByLabel('S5 basePricePerMonth')).toHaveValue('900000')
+
+  await page.getByRole('button', { name: 'Delete draft' }).click()
+  await expect(page.getByRole('button', { name: /^Copy version \d+ to a new draft$/ })).toBeVisible()
+})
