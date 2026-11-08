@@ -58,7 +58,10 @@ export async function apiAs(baseURL, email, password = PASSWORD) {
   return { get: call('get'), post: call('post'), put: call('put'), dispose: () => ctx.dispose() }
 }
 
-/** Answers yes whenever the app asks to confirm an action (its own dialog, see confirmAction). */
+/**
+ * Answers yes whenever the app asks to confirm an action (its own dialog, see confirmAction).
+ * Only answers when a later step touches this page; otherwise click Confirm yourself.
+ */
 export async function autoConfirm(page) {
   await page.addLocatorHandler(page.locator('dialog.se-confirm'), async (dialog) => {
     await dialog.getByRole('button', { name: /^(Confirm|Đồng ý)$/ }).click()

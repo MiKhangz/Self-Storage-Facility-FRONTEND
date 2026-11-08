@@ -10,6 +10,8 @@ export function confirmAction(message) {
     return new Promise((resolve) => {
         const dialog = document.createElement('dialog');
         dialog.className = 'se-confirm';
+        // Focus lands on Confirm, so screen readers need the question as the dialog's name.
+        dialog.setAttribute('aria-label', message);
         const text = document.createElement('p');
         text.textContent = message;
         const actions = document.createElement('div');

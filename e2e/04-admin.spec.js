@@ -99,8 +99,7 @@ test('E12 an admin creates a staff account; a manager can change only their own 
   await manager.context().close()
 })
 
-test('E16 an admin copies the live price version into a draft, then deletes the draft', async ({ page }) => {
-  await autoConfirm(page)
+test('E16 an admin copies the live price version into a draft; Cancel keeps it, Confirm deletes it', async ({ page }) => {
   await loginStaff(page, ACCOUNTS.admin)
   await openAdmin(page, 'Pricing & Policies')
   const versions = page.getByLabel('Policy version')
@@ -113,7 +112,15 @@ test('E16 an admin copies the live price version into a draft, then deletes the 
   await expect(page.getByLabel('S5 basePricePerMonth')).toHaveValue('900000')
   await expect(versions.locator('option')).toHaveCount(before + 1)
 
+  // Answered by hand: Cancel must leave the draft, and screen readers must hear the question.
   await page.getByRole('button', { name: 'Delete draft' }).click()
+  const ask = page.getByRole('dialog', { name: /^Delete draft version \d+\?/ })
+  await ask.getByRole('button', { name: 'Cancel' }).click()
+  await expect(ask).toHaveCount(0)
+  await expect(versions.locator('option')).toHaveCount(before + 1)
+
+  await page.getByRole('button', { name: 'Delete draft' }).click()
+  await ask.getByRole('button', { name: 'Confirm' }).click()
   await expect(versions.locator('option')).toHaveCount(before)
   await expect(page.getByRole('button', { name: /^Copy version \d+ to a new draft$/ })).toBeVisible()
 })
