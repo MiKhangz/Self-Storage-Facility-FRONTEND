@@ -215,6 +215,14 @@ test('E23 ops publish their own prices for one facility; its quote changes and a
   await expect(page.getByText(/version 1 live since/)).toBeVisible()
   await expect(row).toContainText('Own price')
 
+  // The history names who published version 1 and shows the new price against the company standard.
+  await page.getByText('History', { exact: true }).click()
+  await page.locator('.sa-history-entry summary').first().click()
+  await expect(page.getByText(/published by .+ on/)).toBeVisible()
+  const change = page.getByRole('table', { name: 'Changes in version 1' }).getByRole('row').filter({ hasText: size.code })
+  await expect(change).toContainText('1.234.000')
+  await expect(change).toContainText('Now own price, was the company standard')
+
   expect(await quote(mine.facilityId)).toBe(1234000)
   expect(await quote(other.facilityId)).toBe(standard)
   await ops.dispose()

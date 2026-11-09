@@ -315,3 +315,12 @@
 /* Activity log: a heading row per day, and failed actions tinted. */
 .se-table tr.sa-day-row th { padding: 8px 18px; font-size: 12px; text-transform: none; letter-spacing: 0; color: var(--se-dark); }
 .se-table tr.sa-row-failed td { background: #fef6f5; }
+/* Price list history: one line per version, opening to what changed against the version before it. */
+.sa-history-entry { border-top: 1px solid var(--se-border, #ece7e1); padding: 10px 0; }
+.sa-history-entry > summary { cursor: pointer; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sa-history-entry > p { margin: 8px 0 4px; }
+.sa-changes { margin-top: 8px; }
+.sa-changes-group th { background: transparent; text-transform: none; font-weight: 600; padding-top: 12px; }
+.sa-delta { font-weight: 600; }
+.sa-delta.up { color: #c4320a; }
+.sa-delta.down { color: #18794e; }

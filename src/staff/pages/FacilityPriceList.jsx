@@ -7,6 +7,8 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { PageHeader, Status } from '../components/ui.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
+import PriceHistory from './PriceHistory.jsx';
+import { facilityVersionChanges } from './priceChanges.js';
 
 const FIELDS = ['basePricePerMonth', 'discount3Month', 'discount6Month', 'discount12Month'];
 const discounted = (base, pct) => Math.round(Number(base) * (1 - (Number(pct) || 0) / 100));
@@ -53,7 +55,6 @@ export default function FacilityPriceList({ facilityId, canEdit, picker }) {
     const discard = useMutation({ mutationFn: () => facilityPricesApi.priceVersions(facilityId, draft.facilityPriceVersionId), onSuccess: refresh });
     const error = startDraft.error ?? save.error ?? publish.error ?? discard.error ?? list.error;
     const set = (i, patch) => setRows(rows.map((r, j) => (j === i ? { ...r, ...patch } : r)));
-    const ownCount = (v) => v.prices.length;
 
     return (
         <>
@@ -120,18 +121,8 @@ export default function FacilityPriceList({ facilityId, canEdit, picker }) {
                         </button>
                     </div>
                 )}
-                {versions.some((v) => v.status !== 'Draft') && (
-                    <details style={{ marginTop: 16 }}>
-                        <summary className="se-label">{tr('History')}</summary>
-                        <ul className="sa-muted">
-                            {versions.filter((v) => v.status !== 'Draft').map((v) => (
-                                <li key={v.facilityPriceVersionId}>
-                                    {tr('Version {version}', { version: v.version })} · {formatDate(v.effectiveFrom)} → {v.effectiveTo ? formatDate(v.effectiveTo) : tr('now')} · {tr('{n} own price{n:s}', { n: ownCount(v) })} · <Status value={v.status} />
-                                </li>
-                            ))}
-                        </ul>
-                    </details>
-                )}
+                <PriceHistory entries={versions.filter((v) => v.status !== 'Draft').map((v) => ({ ...v, id: v.facilityPriceVersionId }))}
+                    changesOf={(v, previous) => [{ title: 'Prices per size', rows: facilityVersionChanges(v, previous, standard) }]} />
             </section>
         </>
     );

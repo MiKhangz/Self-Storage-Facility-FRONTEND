@@ -11,6 +11,8 @@ import { Roles } from '../../features/auth/roles';
 import FacilityPriceList from './FacilityPriceList.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
+import PriceHistory from './PriceHistory.jsx';
+import { policyChanges } from './priceChanges.js';
 
 const TERMS = [
     { title: 'Deposit', icon: 'shield', rows: [['depositMonths', 'Deposit amount', 'month(s) rent']] },
@@ -23,6 +25,18 @@ const TERMS = [
     },
 ];
 const TERM_KEYS = TERMS.flatMap((t) => t.rows.map(([k]) => k));
+const RULE_FIELDS = [...TERMS.flatMap((t) => t.rows), ['noticeDays', 'Notice before moving out', 'days']];
+
+/** A standard version against the one before it, grouped as the history shows it. The first version has nothing to compare. */
+function standardChanges(policy, previous) {
+    if (!previous) return [];
+    const c = policyChanges(policy, previous, RULE_FIELDS);
+    return [
+        { title: 'Prices per size', rows: c.sizes },
+        { title: 'Rental terms', rows: c.rules.length ? [{ code: '', note: null, changes: c.rules }] : [] },
+        { title: 'Extra fees', rows: c.fees },
+    ];
+}
 
 /** Price after a percentage discount, rounded to whole đồng. */
 export const discounted = (base, pct) => Math.round(base * (1 - (pct ?? 0) / 100));
@@ -205,6 +219,7 @@ function CompanyStandard({ picker }) {
                                 ))}
                             </div>
                         )}
+                        <PriceHistory entries={all.filter((p) => p.status !== 'Draft').map((p) => ({ ...p, id: p.pricingPolicyId }))} changesOf={standardChanges} />
                 </section>
             )}
         </>

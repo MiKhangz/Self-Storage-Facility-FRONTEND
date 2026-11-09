@@ -481,6 +481,7 @@
  * @property {(string|null)} [effectiveTo] date
  * @property {PricingPolicyStatus} [status]
  * @property {(Array<FacilitySizePriceDto>|null)} [prices]
+ * @property {PriceVersionAuditDto} [audit]
  */
 
 /**
@@ -864,6 +865,14 @@
  */
 
 /**
+ * @typedef {Object} PriceVersionAuditDto
+ * @property {(string|null)} [createdByName]
+ * @property {(string|null)} [publishedByName]
+ * @property {(string|null)} [publishedAt] date-time
+ * @property {number} [bookings] int32
+ */
+
+/**
  * @typedef {Object} PricingPolicyDto
  * @property {number} [pricingPolicyId] int32
  * @property {number} [version] int32
@@ -880,6 +889,7 @@
  * @property {PricingPolicyStatus} [status]
  * @property {(Array<UnitPriceDto>|null)} [unitPrices]
  * @property {(Array<FeeTypeDto>|null)} [fees]
+ * @property {PriceVersionAuditDto} [audit]
  */
 
 /**
