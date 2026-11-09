@@ -4,13 +4,55 @@ import { checkInsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, todayIso } from '../../customer/components/format.js';
-import { Modal, PageHeader, Stat } from '../components/ui.jsx';
+import { Modal, PageHeader, Stat, TableState } from '../components/ui.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 
 const time = (iso) => iso && new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 /** Now, as the value of a datetime-local input in Vietnam time. */
 const nowLocal = () => new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 16);
 export const LEFT_HOW = { MarkedByStaff: 'marked by staff', AutoAtClosing: 'auto at closing' };
+const dateTime = (iso) => iso && new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+
+/** A list of visits, newest first: when the customer came in, when and how they left, and who recorded it. */
+export function VisitsTable({ query }) {
+    const tr = useT();
+    const rows = query.data?.items ?? [];
+    return (
+        <table className="se-table"><thead><tr><th>{tr('Unit')}</th><th>{tr('Checked in')}</th><th>{tr('Checked out')}</th><th>{tr('Recorded by')}</th><th>{tr('Note')}</th></tr></thead>
+            <tbody>
+                {rows.map((v) => (
+                    <tr key={v.checkInId}>
+                        <td className="strong">{v.unitCode}<br /><small className="sa-muted">{v.contractNumber}</small></td>
+                        <td>{dateTime(v.checkInAt)}</td>
+                        <td>{v.checkOutAt ? dateTime(v.checkOutAt) : <span className="se-badge info">{tr('Still inside')}</span>}
+                            {LEFT_HOW[v.checkOutMethod] && <><br /><small className="sa-muted">{tr(LEFT_HOW[v.checkOutMethod])}{v.checkOutReason ? ` · ${v.checkOutReason}` : ''}</small></>}</td>
+                        <td>{v.recordedByName}</td>
+                        <td>{v.note ?? '—'}</td>
+                    </tr>
+                ))}
+                <TableState query={query} rows={rows} cols={5} empty="No check-ins yet." />
+            </tbody></table>
+    );
+}
+
+/** The visit log of one rental, opened from its row on the board. */
+function VisitHistory({ row, onClose }) {
+    const tr = useT();
+    const visits = useQuery({
+        queryKey: ['check-ins', 'contract', row.contractId],
+        queryFn: () => checkInsApi.list({ contractId: row.contractId, page: 1, pageSize: 100 }),
+    });
+    return (
+        <Modal wide onClose={onClose}>
+            <div className="se-panel sa-dialog">
+                <div className="sa-card-title"><h2>{tr('Visits of {name}', { name: row.customerName })}</h2>
+                    <button type="button" className="sa-close" onClick={onClose} aria-label={tr('Close')}>×</button></div>
+                <p className="sa-muted">{tr('Kho')} {row.unitCode} · {row.facilityName} · {row.contractNumber}</p>
+                <div className="se-table-wrap"><VisitsTable query={visits} /></div>
+            </div>
+        </Modal>
+    );
+}
 
 /** The customer left without checking out: staff record roughly when, and why. The activity log keeps who did it. */
 function MarkLeft({ row, onClose }) {
@@ -53,6 +95,7 @@ export default function CheckInPage() {
     const board = useQuery({ queryKey: ['check-ins', 'board'], queryFn: checkInsApi.board, refetchInterval: 30_000 });
     const [code, setCode] = useState('');
     const [marking, setMarking] = useState(null);
+    const [history, setHistory] = useState(null);
     const find = useMutation({ mutationFn: () => checkInsApi.find({ accessCode: code.trim() }) });
     const done = { onSuccess: () => { setCode(''); find.reset(); queryClient.invalidateQueries({ queryKey: ['check-ins'] }); } };
     const checkIn = useMutation({ mutationFn: (contractId) => checkInsApi.checkIn({ contractId, note: null }), ...done });
@@ -106,10 +149,13 @@ export default function CheckInPage() {
                                 <td>{r.since ? time(r.since) : '—'}
                                     {LEFT_HOW[r.leftHow] && <div className="sa-muted">{tr('Left')} · {tr(LEFT_HOW[r.leftHow])}</div>}
                                     {!r.canEnter && <div className="sa-muted">{tr('No working code')}</div>}</td>
-                                <td>{r.inside && (
-                                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setMarking(r)}
-                                        title={tr('The customer already left without checking out')}>{tr('Mark as left')}</button>
-                                )}</td>
+                                <td className="sa-row-actions">
+                                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setHistory(r)}
+                                        aria-label={tr('Visit history of {name}', { name: r.customerName })}>{tr('Visit history')}</button>
+                                    {r.inside && (
+                                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setMarking(r)}
+                                            title={tr('The customer already left without checking out')}>{tr('Mark as left')}</button>
+                                    )}</td>
                             </tr>
                         ))}
                         {!rows.length && <tr><td colSpan={6} className="sa-muted">{board.isLoading ? tr('Loading…') : board.isError ? errorMessage(board.error) : tr('Nobody is renting at your facilities yet.')}</td></tr>}
@@ -117,6 +163,7 @@ export default function CheckInPage() {
                 </table>
             </section>
             {marking && <MarkLeft row={marking} onClose={() => setMarking(null)} />}
+            {history && <VisitHistory row={history} onClose={() => setHistory(null)} />}
         </>
     );
 }

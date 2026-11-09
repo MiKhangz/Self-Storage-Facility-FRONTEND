@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
 import { checkInsApi, customersApi } from '../../api/generated';
-import { LEFT_HOW } from './CheckInPage.jsx';
+import { VisitsTable } from './CheckInPage.jsx';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
@@ -17,7 +17,6 @@ const TABS = ['Contracts', 'Reservations', 'Payments', 'Support requests'];
 const VISITS_TAB = 'Check-ins & check-outs';
 // Facility Staff work the desk itself; the visit history is for those who oversee it.
 const SEE_VISITS = [Roles.SystemAdministrator, Roles.BusinessOperationsManager, Roles.FacilityManager];
-const formatDateTimeShort = (iso) => (iso ? `${formatDate(iso)} ${new Date(iso).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}` : '');
 
 /** On-time share of paid invoices: paid ones whose due date had not passed when last paid. */
 export function onTimeShare(invoices) {
@@ -100,20 +99,7 @@ export default function CustomerPage() {
                         </tbody></table>
                 )}
                 {tab === VISITS_TAB && (
-                    <table className="se-table"><thead><tr><th>{tr('Unit')}</th><th>{tr('Checked in')}</th><th>{tr('Checked out')}</th><th>{tr('Recorded by')}</th><th>{tr('Note')}</th></tr></thead>
-                        <tbody>
-                            {(visits.data?.items ?? []).map((v) => (
-                                <tr key={v.checkInId}>
-                                    <td className="strong">{v.unitCode}<br /><small className="sa-muted">{v.contractNumber}</small></td>
-                                    <td>{formatDateTimeShort(v.checkInAt)}</td>
-                                    <td>{v.checkOutAt ? formatDateTimeShort(v.checkOutAt) : <span className="se-badge info">{tr('Still inside')}</span>}
-                                        {LEFT_HOW[v.checkOutMethod] && <><br /><small className="sa-muted">{tr(LEFT_HOW[v.checkOutMethod])}{v.checkOutReason ? ` · ${v.checkOutReason}` : ''}</small></>}</td>
-                                    <td>{v.recordedByName}</td>
-                                    <td>{v.note ?? '—'}</td>
-                                </tr>
-                            ))}
-                            <TableState query={visits} rows={visits.data?.items} cols={5} empty="No check-ins yet." />
-                        </tbody></table>
+                    <VisitsTable query={visits} />
                 )}
             </div>
         </>

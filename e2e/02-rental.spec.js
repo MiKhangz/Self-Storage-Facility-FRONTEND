@@ -149,6 +149,14 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await staff.getByLabel('Reason *').fill('Forgot to check out at the desk')
     await staff.getByRole('dialog').getByRole('button', { name: 'Mark as left' }).click()
     await expect(row).toContainText('marked by staff')
+
+    // Staff open the rental's visit log from its row: the handover visit and the one marked as left.
+    await row.getByRole('button', { name: `Visit history of ${name}` }).click()
+    const log = staff.getByRole('dialog')
+    await expect(log.locator('tbody tr')).toHaveCount(2)
+    await expect(log).toContainText('Forgot to check out at the desk')
+    await log.getByRole('button', { name: 'Close' }).click()
+
     await find(fresh)
     await expect(staff.getByRole('alert')).toContainText('No working access code matches')
 
