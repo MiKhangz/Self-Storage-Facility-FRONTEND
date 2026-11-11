@@ -325,3 +325,8 @@
 .sa-delta { font-weight: 600; }
 .sa-delta.up { color: #c4320a; }
 .sa-delta.down { color: #18794e; }
+/* History and its versions open on click: a chevron says so, and turns when open. */
+.sa-history > summary, .sa-history-entry > summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.sa-history > summary::-webkit-details-marker, .sa-history-entry > summary::-webkit-details-marker { display: none; }
+.sa-history > summary::before, .sa-history-entry > summary::before { content: ""; width: 6px; height: 6px; margin: 0 4px 0 2px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .15s; }
+.sa-history[open] > summary::before, .sa-history-entry[open] > summary::before { transform: rotate(45deg); }
