@@ -20,6 +20,7 @@ export default {
     "{n} unsaved change{n:s}": "{n} thay đổi chưa lưu",
     "Undo changes": "Hoàn tác",
     "History": "Lịch sử",
+    "replaced the same day": "bị thay ngay trong ngày",
     "Prices per size": "Giá theo cỡ",
     "Rental terms": "Điều khoản thuê",
     "{n} booking{n:s} quoted on it": "{n} lượt đặt theo bảng giá này",

@@ -2,6 +2,7 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Status } from '../components/ui.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 import { percentChange } from './priceChanges.js';
+import { toVietnamTime } from '../../admin/activityLog/logic.js';
 
 const value = (tr, v, unit) => (v == null ? '—' : unit === 'vnd' ? formatVnd(v) : unit === '%' ? `${v}%` : `${v} ${tr(unit)}`);
 
@@ -23,13 +24,15 @@ export default function PriceHistory({ entries, changesOf }) {
                 return (
                     <details key={e.id} className="sa-history-entry">
                         <summary>
-                            <strong>{tr('Version {version}', { version: e.version })}</strong> · {formatDate(e.effectiveFrom)} → {e.effectiveTo ? formatDate(e.effectiveTo) : tr('now')} <Status value={e.status} />
+                            <strong>{tr('Version {version}', { version: e.version })}</strong> · {formatDate(e.effectiveFrom)}{' '}
+                            {/* Publishing ends the old version yesterday, so one replaced on its first day ends before it starts. */}
+                            {e.effectiveTo && e.effectiveTo < e.effectiveFrom ? tr('replaced the same day') : <>→ {e.effectiveTo ? formatDate(e.effectiveTo) : tr('now')}</>} <Status value={e.status} />
                             {a && <span className="sa-muted"> · {tr('{n} booking{n:s} quoted on it', { n: a.bookings })}</span>}
                         </summary>
                         {a && (
                             <p className="sa-muted">
                                 {a.createdByName && tr('Drafted by {name}', { name: a.createdByName })}
-                                {a.publishedByName && <> · {tr('published by {name} on {date}', { name: a.publishedByName, date: formatDate(a.publishedAt) })}</>}
+                                {a.publishedByName && <> · {tr('published by {name} on {date}', { name: a.publishedByName, date: toVietnamTime(a.publishedAt).dateLabel })}</>}
                             </p>
                         )}
                         {!groups.length ? <p className="sa-muted">{previous ? tr('Same numbers as version {version}.', { version: previous.version }) : tr('First version.')}</p>
