@@ -125,8 +125,13 @@ export default function HomePage() {
                             Kho tự quản có khóa riêng tại TP. Hồ Chí Minh{areaRange ? `, diện tích từ ${areaRange}` : ''}. Thuê theo tháng, ra vào bằng mã cá nhân và quản lý mọi thứ trực tuyến.
                         </p>
                         <div className="se-hero-actions">
+<<<<<<< Updated upstream:src/user/home/HomePage.jsx
                             <Link to="/booking" className="se-btn se-btn-primary se-btn-lg">Đặt kho ngay <Icon name="arrow" size={16} /></Link>
                             <Link to="/sizes" className="se-btn se-btn-outline se-btn-lg">Xem kích thước và giá</Link>
+=======
+                            <Link to="/booking" className="se-btn se-btn-primary se-btn-lg">{t('Đặt kho ngay')} <Icon name="arrow" size={16} /></Link>
+                            < Link to="/sizes" className="se-btn se-btn-outline se-btn-lg" > {t('Xem kích thước và giá')}</Link>
+>>>>>>> Stashed changes:src/customer/home/HomePage.jsx
                         </div>
                         {!!locations.length && (
                             <dl className="se-hero-stats">

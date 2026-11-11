@@ -1,0 +1,109 @@
+import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import { useAuth } from '../features/auth/AuthContext';
+import { Roles } from '../features/auth/roles';
+import Icon from '../customer/components/Icon.jsx';
+import { initials } from '../customer/layout/CustomerLayout.jsx';
+import { humanize, useReturns, useReservations, useTickets } from './queries.js';
+import '../customer/layout/CustomerLayout.css';
+import './Admin.css';
+import { LanguageSelect, useT } from '../i18n/I18n.jsx';
+
+const { SystemAdministrator: ADMIN, BusinessOperationsManager: BOM, FacilityManager: FM, FacilityStaff: FS } = Roles;
+const OPS = [FS, FM, ADMIN, BOM];
+
+const NAV = [
+    { section: 'Overview', items: [{ to: '/admin', end: true, icon: 'grid', label: 'Dashboard', roles: OPS }] },
+    {
+        section: 'Operations', items: [
+            { to: '/admin/facilities', icon: 'building', label: 'Facilities', roles: [ADMIN, BOM] },
+            { to: '/admin/units', icon: 'box', label: 'Storage Units', roles: OPS },
+            { to: '/admin/reservations', icon: 'calendar', label: 'Reservations', roles: [FS, FM, ADMIN], badge: 'reservations' },
+            { to: '/admin/handover', icon: 'key', label: 'Handover', roles: [FS, FM] },
+            { to: '/admin/check-in', icon: 'check', label: 'Check-in / out', roles: [FS, FM] },
+            { to: '/admin/returns', icon: 'arrowLeft', label: 'Returns', roles: [FS, FM, BOM], badge: 'returns' },
+            { to: '/admin/staff', icon: 'clock', label: 'Staff & Shifts', roles: [FM, ADMIN] },
+            { to: '/admin/contracts', icon: 'file', label: 'Customers & Contracts', roles: OPS },
+            { to: '/admin/payments', icon: 'card', label: 'Payments', roles: [FS, FM, BOM] },
+            { to: '/admin/overdue', icon: 'clock', label: 'Overdue Cases', roles: [FM, BOM] },
+            { to: '/admin/maintenance', icon: 'shield', label: 'Maintenance', roles: OPS },
+            { to: '/admin/tickets', icon: 'chat', label: 'Support Tickets', roles: OPS, badge: 'tickets' },
+        ],
+    },
+    {
+        section: 'Business', items: [
+            { to: '/admin/pricing', icon: 'gem', label: 'Pricing & Policies', roles: [BOM, ADMIN] },
+            { to: '/admin/unit-sizes', icon: 'box', label: 'Unit Sizes', roles: [BOM] },
+            { to: '/admin/deposit-refunds', icon: 'card', label: 'Refund payouts', roles: [BOM, FM, ADMIN] },
+            { to: '/admin/reports', icon: 'grid', label: 'Reports & Exports', roles: [BOM, FM, ADMIN] },
+        ],
+    },
+    {
+        section: 'System', items: [
+            { to: '/admin/users', icon: 'shield', label: 'Users & Roles', roles: [ADMIN, FM] },
+            { to: '/admin/activity', icon: 'clock', label: 'Activity Log', roles: [ADMIN] },
+        ],
+    },
+];
+
+/** Shell for every admin screen: role-filtered sidebar, user chip, page outlet. */
+export default function AdminLayout() {
+    const { session, logout } = useAuth();
+    const tr = useT();
+    const navigate = useNavigate();
+    const role = session?.role;
+    const canOperate = [FS, FM, ADMIN].includes(role);
+    // Sidebar counters: work waiting in each queue.
+    const reservations = useReservations({ status: 'Pending' });
+    const returns = useReturns({ status: 'Requested' });
+    const tickets = useTickets({ status: 'New' });
+    const counts = canOperate ? {
+        reservations: reservations.data?.length,
+        returns: returns.data?.length,
+        tickets: tickets.data?.length,
+    } : {};
+
+    return (
+        <div className="se-page sa-shell">
+            <aside className="sa-side">
+                <div className="sa-brand">
+                    <span className="se-brand-mark"><Icon name="box" size={18} /></span>
+                    <div><span className="se-brand-name">Stor<span>Ease</span></span><small>{tr('Admin portal')}</small></div>
+                </div>
+                <nav>
+                    {NAV.map((group) => {
+                        const items = group.items.filter((i) => i.roles.includes(role));
+                        if (!items.length) return null;
+                        return (
+                            <div key={group.section} className="sa-nav-group">
+                                <span className="sa-nav-title">{tr(group.section)}</span>
+                                {items.map((i) => (
+                                    <NavLink key={i.to} to={i.to} end={i.end}>
+                                        <Icon name={i.icon} size={20} /><span>{tr(i.label)}</span>
+                                        {!!counts[i.badge] && <span className="sa-nav-badge">{counts[i.badge]}</span>}
+                                    </NavLink>
+                                ))}
+                            </div>
+                        );
+                    })}
+                </nav>
+                {/* A new tab keeps this admin session open; the customer site starts signed out there. */}
+                <a href="/" target="_blank" rel="noopener noreferrer" className="sa-logout">
+                    <Icon name="home" size={20} /> {tr('Customer site')}
+                </a>
+                <button type="button" className="sa-logout" onClick={() => { logout(); navigate('/admin/login', { replace: true }); }}>
+                    <Icon name="arrowLeft" size={20} /> {tr('Log out')}
+                </button>
+            </aside>
+            <div className="sa-main">
+                <header className="sa-top">
+                    <LanguageSelect />
+                    <div className="sa-user">
+                        <span className="se-avatar">{initials(session?.fullName)}</span>
+                        <div><strong>{session?.fullName}</strong><small>{tr(humanize(role))}</small></div>
+                    </div>
+                </header>
+                <main className="sa-content"><Outlet /></main>
+            </div>
+        </div>
+    );
+}
