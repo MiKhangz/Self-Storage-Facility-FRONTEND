@@ -88,7 +88,7 @@ export default function SizesPage() {
     const rows = useTypeRows(types, activeFacility);
     const maxArea = Math.max(...types.map((t) => t.areaM2), 1);
     const highlight = tierFor(months);
-    const terms = useTerms();
+    const terms = useTerms({ facilityId: activeFacility });
     const bookLink = (t) => `/booking?facilityId=${activeFacility}&unitTypeId=${t.unitTypeId}&rentalMonths=${months}`;
 
     return (

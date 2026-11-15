@@ -3,7 +3,11 @@ import { pricingPoliciesApi } from '../../api/generated';
 import { fill } from '../../i18n/I18n.jsx';
 
 /** The rental terms in force today: the same rules the backend enforces, so the site never promises others. */
-export const useTerms = () => useQuery({ queryKey: ['terms'], queryFn: () => pricingPoliciesApi.currentTerms(), staleTime: 10 * 60_000 });
+export const useTerms = (params) => useQuery({
+    queryKey: ['terms', params ?? {}],
+    queryFn: () => pricingPoliciesApi.currentTerms(params),
+    staleTime: 10 * 60_000,
+});
 
 /** Percent off for a stay of `months` (the 3 / 6 / 12-month tier it reaches); the largest across sizes when no size is given. */
 export function discountFor(terms, months, unitTypeId) {

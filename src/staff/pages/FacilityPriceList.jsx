@@ -39,7 +39,11 @@ export default function FacilityPriceList({ facilityId, canEdit, picker }) {
     useEffect(() => { setRows(rowsOf(standard, draft ?? live)); }, [list.data]); // eslint-disable-line react-hooks/exhaustive-deps
     const saved = rowsOf(standard, draft ?? live);
     const changed = rows.filter((r, i) => saved[i] && (r.own !== saved[i].own || (r.own && FIELDS.some((k) => Number(r[k]) !== Number(saved[i][k])))));
-    const refresh = () => queryClient.invalidateQueries({ queryKey: ['facility-prices', facilityId] });
+    const refresh = () => {
+        queryClient.invalidateQueries({ queryKey: ['facility-prices', facilityId] });
+        queryClient.invalidateQueries({ queryKey: ['terms'] });
+        queryClient.invalidateQueries({ queryKey: ['quote'] });
+    };
 
     const startDraft = useMutation({ mutationFn: () => facilityPricesApi.postPriceVersions(facilityId), onSuccess: refresh });
     const save = useMutation({

@@ -71,8 +71,8 @@ function AccessCodeCard({ contract }) {
     );
 }
 
-function RenewCard({ contract, unitTypeId, quiet }) {
-    const terms = useTerms().data;
+function RenewCard({ contract, facilityId, unitTypeId, quiet }) {
+    const terms = useTerms({ facilityId }).data;
     const queryClient = useQueryClient();
     const t = useT();
     const [months, setMonths] = useState(6);
@@ -172,7 +172,7 @@ export default function UnitDetailPage() {
             <div className="se-detail-grid">
                 <div>
                     <AccessCodeCard contract={c} />
-                    {active && <RenewCard contract={c} unitTypeId={r?.unitTypeId} quiet={!!due} />}
+                    {active && <RenewCard contract={c} facilityId={r?.facilityId} unitTypeId={r?.unitTypeId} quiet={!!due} />}
                     {live && !active && <div className="se-alert info">{t('Hãy thanh toán tiền thuê quá hạn để có thể gia hạn hoặc yêu cầu trả kho.')}</div>}
                     <section className="se-panel">
                         <h2>{t('Lịch sử thanh toán')}</h2>
