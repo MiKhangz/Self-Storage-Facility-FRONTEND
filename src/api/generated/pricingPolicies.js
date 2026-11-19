@@ -28,10 +28,11 @@ export const pricingPoliciesApi = {
     api.post(`/api/pricing-policies`, body).then((r) => r.data),
   /**
    * GET /api/pricing-policies/current-terms
+   * @param {{ facilityId?: number, date?: string }} [params] query string
    * @returns {Promise<PolicyTermsDto>}
    */
-  currentTerms: () =>
-    api.get(`/api/pricing-policies/current-terms`).then((r) => r.data),
+  currentTerms: (params) =>
+    api.get(`/api/pricing-policies/current-terms`, { params }).then((r) => r.data),
   /**
    * GET /api/pricing-policies/{id}
    * @param {number} id

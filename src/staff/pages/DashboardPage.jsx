@@ -54,7 +54,7 @@ export default function DashboardPage() {
     ];
 
     return (
-        <>
+        <div className="sa-dashboard">
             <PageHeader title={tr('Hello, {name}', { name: firstName })} subtitle={`${new Date().toLocaleDateString(lang === 'vi' ? 'vi-VN' : 'en-GB', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric', timeZone: 'Asia/Ho_Chi_Minh' })} · ${tr('All facilities')}`}>
                 <Link to="/admin/reports" className="se-btn se-btn-primary"><Icon name="file" size={16} /> {tr('Reports')}</Link>
             </PageHeader>
@@ -65,25 +65,30 @@ export default function DashboardPage() {
                 </div>
             )}
 
-            <div className="sa-stats">
-                <Stat icon="grid" label="Occupancy rate" value={`${occupancy(allUnits)}%`} note={tr('{n} unit{n:s}', { n: allUnits.length })} />
-                <Stat icon="card" label={tr('Revenue ({month})', { month: new Date().toLocaleString(lang === 'vi' ? 'vi-VN' : 'en', { month: 'short' }) })} value={compactVnd(paidInMonth(month))} note="paid on invoices issued this month" />
-                <Stat icon="file" label="Active contracts" value={active.length} note={tr('{n} draft{n:s} awaiting handover', { n: allContracts.filter((c) => c.status === 'Draft').length })} />
-                <Stat icon="clock" tone="bad" label="Overdue payments" value={overdue.length} note={formatVnd(overdue.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} />
+            <div className="sa-stats sa-stats-split">
+                <div className="sa-stats-revenue">
+                    <Stat icon="card" label={tr('Revenue ({month})', { month: new Date().toLocaleString(lang === 'vi' ? 'vi-VN' : 'en', { month: 'short' }) })} value={compactVnd(paidInMonth(month))} note="paid on invoices issued this month" />
+                </div>
+                <div className="sa-stats-stack">
+                    <Stat icon="grid" label="Occupancy rate" value={`${occupancy(allUnits)}%`} note={tr('{n} unit{n:s}', { n: allUnits.length })} />
+                    <Stat icon="file" label="Active contracts" value={active.length} note={tr('{n} draft{n:s} awaiting handover', { n: allContracts.filter((c) => c.status === 'Draft').length })} />
+                    <Stat icon="clock" tone="bad" label="Overdue payments" value={overdue.length} note={formatVnd(overdue.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} />
+                </div>
             </div>
 
-            <div className="sa-grid-2">
-                <section className="se-panel">
-                    <div className="sa-card-title"><h2>{tr('Monthly revenue {year}', { year })}</h2><span className="sa-muted">{tr('Paid amount by invoice month')}</span></div>
-                    <div className="sa-bars" role="img" aria-label={`Revenue per month in ${year}`}>
-                        {revenue.map((v, i) => (
-                            <div key={i} className="sa-bar" title={`${monthLabel(i)}: ${formatVnd(v)}`}>
-                                <span style={{ height: `${(v / maxRevenue) * 100}%` }} className={i === Number(month.slice(5)) - 1 ? 'current' : ''} />
-                                <small>{monthLabel(i)}</small>
-                            </div>
-                        ))}
-                    </div>
-                </section>
+            <section className="se-panel">
+                <div className="sa-card-title"><h2>{tr('Monthly revenue {year}', { year })}</h2><span className="sa-muted">{tr('Paid amount by invoice month')}</span></div>
+                <div className="sa-bars" role="img" aria-label={`Revenue per month in ${year}`}>
+                    {revenue.map((v, i) => (
+                        <div key={i} className="sa-bar" title={`${monthLabel(i)}: ${formatVnd(v)}`}>
+                            <span style={{ height: `${(v / maxRevenue) * 100}%` }} className={i === Number(month.slice(5)) - 1 ? 'current' : ''} />
+                            <small>{monthLabel(i)}</small>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            <div className="sa-dashboard-row">
                 <section className="se-panel">
                     <div className="sa-card-title"><h2>{tr('Occupancy by facility')}</h2></div>
                     <div className="sa-occupancy">
@@ -99,9 +104,6 @@ export default function DashboardPage() {
                         {!facilities.data?.length && <p className="sa-muted">{facilities.isLoading ? tr('Loading…') : tr('No facilities.')}</p>}
                     </div>
                 </section>
-            </div>
-
-            <div className="sa-grid-2">
                 <section className="se-panel">
                     <div className="sa-card-title"><h2>{tr("Today's schedule")}</h2><Link to="/admin/handover" className="se-link">{tr('Open handover desk')} <Icon name="arrow" size={14} /></Link></div>
                     <div className="se-table-wrap">
@@ -135,7 +137,7 @@ export default function DashboardPage() {
                     </div>
                 </section>
             </div>
-        </>
+        </div>
     );
 }
 

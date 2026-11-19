@@ -32,7 +32,7 @@ export default function ChooseUnitPage() {
     const types = [...(unitTypes.data ?? [])].sort((a, b) => a.areaM2 - b.areaM2);
     const unitTypeId = Number(form.unitTypeId) || types[0]?.unitTypeId;
     const type = types.find((t) => t.unitTypeId === unitTypeId);
-    const terms = useTerms().data;
+    const terms = useTerms({ facilityId, date: form.moveInDate }).data;
     const ready = !!(facilityId && unitTypeId && form.moveInDate);
 
     const stockQuery = { facilityId, moveInDate: form.moveInDate };

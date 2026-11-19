@@ -128,7 +128,11 @@ function CompanyStandard({ picker }) {
     const [pickedId, setPickedId] = useState(null);
     const policy = all.find((p) => p.pricingPolicyId === pickedId) ?? draft ?? active ?? all[0];
     const editable = policy?.status === 'Draft';
-    const refresh = () => queryClient.invalidateQueries({ queryKey: ['pricing-policies'] });
+    const refresh = () => {
+        queryClient.invalidateQueries({ queryKey: ['pricing-policies'] });
+        queryClient.invalidateQueries({ queryKey: ['terms'] });
+        queryClient.invalidateQueries({ queryKey: ['quote'] });
+    };
 
     const newDraft = useMutation({
         // A new version copies the one on screen (prices, discounts, fees, terms), so an old price comes back by copying
