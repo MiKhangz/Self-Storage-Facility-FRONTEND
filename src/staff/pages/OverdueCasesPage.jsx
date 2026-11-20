@@ -44,17 +44,12 @@ export default function OverdueCasesPage() {
     return (
         <>
             <PageHeader title={tr('Overdue cases')} subtitle="Rent past its due date, from the first reminder to clear-out" />
-            <div className="sa-stats">
-                <Stat icon="clock" label="Open cases" value={all.filter((c) => !c.resolvedAt).length} />
-                <Stat icon="card" tone="bad" label="Outstanding" value={formatVnd(all.reduce((s, c) => s + (c.outstanding ?? 0), 0))} />
-                <Stat icon="shield" tone="warn" label="Locked out" value={all.filter((c) => c.stage === 'Suspended' || c.stage === 'ClearOut').length} />
-            </div>
             <Filters>
                 <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search customer, contract, unit or invoice')} />
                 <SelectFilter label="Stage" value={stage} onChange={setStage} all="All stages" options={STAGES.map((s) => ({ value: s, label: humanize(s) }))} />
                 <label className="se-check"><input type="checkbox" checked={openOnly} onChange={(e) => setOpenOnly(e.target.checked)} /><span>{tr('Open cases only')}</span></label>
             </Filters>
-            <div className="sa-split">
+            <div className="sa-split open">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Invoice')}</th><th>{tr('Outstanding')}</th><th>{tr('Days overdue')}</th><th>{tr('Late fee')}</th><th>{tr('Stage')}</th></tr></thead>
@@ -73,6 +68,11 @@ export default function OverdueCasesPage() {
                             <TableState query={cases} rows={shown} cols={7} empty="No overdue cases." />
                         </tbody>
                     </table>
+                </div>
+                <div className="sa-stats-stack">
+                    <Stat icon="clock" label="Open cases" value={all.filter((c) => !c.resolvedAt).length} />
+                    <Stat icon="card" tone="bad" label="Outstanding" value={formatVnd(all.reduce((s, c) => s + (c.outstanding ?? 0), 0))} />
+                    <Stat icon="shield" tone="warn" label="Locked out" value={all.filter((c) => c.stage === 'Suspended' || c.stage === 'ClearOut').length} />
                 </div>
                 {current && (
                     <Modal narrow onClose={() => setSelected(null)}><aside className="se-panel sa-side-panel">

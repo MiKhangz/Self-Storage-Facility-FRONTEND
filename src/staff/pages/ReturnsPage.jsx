@@ -113,12 +113,6 @@ export default function ReturnsPage() {
     return (
         <>
             <PageHeader title={tr('Returns')} subtitle="Inspect returned units, settle deposits and release units" />
-            <div className="sa-stats">
-                <Stat icon="arrowLeft" label="Return requests" value={all.filter((m) => m.status === 'Requested').length} />
-                <Stat icon="calendar" label="Inspections booked" value={all.filter((m) => m.status === 'Approved').length} />
-                <Stat icon="card" tone="warn" label="Awaiting refund" value={all.filter((m) => m.status === 'Inspected').length} />
-                <Stat icon="check" label="Completed" value={all.filter((m) => m.status === 'Completed').length} />
-            </div>
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
                     <button key={t} role="tab" aria-selected={tab === t} className={tab === t ? 'active' : ''} onClick={() => { setTab(t); setSelected(null); }}>
@@ -126,7 +120,7 @@ export default function ReturnsPage() {
                     </button>
                 ))}
             </div>
-            <div className="sa-split">
+            <div className="sa-split open">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Contract')}</th><th>{tr('Return date')}</th><th>{tr('Move out by')}</th><th>{tr('Inspection')}</th><th>{tr('Status')}</th></tr></thead>
@@ -145,6 +139,12 @@ export default function ReturnsPage() {
                             <TableState query={returns} rows={shown} cols={7} empty="Nothing in this list." />
                         </tbody>
                     </table>
+                </div>
+                <div className="sa-stats-stack">
+                    <Stat icon="arrowLeft" label="Return requests" value={all.filter((m) => m.status === 'Requested').length} />
+                    <Stat icon="calendar" label="Inspections booked" value={all.filter((m) => m.status === 'Approved').length} />
+                    <Stat icon="card" tone="warn" label="Awaiting refund" value={all.filter((m) => m.status === 'Inspected').length} />
+                    <Stat icon="check" label="Completed" value={all.filter((m) => m.status === 'Completed').length} />
                 </div>
                 {current && (
                     <Modal narrow onClose={() => setSelected(null)}><aside className="se-panel sa-side-panel">

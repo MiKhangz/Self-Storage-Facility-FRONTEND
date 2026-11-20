@@ -4,14 +4,14 @@ import { checkInsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, todayIso } from '../../customer/components/format.js';
+import { formatDateTime } from '../../customer/support/support.js';
 import { Modal, PageHeader, Stat, TableState } from '../components/ui.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 
 const time = (iso) => iso && new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
 /** Now, as the value of a datetime-local input in Vietnam time. */
 const nowLocal = () => new Date(Date.now() + 7 * 3600_000).toISOString().slice(0, 16);
-export const LEFT_HOW = { MarkedByStaff: 'marked by staff', AutoAtClosing: 'auto at closing' };
-const dateTime = (iso) => iso && new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+const LEFT_HOW = { MarkedByStaff: 'marked by staff', AutoAtClosing: 'auto at closing' };
 
 /** A list of visits, newest first: when the customer came in, when and how they left, and who recorded it. */
 export function VisitsTable({ query }) {
@@ -23,8 +23,8 @@ export function VisitsTable({ query }) {
                 {rows.map((v) => (
                     <tr key={v.checkInId}>
                         <td className="strong">{v.unitCode}<br /><small className="sa-muted">{v.contractNumber}</small></td>
-                        <td>{dateTime(v.checkInAt)}</td>
-                        <td>{v.checkOutAt ? dateTime(v.checkOutAt) : <span className="se-badge info">{tr('Still inside')}</span>}
+                        <td>{formatDateTime(v.checkInAt)}</td>
+                        <td>{v.checkOutAt ? formatDateTime(v.checkOutAt) : <span className="se-badge info">{tr('Still inside')}</span>}
                             {LEFT_HOW[v.checkOutMethod] && <><br /><small className="sa-muted">{tr(LEFT_HOW[v.checkOutMethod])}{v.checkOutReason ? ` · ${v.checkOutReason}` : ''}</small></>}</td>
                         <td>{v.recordedByName}</td>
                         <td>{v.note ?? '—'}</td>
@@ -109,11 +109,6 @@ export default function CheckInPage() {
     return (
         <>
             <PageHeader title={tr('Check-in / Check-out')} subtitle={tr('Today, {date}', { date: formatDate(todayIso()) })} />
-            <div className="sa-stats">
-                <Stat icon="key" label="Inside now" value={rows.filter((r) => r.inside).length} />
-                <Stat icon="file" label="Renting here" value={rows.length} />
-                <Stat icon="shield" tone="warn" label="No working code" value={rows.filter((r) => !r.canEnter).length} />
-            </div>
 
             <section className="se-panel sa-checkin-find">
                 <form onSubmit={(e) => { e.preventDefault(); if (code.trim()) find.mutate(); }}>
@@ -136,32 +131,39 @@ export default function CheckInPage() {
                 {error && <div className="se-alert" role="alert">{errorMessage(error)}</div>}
             </section>
 
-            <section className="se-card se-table-wrap">
-                <table className="se-table sa-table">
-                    <thead><tr><th>{tr('Status')}</th><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Facility')}</th><th>{tr('Since')}</th><th aria-label={tr('Fix a mistake')} /></tr></thead>
-                    <tbody>
-                        {rows.map((r) => (
-                            <tr key={r.contractId} className={found?.contractId === r.contractId ? 'active' : ''}>
-                                <td><span className={`sa-presence ${r.inside ? 'in' : 'out'}`}>{tr(r.inside ? 'Inside' : 'Out')}</span></td>
-                                <td className="strong">{r.customerName}<div className="sa-muted">{r.customerPhone}</div></td>
-                                <td>{r.unitCode}</td>
-                                <td>{r.facilityName}</td>
-                                <td>{r.since ? time(r.since) : '—'}
-                                    {LEFT_HOW[r.leftHow] && <div className="sa-muted">{tr('Left')} · {tr(LEFT_HOW[r.leftHow])}</div>}
-                                    {!r.canEnter && <div className="sa-muted">{tr('No working code')}</div>}</td>
-                                <td className="sa-row-actions">
-                                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setHistory(r)}
-                                        aria-label={tr('Visit history of {name}', { name: r.customerName })}>{tr('Visit history')}</button>
-                                    {r.inside && (
-                                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setMarking(r)}
-                                            title={tr('The customer already left without checking out')}>{tr('Mark as left')}</button>
-                                    )}</td>
-                            </tr>
-                        ))}
-                        {!rows.length && <tr><td colSpan={6} className="sa-muted">{board.isLoading ? tr('Loading…') : board.isError ? errorMessage(board.error) : tr('Nobody is renting at your facilities yet.')}</td></tr>}
-                    </tbody>
-                </table>
-            </section>
+            <div className="sa-split open">
+                <section className="se-card se-table-wrap">
+                    <table className="se-table sa-table">
+                        <thead><tr><th>{tr('Status')}</th><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Facility')}</th><th>{tr('Since')}</th><th aria-label={tr('Fix a mistake')} /></tr></thead>
+                        <tbody>
+                            {rows.map((r) => (
+                                <tr key={r.contractId} className={found?.contractId === r.contractId ? 'active' : ''}>
+                                    <td><span className={`sa-presence ${r.inside ? 'in' : 'out'}`}>{tr(r.inside ? 'Inside' : 'Out')}</span></td>
+                                    <td className="strong">{r.customerName}<div className="sa-muted">{r.customerPhone}</div></td>
+                                    <td>{r.unitCode}</td>
+                                    <td>{r.facilityName}</td>
+                                    <td>{r.since ? time(r.since) : '—'}
+                                        {LEFT_HOW[r.leftHow] && <div className="sa-muted">{tr('Left')} · {tr(LEFT_HOW[r.leftHow])}</div>}
+                                        {!r.canEnter && <div className="sa-muted">{tr('No working code')}</div>}</td>
+                                    <td className="sa-row-actions">
+                                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setHistory(r)}
+                                            aria-label={tr('Visit history of {name}', { name: r.customerName })}>{tr('Visit history')}</button>
+                                        {r.inside && (
+                                            <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setMarking(r)}
+                                                title={tr('The customer already left without checking out')}>{tr('Mark as left')}</button>
+                                        )}</td>
+                                </tr>
+                            ))}
+                            <TableState query={board} rows={rows} cols={6} empty="Nobody is renting at your facilities yet." />
+                        </tbody>
+                    </table>
+                </section>
+                <div className="sa-stats-stack">
+                    <Stat icon="key" label="Inside now" value={rows.filter((r) => r.inside).length} />
+                    <Stat icon="file" label="Renting here" value={rows.length} />
+                    <Stat icon="shield" tone="warn" label="No working code" value={rows.filter((r) => !r.canEnter).length} />
+                </div>
+            </div>
             {marking && <MarkLeft row={marking} onClose={() => setMarking(null)} />}
             {history && <VisitHistory row={history} onClose={() => setHistory(null)} />}
         </>

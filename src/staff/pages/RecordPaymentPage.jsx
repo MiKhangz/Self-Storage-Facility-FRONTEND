@@ -122,35 +122,33 @@ export default function RecordPaymentPage() {
     return (
         <>
             <PageHeader title={tr('Payments')} subtitle={canRecord ? tr('Enter payments taken at the front desk against an open invoice') : tr('Invoices, reminders, adjustments and refunds')} />
-            <div className="sa-stats">
-                <Stat icon="card" label="Unpaid invoices" value={open.length} note={formatVnd(open.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} />
-                <Stat icon="clock" tone="bad" label="Overdue" value={open.filter((i) => i.status === 'Overdue').length} />
-                <Stat icon="check" label="Paid invoices" value={all.filter((i) => i.status === 'Paid').length} />
-            </div>
-            <div className="sa-split">
-                <div>
-                    <Filters>
-                        <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search customer, unit or invoice')} />
-                        <SelectFilter label="Show" value={view} onChange={setView} all="All invoices" options={[{ value: 'open', label: tr('Unpaid only') }]} />
-                    </Filters>
-                    <div className="se-card se-table-wrap">
-                        <table className="se-table sa-table">
-                            <thead><tr><th>{tr('Invoice')}</th><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Due')}</th><th>{tr('Outstanding')}</th><th>{tr('Status')}</th></tr></thead>
-                            <tbody>
-                                {shown.map((i) => (
-                                    <tr key={i.invoiceId} className={selected === i.invoiceId ? 'active' : ''} onClick={() => { setSelected(i.invoiceId); setAmount(''); pay.reset(); }}>
-                                        <td className="strong">{i.invoiceNumber}</td>
-                                        <td>{contractOf[i.contractId]?.customerName ?? '—'}</td>
-                                        <td>{contractOf[i.contractId]?.unitCode ?? '—'}</td>
-                                        <td>{formatDate(i.dueDate)}</td>
-                                        <td className="price">{formatVnd(i.outstandingAmount)}</td>
-                                        <td><Status value={i.status} /></td>
-                                    </tr>
-                                ))}
-                                <TableState query={invoices} rows={shown} cols={6} empty={view === 'open' ? tr('No unpaid invoices.') : tr('No invoices.')} />
-                            </tbody>
-                        </table>
-                    </div>
+            <Filters>
+                <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search customer, unit or invoice')} />
+                <SelectFilter label="Show" value={view} onChange={setView} all="All invoices" options={[{ value: 'open', label: tr('Unpaid only') }]} />
+            </Filters>
+            <div className="sa-split open">
+                <div className="se-card se-table-wrap">
+                    <table className="se-table sa-table">
+                        <thead><tr><th>{tr('Invoice')}</th><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Due')}</th><th>{tr('Outstanding')}</th><th>{tr('Status')}</th></tr></thead>
+                        <tbody>
+                            {shown.map((i) => (
+                                <tr key={i.invoiceId} className={selected === i.invoiceId ? 'active' : ''} onClick={() => { setSelected(i.invoiceId); setAmount(''); pay.reset(); }}>
+                                    <td className="strong">{i.invoiceNumber}</td>
+                                    <td>{contractOf[i.contractId]?.customerName ?? '—'}</td>
+                                    <td>{contractOf[i.contractId]?.unitCode ?? '—'}</td>
+                                    <td>{formatDate(i.dueDate)}</td>
+                                    <td className="price">{formatVnd(i.outstandingAmount)}</td>
+                                    <td><Status value={i.status} /></td>
+                                </tr>
+                            ))}
+                            <TableState query={invoices} rows={shown} cols={6} empty={view === 'open' ? tr('No unpaid invoices.') : tr('No invoices.')} />
+                        </tbody>
+                    </table>
+                </div>
+                <div className="sa-stats-stack">
+                    <Stat icon="card" label="Unpaid invoices" value={open.length} note={formatVnd(open.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0))} />
+                    <Stat icon="clock" tone="bad" label="Overdue" value={open.filter((i) => i.status === 'Overdue').length} />
+                    <Stat icon="check" label="Paid invoices" value={all.filter((i) => i.status === 'Paid').length} />
                 </div>
                 {invoice && (
                     <Modal narrow onClose={() => setSelected(null)}><aside className="se-panel sa-side-panel">
