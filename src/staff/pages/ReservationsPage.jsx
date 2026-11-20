@@ -73,8 +73,12 @@ function CloseBooking({ reservation }) {
 function AssignPanel({ reservation, onClose }) {
     const tr = useT();
     const queryClient = useQueryClient();
-    const units = useUnits({ facilityId: reservation.facilityId, status: 'Available' });
-    const candidates = (units.data ?? []).filter((u) => u.unitTypeId === reservation.unitTypeId);
+    const units = useUnits({ facilityId: reservation.facilityId });
+    // The unit held at booking first, then free ones. The server checks each is free for the whole stay.
+    const held = reservation.storageUnitId;
+    const candidates = (units.data ?? [])
+        .filter((u) => u.unitTypeId === reservation.unitTypeId && (u.storageUnitId === held || u.status === 'Available'))
+        .sort((a, b) => (b.storageUnitId === held) - (a.storageUnitId === held));
     const [unitId, setUnitId] = useState(null);
     const chosen = unitId ?? candidates[0]?.storageUnitId;
     const assign = useMutation({
@@ -100,7 +104,9 @@ function AssignPanel({ reservation, onClose }) {
                 <div><dt>{tr('Facility')}</dt><dd>{reservation.facilityName}</dd></div>
                 <div><dt>{tr('Requested')}</dt><dd>{reservation.unitTypeName}</dd></div>
                 <div><dt>{tr('Rental period')}</dt><dd>{formatDate(reservation.moveInDate)} → {formatDate(rentalEndDate(reservation.moveInDate, reservation.rentalMonths))}</dd></div>
-                {reservation.unitCode && <div><dt>{tr('Unit')}</dt><dd>{reservation.unitCode}</dd></div>}
+                {reservation.unitCode && <div><dt>{tr(reservation.status === 'Pending' ? 'Expected unit' : 'Unit')}</dt><dd>{reservation.unitCode}</dd></div>}
+                {reservation.proposedUnitCode && <div><dt>{tr('Offered instead')}</dt><dd>{reservation.proposedUnitCode} · {tr('waiting for the customer')}</dd></div>}
+                <div><dt>{tr('Handover appointment')}</dt><dd>{reservation.handoverSlot ? formatDateTime(reservation.handoverSlot) : tr('Not booked yet (move-in day counts)')}</dd></div>
             </dl>
             {pending && (
                 <>
@@ -110,11 +116,12 @@ function AssignPanel({ reservation, onClose }) {
                             <label key={u.storageUnitId} className={`sa-unit-option${chosen === u.storageUnitId ? ' active' : ''}`}>
                                 <input type="radio" name="unit" aria-label={`Unit ${u.unitCode}`} checked={chosen === u.storageUnitId} onChange={() => setUnitId(u.storageUnitId)} />
                                 <span><strong>{u.unitCode}</strong><small>{u.floorName}{u.zone ? ` · ${u.zone}` : ''}</small></span>
-                                {i === 0 && <span className="se-badge">{tr('First free')}</span>}
+                                {u.storageUnitId === held ? <span className="se-badge">{tr('Expected')}</span> : i === 0 && <span className="se-badge">{tr('First free')}</span>}
                             </label>
                         ))}
                         {!candidates.length && <p className="sa-muted">{units.isLoading ? tr('Loading units…') : tr('No available unit of this size at this facility.')}</p>}
                     </div>
+                    {held && chosen !== held && <p className="se-hint">{tr('The customer was promised {code}. Choosing another unit asks them to accept it or cancel with the deposit refunded.', { code: reservation.unitCode })}</p>}
                     {assign.isError && <div className="se-alert" role="alert">{errorMessage(assign.error)}</div>}
                     <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!chosen || assign.isPending} onClick={() => assign.mutate()}>
                         <Icon name="check" size={16} /> {assign.isPending ? tr('Assigning…') : tr('Confirm & assign')}
@@ -158,9 +165,9 @@ export default function ReservationsPage() {
                             <tr key={r.reservationId} className={selected === r.reservationId ? 'active' : ''} onClick={() => setSelected(r.reservationId)}>
                                 <td className="strong">{r.reservationCode}</td>
                                 <td>{r.customerName}</td>
-                                <td>{r.unitTypeName}{r.unitCode ? ` · ${r.unitCode}` : ''}</td>
+                                <td>{r.unitTypeName}{r.unitCode ? ` · ${r.unitCode}` : ''}{r.proposedUnitCode && <div className="sa-muted">{tr('Offered {code}, waiting for the customer', { code: r.proposedUnitCode })}</div>}</td>
                                 <td>{r.facilityName}</td>
-                                <td>{formatDate(r.moveInDate)}</td>
+                                <td>{formatDate(r.moveInDate)}{r.handoverSlot && <div className="sa-muted">{tr('Appointment {time}', { time: formatDateTime(r.handoverSlot) })}</div>}</td>
                                 <td>{tr('{n} month{n:s}', { n: r.rentalMonths })}</td>
                                 <td>{waitingForUnit(r) && canAssign && <button type="button" className="se-btn se-btn-outline se-btn-sm">{tr('Assign')}</button>}</td>
                             </tr>

@@ -23,6 +23,12 @@ const TERMS = [
             ['suspendAfterDays', 'Suspend access after', 'days'], ['clearOutAfterDays', 'Clear out unit after', 'days'],
         ],
     },
+    {
+        title: 'Rental end', icon: 'calendar', rows: [
+            ['endReminderDays', 'Remind the renter before the end date', 'days'], ['overstayFeePercent', 'Overstay fee per day', '% of daily rent'],
+            ['moveOutAfterDays', 'Move goods to the central warehouse after', 'days past end'],
+        ],
+    },
 ];
 const TERM_KEYS = TERMS.flatMap((t) => t.rows.map(([k]) => k));
 const RULE_FIELDS = [...TERMS.flatMap((t) => t.rows), ['noticeDays', 'Notice before moving out', 'days']];
@@ -139,6 +145,7 @@ function CompanyStandard({ picker }) {
         // its version and publishing it: past dates keep the version that applied. With no version yet, start blank.
         mutationFn: () => (policy ? pricingPoliciesApi.copy(policy.pricingPolicyId) : pricingPoliciesApi.create({
             ...Object.fromEntries(TERM_KEYS.map((k) => [k, 0])),
+            endReminderDays: 10, overstayFeePercent: 150, moveOutAfterDays: 7,
             effectiveFrom: todayIso(),
             effectiveTo: null,
         })),

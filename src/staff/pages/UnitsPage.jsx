@@ -11,7 +11,7 @@ import { humanize, useContracts, useFacilities, useSizePrices, useUnitTypes, use
 import { useT } from '../../i18n/I18n.jsx';
 
 const STATUSES = ['Available', 'Reserved', 'Occupied', 'Maintenance', 'Retired'];
-const LIVE = ['Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended'];
+const LIVE = ['Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended', 'Overstay'];
 
 /** Edit a unit (managers and admins). Floor and size can change only while it is Available, as the API requires. */
 function UnitEditor({ unit }) {

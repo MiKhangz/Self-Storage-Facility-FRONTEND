@@ -7,6 +7,7 @@ import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
+import RentalEnds from '../components/RentalEnds.jsx';
 import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
@@ -44,6 +45,7 @@ export default function OverdueCasesPage() {
     return (
         <>
             <PageHeader title={tr('Overdue cases')} subtitle="Rent past its due date, from the first reminder to clear-out" />
+            <RentalEnds overstayOnly />
             <Filters>
                 <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search customer, contract, unit or invoice')} />
                 <SelectFilter label="Stage" value={stage} onChange={setStage} all="All stages" options={STAGES.map((s) => ({ value: s, label: humanize(s) }))} />

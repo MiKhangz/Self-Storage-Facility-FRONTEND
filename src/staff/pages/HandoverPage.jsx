@@ -258,9 +258,11 @@ function HandoverDesk({ stats }) {
     const [done, setDone] = useState(null);
     const queryClient = useQueryClient();
     // A Confirmed booking without a unit (its handover was undone) is assigned on Reservations first.
+    // A booking with an appointment is due on that day (it may be before move-in); otherwise on move-in day.
+    const dueDay = (r) => (r.handoverSlot ? new Date(r.handoverSlot).toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' }) : r.moveInDate);
     const queue = [...(reservations.data ?? [])]
-        .filter((r) => r.storageUnitId && matchesHandoverRange(r.moveInDate, range, today))
-        .sort((a, b) => a.moveInDate.localeCompare(b.moveInDate));
+        .filter((r) => r.storageUnitId && matchesHandoverRange(dueDay(r), range, today))
+        .sort((a, b) => (a.handoverSlot ?? a.moveInDate).localeCompare(b.handoverSlot ?? b.moveInDate));
     const current = queue.find((r) => r.reservationId === selected) ?? null;
     const contract = current && (drafts.data ?? []).find((c) => c.reservationId === current.reservationId);
     const open = !!(current || done);
@@ -284,7 +286,7 @@ function HandoverDesk({ stats }) {
                     <div className="sa-queue">
                         {queue.map((r) => (
                             <button key={r.reservationId} type="button" className={`sa-queue-item${current?.reservationId === r.reservationId ? ' active' : ''}`} onClick={() => setSelected(r.reservationId)}>
-                                <span><strong>{r.customerName}</strong><small>{r.unitCode} · {r.unitTypeName}</small></span>
+                                <span><strong>{r.customerName}</strong><small>{r.unitCode} · {r.unitTypeName}{r.handoverSlot ? ` · ${formatDateTime(r.handoverSlot)}` : ''}</small></span>
                                 {dueBadge(r)}
                             </button>
                         ))}
@@ -311,7 +313,7 @@ function HandoverDesk({ stats }) {
                                         <td className="strong">{r.customerName}</td>
                                         <td>{r.unitCode} · {r.unitTypeName}</td>
                                         <td>{r.facilityName}</td>
-                                        <td>{dueBadge(r)}</td>
+                                        <td>{dueBadge(r)}{r.handoverSlot && <div className="sa-muted">{tr('Appointment {time}', { time: formatDateTime(r.handoverSlot) })}</div>}</td>
                                         <td>{tr('{n} month{n:s}', { n: r.rentalMonths })}</td>
                                         <td className="sa-row-actions">
                                             <button type="button" className="se-btn se-btn-outline se-btn-sm" onClick={(e) => { e.stopPropagation(); setSelected(r.reservationId); }}>

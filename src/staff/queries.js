@@ -37,7 +37,7 @@ export const TONE = {
     Available: '', Active: '', Paid: '', Completed: '', Done: '', Resolved: '', Confirmed: '', HandedOver: '', Succeeded: '', Success: '', Good: '',
     Reserved: 'low', Pending: 'low', Draft: 'low', Issued: 'low', Requested: 'low', Approved: 'low', Inspected: 'low', InProgress: 'low',
     New: 'low', Scheduled: 'low', ToDo: 'low', WaitingForCustomer: 'low', PendingReturn: 'low', MinorDamage: 'low', Open: 'low',
-    Occupied: 'info', Maintenance: 'none', Overdue: 'none', Suspended: 'none', Rejected: 'none', Cancelled: 'muted', Expired: 'muted',
+    Occupied: 'info', Overstay: 'none', AwaitingCustomer: 'low', Maintenance: 'none', Overdue: 'none', Suspended: 'none', Rejected: 'none', Cancelled: 'muted', Expired: 'muted',
     Closed: 'muted', Terminated: 'muted', Retired: 'muted', Superseded: 'muted', WrittenOff: 'muted', Inactive: 'muted', Disabled: 'muted', MajorDamage: 'none',
     Failure: 'none', Urgent: 'none', High: 'low', Normal: '', Low: 'muted',
 };

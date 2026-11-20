@@ -11,6 +11,7 @@ import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { periodUsed } from '../../customer/account/queries.js';
 import { Modal, PageHeader, SearchFilter, Filters, Stat, Status, TableState, downloadFile, matches } from '../components/ui.jsx';
 import { useContracts, useInvoices } from '../queries.js';
+import RentalEnds from '../components/RentalEnds.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
 
@@ -19,6 +20,7 @@ const TABS = [
     { key: 'all', label: 'All contracts', match: () => true },
     { key: 'active', label: 'Active', match: (c) => c.status === 'Active' },
     { key: 'expiring', label: 'Expiring in 14 days', match: (c, today) => c.status === 'Active' && c.endDate >= today && c.endDate <= addDays(today, 14) },
+    { key: 'overstay', label: 'Past end date', match: (c) => c.status === 'Overstay' },
     { key: 'overdue', label: 'Overdue', match: (c, _t, owing) => c.status === 'Overdue' || c.status === 'Suspended' || owing[c.contractId]?.overdue },
     { key: 'ended', label: 'Ended', match: (c) => ENDED.includes(c.status) },
 ];
@@ -98,12 +100,13 @@ function RenewalRequests() {
     const tr = useT();
     const queryClient = useQueryClient();
     const canDecide = [Roles.FacilityManager, Roles.BusinessOperationsManager].includes(useAuth().session?.role);
-    const requested = useQuery({ queryKey: ['renewals', 'Requested'], queryFn: () => renewalsApi.list({ status: 'Requested', page: 1, pageSize: 100 }) });
+    // Requested ones wait for a decision; AwaitingCustomer ones were approved on a move to another unit and wait for the renter.
+    const requested = useQuery({ queryKey: ['renewals', 'open'], queryFn: () => renewalsApi.list({ page: 1, pageSize: 100 }) });
     const decide = useMutation({
         mutationFn: ({ id, approve }) => (approve ? renewalsApi.approve(id) : renewalsApi.reject(id)),
         onSuccess: () => ['renewals', 'contracts', 'invoices'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
     });
-    const list = requested.data?.items ?? [];
+    const list = (requested.data?.items ?? []).filter((r) => ['Requested', 'AwaitingCustomer'].includes(r.status));
     if (!list.length) return null;
     return (
         <section className="se-panel" style={{ marginBottom: 20 }}>
@@ -121,7 +124,10 @@ function RenewalRequests() {
                                 <td>{formatDate(r.currentEndDate)} → <strong>{formatDate(r.newEndDate)}</strong></td>
                                 <td>{formatVnd(r.currentMonthlyRent)} → <strong>{formatVnd(r.newMonthlyRent)}</strong></td>
                                 <td>{formatDate(r.requestedAt)}</td>
-                                {canDecide && (
+                                {canDecide && r.status === 'AwaitingCustomer' && (
+                                    <td className="sa-muted">{tr('Unit booked by the next customer: offered {code}, waiting for the renter', { code: r.transferUnitCode })}</td>
+                                )}
+                                {canDecide && r.status === 'Requested' && (
                                     <td className="sa-row-actions">
                                         <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={decide.isPending}
                                             onClick={() => confirmAction(tr('Approve? {number} runs to {date} at {rent} a month.', { number: r.contractNumber, date: formatDate(r.newEndDate), rent: formatVnd(r.newMonthlyRent) })).then((ok) => ok && decide.mutate({ id: r.renewalId, approve: true }))}>{tr('Approve')}</button>{' '}
@@ -168,6 +174,7 @@ export default function ContractsPage() {
             </PageHeader>
             {exportError && <div className="se-alert" role="alert">{exportError}</div>}
             <RenewalRequests />
+            <RentalEnds />
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
                     <button key={t.key} role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
@@ -197,7 +204,7 @@ export default function ContractsPage() {
                 </div>
                 <div className="sa-stats-stack">
                     {TABS.slice(1).map((t) => (
-                        <Stat key={t.key} icon={t.key === 'overdue' ? 'clock' : 'file'} tone={t.key === 'overdue' ? 'bad' : t.key === 'expiring' ? 'warn' : ''}
+                        <Stat key={t.key} icon={t.key === 'overdue' ? 'clock' : 'file'} tone={['overdue', 'overstay'].includes(t.key) ? 'bad' : t.key === 'expiring' ? 'warn' : ''}
                             label={t.label} value={all.filter((c) => t.match(c, today, owing)).length} />
                     ))}
                 </div>
