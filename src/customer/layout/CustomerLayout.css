@@ -338,3 +338,12 @@
 .se-confirm::backdrop { background: rgba(15, 23, 42, .45); }
 .se-confirm p { margin: 0 0 20px; line-height: 1.5; }
 .se-confirm-actions { display: flex; justify-content: flex-end; gap: 10px; }
+
+/* Handover appointment and a changed unit the customer must answer. */
+.se-appointment { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 16px; padding-top: 16px; border-top: 1px dashed var(--se-border, #e5e7eb); text-align: left; }
+.se-appointment .se-hint { flex-basis: 100%; margin: 0; }
+.se-appointment-fields { display: flex; flex-wrap: wrap; gap: 8px; }
+.se-appointment-fields input, .se-appointment-fields select { min-height: 36px; padding: 0 10px; border: 1px solid var(--se-border, #d0d5dd); border-radius: 8px; font: inherit; }
+.se-proposal { text-align: left; margin-top: 16px; }
+.se-proposal p { margin: 0 0 8px; }
+.se-proposal-actions { display: flex; flex-wrap: wrap; gap: 8px; }

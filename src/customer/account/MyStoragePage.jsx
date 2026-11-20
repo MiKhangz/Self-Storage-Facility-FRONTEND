@@ -10,6 +10,7 @@ import {
 } from './queries.js';
 import './MyStoragePage.css';
 import { useT } from '../../i18n/I18n.jsx';
+import { formatDateTime } from '../support/support.js';
 
 function Stat({ icon, label, value, note }) {
     return (
@@ -121,7 +122,10 @@ export default function MyStoragePage() {
                             <div><dt>{t('Mã ra vào')}</dt><dd>{t('Được cấp khi nhận kho ngày {date}', { date: formatDate(r.moveInDate) })}</dd></div>
                             <div><dt>{t('Thời hạn thuê')}</dt><dd>{formatDate(r.moveInDate)} → {formatDate(rentalEndDate(r.moveInDate, r.rentalMonths))}</dd></div>
                         </dl>
-                        <p className="se-unit-progress-label">{t('Bắt đầu tính sau khi nhận kho')}</p>
+                        {r.proposedUnitCode
+                            ? <p className="se-alert info">{t('Kho cần đổi sang {code}: hãy xác nhận trong đơn đặt kho.', { code: r.proposedUnitCode })}</p>
+                            : r.depositStatus === 'Paid' && !r.handoverSlot && <p className="se-alert info">{t('Hãy đặt lịch hẹn nhận kho trong đơn đặt kho.')}</p>}
+                        <p className="se-unit-progress-label">{r.handoverSlot ? t('Lịch hẹn nhận kho: {time}', { time: formatDateTime(r.handoverSlot) }) : t('Bắt đầu tính sau khi nhận kho')}</p>
                         <div className="se-progress"><span style={{ width: '1%' }} /></div>
                         <div className="se-unit-actions">
                             <Link to={`/booking/confirmed/${r.reservationId}`} className="se-btn se-btn-outline se-btn-sm">{t('Xem đơn đặt kho')}</Link>

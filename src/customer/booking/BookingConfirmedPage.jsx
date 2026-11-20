@@ -7,6 +7,7 @@ import { formatDate, formatVnd, rentalEndDate } from '../components/format.js';
 import PayInvoiceButton from '../account/PayInvoiceButton.jsx';
 import BookingStepper from './BookingStepper.jsx';
 import CancelBooking from './CancelBooking.jsx';
+import { HandoverAppointment, UnitProposal } from './BookingActions.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 
 const STATUS_LABEL = { Pending: 'Đang chờ xếp kho', Confirmed: 'Chờ nhận kho', HandedOver: 'Đã nhận kho', Cancelled: 'Đã hủy', Expired: 'Đã hết hạn', Rejected: 'Bị từ chối' };
@@ -37,7 +38,7 @@ export default function BookingConfirmedPage() {
                                     <span className="se-badge low">{t(STATUS_LABEL[r.status] ?? r.status)}</span>
                                 </div>
                                 <dl>
-                                    <dt>{t('Kho')}</dt><dd>{r.unitCode ? `${r.unitCode} · ` : ''}{r.unitTypeName}{r.unitCode ? '' : ` · ${t('số kho được xếp trước ngày nhận')}`}</dd>
+                                    <dt>{t(r.status === 'Pending' ? 'Kho dự kiến' : 'Kho')}</dt><dd>{r.unitCode ? `${r.unitCode} · ` : ''}{r.unitTypeName}{r.unitCode ? '' : ` · ${t('số kho được xếp trước ngày nhận')}`}</dd>
                                     <dt>{t('Cơ sở')}</dt><dd>{r.facilityName}</dd>
                                     <dt>{t('Thời hạn thuê')}</dt><dd>{formatDate(r.moveInDate)} → {formatDate(rentalEndDate(r.moveInDate, r.rentalMonths))} ({t('{months} tháng', { months: r.rentalMonths })})</dd>
                                     <dt>{t('Ngày nhận kho')}</dt><dd>{formatDate(r.moveInDate)}</dd>
@@ -47,7 +48,9 @@ export default function BookingConfirmedPage() {
                                     <PayInvoiceButton invoice={{ invoiceId: r.depositInvoiceId, outstandingAmount: r.depositAmount, invoiceNumber: `DEP${r.reservationCode}` }}
                                         title="Thanh toán tiền cọc" paidText="Tiền cọc của bạn đã được thanh toán." className="se-btn se-btn-primary se-btn-block">{t('Thanh toán tiền cọc ngay')}</PayInvoiceButton>
                                 )}
+                                <HandoverAppointment reservation={r} />
                             </div>
+                            <UnitProposal reservation={r} />
 
                             <div className="se-bring">
                                 <strong>{t('Mang theo khi đến nhận kho')}</strong>

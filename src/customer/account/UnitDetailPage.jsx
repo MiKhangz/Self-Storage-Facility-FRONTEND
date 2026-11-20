@@ -82,12 +82,28 @@ function RenewCard({ contract, facilityId, unitTypeId, quiet }) {
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['renewals', contract.contractId] }),
     });
     const pending = renewals.data?.items?.find((r) => r.status === 'Requested');
+    // The next customer booked this unit: the manager offered another one of the same size.
+    const offer = renewals.data?.items?.find((r) => r.status === 'AwaitingCustomer');
+    const answer = useMutation({
+        mutationFn: (accept) => (accept ? renewalsApi.acceptTransfer(offer.renewalId) : renewalsApi.declineTransfer(offer.renewalId)),
+        onSuccess: () => ['renewals', 'contracts', 'returns'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
+    });
 
     return (
         <section className="se-panel">
             <h2><Icon name="calendar" size={18} /> {t('Gia hạn thuê')}</h2>
             <p className="se-hint">{t('Thời hạn hiện tại kết thúc ngày {date}. Gia hạn để giữ kho; quản lý sẽ duyệt ngày kết thúc và giá thuê mới.', { date: formatDate(contract.endDate) })}</p>
-            {pending ? (
+            {offer ? (
+                <div className="se-alert info se-proposal">
+                    <p><strong>{t('Gia hạn được duyệt nếu bạn chuyển sang kho {code}', { code: offer.transferUnitCode })}</strong></p>
+                    <p>{t('Kho {old} đã có khách đặt sau ngày {date}. Kho {code} cùng cỡ: đồng ý thì hợp đồng chuyển sang kho mới, kéo dài đến {end}; hãy chuyển đồ trước ngày {date}. Không đồng ý thì bạn trả kho vào ngày {date} và nhận lại toàn bộ tiền cọc sau khi kiểm tra kho.', { old: contract.unitCode, code: offer.transferUnitCode, date: formatDate(contract.endDate), end: formatDate(offer.newEndDate) })}</p>
+                    {answer.isError && <div className="se-alert" role="alert">{errorMessage(answer.error)}</div>}
+                    <div className="se-proposal-actions">
+                        <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={answer.isPending} onClick={() => answer.mutate(true)}>{t('Đồng ý chuyển sang {code}', { code: offer.transferUnitCode })}</button>
+                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={answer.isPending} onClick={() => answer.mutate(false)}>{t('Không gia hạn, trả kho')}</button>
+                    </div>
+                </div>
+            ) : pending ? (
                 <div className="se-alert info">
                     {t('Đã gửi yêu cầu gia hạn thêm {months} tháng: ngày kết thúc mới {date}, {rent} / tháng. Đang chờ duyệt.', { months: pending.extendMonths, date: formatDate(pending.newEndDate), rent: formatVnd(pending.newMonthlyRent) })}
                 </div>
@@ -145,6 +161,7 @@ export default function UnitDetailPage() {
     // The API renews and moves out only Active contracts; an overdue one must be paid up first.
     const active = c.status === 'Active';
     const used = periodUsed(c.startDate, c.endDate, todayIso());
+    const daysLeft = Math.round((Date.parse(c.endDate) - Date.parse(todayIso())) / 86_400_000);
 
     return (
         <>
@@ -156,10 +173,16 @@ export default function UnitDetailPage() {
                 </div>
                 <div className="se-title-actions">
                     <Link to={`/support/new?contractId=${contractId}`} className="se-btn se-btn-ghost"><Icon name="shield" size={16} /> {t('Báo sự cố')}</Link>
-                    {active && <Link to={`/return?contractId=${contractId}`} className="se-btn se-btn-danger">{t('Yêu cầu trả kho')}</Link>}
+                    {(active || c.status === 'Overstay') && <Link to={`/return?contractId=${contractId}`} className="se-btn se-btn-danger">{t('Yêu cầu trả kho')}</Link>}
                 </div>
             </div>
 
+            {c.status === 'Overstay' && (
+                <div className="se-alert" role="alert">{t('Kỳ thuê đã kết thúc ngày {date} nhưng kho chưa được trả. Mã ra vào đã khóa và phí quá hạn được tính mỗi ngày. Hãy yêu cầu trả kho để mở lại mã và dọn đồ; quá hạn lâu, đồ sẽ được chuyển về kho tổng và phí trừ vào tiền cọc.', { date: formatDate(c.endDate) })}</div>
+            )}
+            {active && daysLeft >= 0 && daysLeft <= 10 && (
+                <div className="se-alert info" role="status">{t('Kỳ thuê kết thúc ngày {date} (còn {days} ngày). Hãy gia hạn bên dưới hoặc yêu cầu trả kho.', { date: formatDate(c.endDate), days: daysLeft })}</div>
+            )}
             {c.status === 'Draft' && !c.signedAt && (
                 <div className="se-due">
                     <Icon name="file" size={20} />

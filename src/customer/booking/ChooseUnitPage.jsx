@@ -35,13 +35,14 @@ export default function ChooseUnitPage() {
     const terms = useTerms({ facilityId, date: form.moveInDate }).data;
     const ready = !!(facilityId && unitTypeId && form.moveInDate);
 
-    const stockQuery = { facilityId, moveInDate: form.moveInDate };
+    // Free for every day of the stay, not just move-in day.
+    const stockQuery = { facilityId, moveInDate: form.moveInDate, rentalMonths: form.rentalMonths };
     const stock = useQuery({
         queryKey: ['availability', { unitTypeId, ...stockQuery }],
         queryFn: () => unitTypesApi.availability(unitTypeId, stockQuery),
         enabled: ready,
     });
-    const quoteQuery = { ...stockQuery, rentalMonths: form.rentalMonths };
+    const quoteQuery = stockQuery;
     const quote = useQuery({
         queryKey: ['quote', { unitTypeId, ...quoteQuery }],
         queryFn: () => unitTypesApi.quote(unitTypeId, quoteQuery),
@@ -115,7 +116,9 @@ export default function ChooseUnitPage() {
                         )}
                         <p className="se-hint">
                             {quote.data ? <>{tr('Tiền thuê {rent} mỗi tháng khi thuê {months} tháng.', { rent: formatVnd(quote.data.monthlyRent), months: form.rentalMonths })} </> : null}
-                            {tr('Nhân viên sẽ xếp số kho cụ thể cho bạn trước ngày nhận kho.')}
+                            {quote.data?.expectedUnitCode
+                                ? tr('Kho dự kiến của bạn: {code}. Nếu cần đổi kho, chúng tôi sẽ hỏi ý kiến bạn trước.', { code: quote.data.expectedUnitCode })
+                                : tr('Nhân viên sẽ xếp số kho cụ thể cho bạn trước ngày nhận kho.')}
                         </p>
                         {(quote.isError || stock.isError) && <div className="se-alert" role="alert">{tr('Chưa có giá cho lựa chọn này. Hãy thử cỡ kho, cơ sở hoặc ngày khác.')}</div>}
                     </section>

@@ -39,7 +39,7 @@ export default function ReturnPage() {
     const reservations = useMyReservations();
     const requests = useQuery({ queryKey: ['returns'], queryFn: () => returnsApi.list({ page: 1, pageSize: 50 }) });
 
-    const active = (contracts.data?.items ?? []).filter((c) => c.status === 'Active');
+    const active = (contracts.data?.items ?? []).filter((c) => c.status === 'Active' || c.status === 'Overstay');
     const [picked, setPicked] = useState('');
     const contract = active.find((c) => c.contractId === (Number(picked) || Number(params.get('contractId')))) ?? active[0];
     const reservation = reservations.data?.items?.find((r) => r.reservationId === contract?.reservationId);

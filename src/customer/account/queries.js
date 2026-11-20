@@ -16,7 +16,7 @@ export const OPEN_INVOICE = ['Issued', 'Overdue'];
 export const OPEN_TICKET = ['New', 'InProgress', 'WaitingForCustomer'];
 export const AWAITING_CHECK_IN = ['Pending', 'Confirmed'];
 // A contract the customer still holds; Draft is signed-or-signing before handover.
-export const LIVE_CONTRACT = ['Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended'];
+export const LIVE_CONTRACT = ['Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended', 'Overstay'];
 
 /** Share of the rental period already used, 0–100. */
 export function periodUsed(startIso, endIso, todayIso) {
@@ -37,6 +37,6 @@ export const invoiceBadge = (inv, tr = fill) => {
 /** [tone, label] per contract status, in the customer's words. */
 export const CONTRACT_BADGE = {
     Draft: ['low', 'Chờ nhận kho'], Active: ['', 'Đang thuê'], PendingReturn: ['low', 'Đang trả kho'],
-    Overdue: ['none', 'Quá hạn thanh toán'], Suspended: ['none', 'Tạm khóa ra vào'],
+    Overdue: ['none', 'Quá hạn thanh toán'], Suspended: ['none', 'Tạm khóa ra vào'], Overstay: ['none', 'Quá hạn trả kho'],
     Closed: ['muted', 'Đã kết thúc'], Terminated: ['muted', 'Đã chấm dứt'],
 };

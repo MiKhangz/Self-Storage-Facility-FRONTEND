@@ -21,6 +21,7 @@ export default function BookingSummary({ facility, type, moveInDate, rentalMonth
                 </div>
             </div>
             <dl>
+                {q?.expectedUnitCode && <div><dt>{t('Kho dự kiến')}</dt><dd>{q.expectedUnitCode}</dd></div>}
                 <div><dt>{t('Ngày nhận kho')}</dt><dd>{formatDate(moveInDate)}</dd></div>
                 <div><dt>{t('Thời hạn thuê')}</dt><dd>{t('{months} tháng (đến {end})', { months: rentalMonths, end: formatDate(rentalEndDate(moveInDate, rentalMonths)) })}</dd></div>
             </dl>

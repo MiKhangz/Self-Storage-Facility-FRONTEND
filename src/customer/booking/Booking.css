@@ -69,3 +69,4 @@
     .se-ticket dl { grid-template-columns: minmax(0, 1fr); gap: 2px; }
     .se-ticket dd { margin-bottom: 8px; }
 }
+
