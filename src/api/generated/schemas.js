@@ -210,7 +210,7 @@
  * @property {number} [totalPages] int32
  */
 
-/** @typedef {"Draft"|"Active"|"PendingReturn"|"Closed"|"Overdue"|"Suspended"|"Terminated"} ContractStatus */
+/** @typedef {"Draft"|"Active"|"PendingReturn"|"Closed"|"Overdue"|"Suspended"|"Terminated"|"Overstay"} ContractStatus */
 
 /**
  * @typedef {Object} CreateContractRequest
@@ -248,6 +248,9 @@
  * @property {number} [suspendAfterDays] int32
  * @property {number} [clearOutAfterDays] int32
  * @property {number} [cancelFreeHours] int32
+ * @property {number} [endReminderDays] int32
+ * @property {number} [overstayFeePercent] double
+ * @property {number} [moveOutAfterDays] int32
  */
 
 /**
@@ -855,6 +858,9 @@
  * @property {number} [clearOutAfterDays] int32
  * @property {number} [cancelFreeHours] int32
  * @property {(Array<SizeDiscountDto>|null)} [discounts]
+ * @property {number} [endReminderDays] int32
+ * @property {number} [overstayFeePercent] double
+ * @property {number} [moveOutAfterDays] int32
  */
 
 /**
@@ -890,6 +896,9 @@
  * @property {(Array<UnitPriceDto>|null)} [unitPrices]
  * @property {(Array<FeeTypeDto>|null)} [fees]
  * @property {PriceVersionAuditDto} [audit]
+ * @property {number} [endReminderDays] int32
+ * @property {number} [overstayFeePercent] double
+ * @property {number} [moveOutAfterDays] int32
  */
 
 /**
@@ -924,6 +933,11 @@
  * @property {(string|null)} [code]
  * @property {(string|null)} [name]
  * @property {number} [amount] double
+ */
+
+/**
+ * @typedef {Object} RecordEndContactRequest
+ * @property {(string|null)} [note]
  */
 
 /** @typedef {"BankTransfer"|"Cash"} RefundMethod */
@@ -976,6 +990,7 @@
  * @property {number} [newMonthlyRent] double
  * @property {(string|null)} [status]
  * @property {(number|null)} [approvedBy] int32
+ * @property {(string|null)} [transferUnitCode]
  */
 
 /**
@@ -985,6 +1000,26 @@
  * @property {number} [pageSize] int32
  * @property {number} [totalCount] int32
  * @property {number} [totalPages] int32
+ */
+
+/**
+ * @typedef {Object} RentalEndDto
+ * @property {number} [contractId] int32
+ * @property {(string|null)} [contractNumber]
+ * @property {number} [customerId] int32
+ * @property {(string|null)} [customerName]
+ * @property {(string|null)} [customerPhone]
+ * @property {(string|null)} [unitCode]
+ * @property {(string|null)} [facilityName]
+ * @property {string} [endDate] date
+ * @property {number} [daysLeft] int32
+ * @property {(string|null)} [decision]
+ * @property {ContractStatus} [status]
+ * @property {(string|null)} [endReminderAt] date-time
+ * @property {(string|null)} [endContactNote]
+ * @property {number} [overstayDays] int32
+ * @property {number} [overstayFee] double
+ * @property {boolean} [canMoveOut]
  */
 
 /**
@@ -1019,6 +1054,9 @@
  * @property {(number|null)} [depositInvoiceId] int32
  * @property {(number|null)} [depositAmount] double
  * @property {InvoiceStatus} [depositStatus]
+ * @property {(number|null)} [proposedStorageUnitId] int32
+ * @property {(string|null)} [proposedUnitCode]
+ * @property {(string|null)} [handoverSlot] date-time
  */
 
 /**
@@ -1117,6 +1155,11 @@
  * @property {(string|null)} [fullName]
  * @property {(string|null)} [role]
  * @property {string} [expiresAt] date-time
+ */
+
+/**
+ * @typedef {Object} SetAppointmentRequest
+ * @property {string} [at] date-time
  */
 
 /**
@@ -1318,6 +1361,8 @@
  * @property {string} [moveInDate] date
  * @property {number} [availableUnits] int32
  * @property {number} [totalUnits] int32
+ * @property {number} [rentalMonths] int32
+ * @property {(string|null)} [expectedUnitCode]
  */
 
 /**
@@ -1377,6 +1422,7 @@
  * @property {number} [depositAmount] double
  * @property {(Array<QuoteFeeDto>|null)} [fees]
  * @property {number} [totalAmount] double
+ * @property {(string|null)} [expectedUnitCode]
  */
 
 /**
@@ -1415,6 +1461,9 @@
  * @property {number} [suspendAfterDays] int32
  * @property {number} [clearOutAfterDays] int32
  * @property {number} [cancelFreeHours] int32
+ * @property {number} [endReminderDays] int32
+ * @property {number} [overstayFeePercent] double
+ * @property {number} [moveOutAfterDays] int32
  */
 
 /**

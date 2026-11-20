@@ -7,6 +7,8 @@ import { api } from '../axiosClient.js'
 /** @typedef {import('./schemas.js').ContractDtoPagedResult} ContractDtoPagedResult */
 /** @typedef {import('./schemas.js').ContractStatus} ContractStatus */
 /** @typedef {import('./schemas.js').CreateContractRequest} CreateContractRequest */
+/** @typedef {import('./schemas.js').RecordEndContactRequest} RecordEndContactRequest */
+/** @typedef {import('./schemas.js').RentalEndDto} RentalEndDto */
 
 export const contractsApi = {
   /**
@@ -51,6 +53,28 @@ export const contractsApi = {
    */
   export: (params) =>
     api.get(`/api/contracts/export`, { params }).then((r) => r.data),
+  /**
+   * GET /api/contracts/ending
+   * @param {{ overstayOnly?: boolean }} [params] query string
+   * @returns {Promise<Array<RentalEndDto>>}
+   */
+  ending: (params) =>
+    api.get(`/api/contracts/ending`, { params }).then((r) => r.data),
+  /**
+   * POST /api/contracts/{id}/end-contact
+   * @param {number} id
+   * @param {RecordEndContactRequest} body
+   * @returns {Promise<RentalEndDto>}
+   */
+  endContact: (id, body) =>
+    api.post(`/api/contracts/${id}/end-contact`, body).then((r) => r.data),
+  /**
+   * POST /api/contracts/{id}/move-to-central-storage
+   * @param {number} id
+   * @returns {Promise<RentalEndDto>}
+   */
+  moveToCentralStorage: (id) =>
+    api.post(`/api/contracts/${id}/move-to-central-storage`, undefined).then((r) => r.data),
   /**
    * POST /api/contracts/{id}/terminate
    * @param {number} id

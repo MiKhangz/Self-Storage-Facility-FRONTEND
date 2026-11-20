@@ -9,6 +9,7 @@ import { api } from '../axiosClient.js'
 /** @typedef {import('./schemas.js').ReservationDto} ReservationDto */
 /** @typedef {import('./schemas.js').ReservationDtoPagedResult} ReservationDtoPagedResult */
 /** @typedef {import('./schemas.js').ReservationStatus} ReservationStatus */
+/** @typedef {import('./schemas.js').SetAppointmentRequest} SetAppointmentRequest */
 /** @typedef {import('./schemas.js').WalkInReservationRequest} WalkInReservationRequest */
 
 export const reservationsApi = {
@@ -55,6 +56,28 @@ export const reservationsApi = {
    */
   noShow: (id) =>
     api.post(`/api/reservations/${id}/no-show`, undefined).then((r) => r.data),
+  /**
+   * POST /api/reservations/{id}/accept-unit
+   * @param {number} id
+   * @returns {Promise<ReservationDto>}
+   */
+  acceptUnit: (id) =>
+    api.post(`/api/reservations/${id}/accept-unit`, undefined).then((r) => r.data),
+  /**
+   * POST /api/reservations/{id}/decline-unit
+   * @param {number} id
+   * @returns {Promise<ReservationCancellationDto>}
+   */
+  declineUnit: (id) =>
+    api.post(`/api/reservations/${id}/decline-unit`, undefined).then((r) => r.data),
+  /**
+   * POST /api/reservations/{id}/appointment
+   * @param {number} id
+   * @param {SetAppointmentRequest} body
+   * @returns {Promise<ReservationDto>}
+   */
+  appointment: (id, body) =>
+    api.post(`/api/reservations/${id}/appointment`, body).then((r) => r.data),
   /**
    * GET /api/reservations/{id}/handover
    * @param {number} id

@@ -41,4 +41,18 @@ export const renewalsApi = {
    */
   reject: (id) =>
     api.post(`/api/renewals/${id}/reject`, undefined).then((r) => r.data),
+  /**
+   * POST /api/renewals/{id}/accept-transfer
+   * @param {number} id
+   * @returns {Promise<RenewalDto>}
+   */
+  acceptTransfer: (id) =>
+    api.post(`/api/renewals/${id}/accept-transfer`, undefined).then((r) => r.data),
+  /**
+   * POST /api/renewals/{id}/decline-transfer
+   * @param {number} id
+   * @returns {Promise<RenewalDto>}
+   */
+  declineTransfer: (id) =>
+    api.post(`/api/renewals/${id}/decline-transfer`, undefined).then((r) => r.data),
 }

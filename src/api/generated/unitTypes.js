@@ -45,7 +45,7 @@ export const unitTypesApi = {
   /**
    * GET /api/unit-types/{id}/availability
    * @param {number} id
-   * @param {{ facilityId?: number, moveInDate?: string }} [params] query string
+   * @param {{ facilityId?: number, moveInDate?: string, rentalMonths?: number }} [params] query string
    * @returns {Promise<UnitAvailabilityDto>}
    */
   availability: (id, params) =>
