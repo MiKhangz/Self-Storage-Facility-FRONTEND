@@ -20,6 +20,8 @@ const env = {
     ?? 'Server=localhost\\SQLEXPRESS;Database=StorEase_E2E;Trusted_Connection=True;TrustServerCertificate=True;MultipleActiveResultSets=True',
   // Tests run billing on purpose (with a chosen date); the background job would race them.
   Billing__RunInBackground: 'false',
+  // The tests pay through the test checkout, never the VNPay sandbox the developer's own settings may point at.
+  PaymentGateway__VnPayTmnCode: '',
 }
 
 function run(cmd, args, cwd) {
