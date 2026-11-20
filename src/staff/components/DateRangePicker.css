@@ -1,0 +1,303 @@
+.sa-drp {
+    position: relative;
+    display: inline-block;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    color: #202421;
+}
+
+/* Trigger: 220x32, 7px radius, thin neutral border, 10px horizontal padding */
+.sa-drp-trigger {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 220px;
+    height: 32px;
+    padding: 0 10px;
+    background: #FFFFFF;
+    border: 1px solid #E9ECEA;
+    border-radius: 7px;
+    box-sizing: border-box;
+    cursor: pointer;
+    transition: border-color 120ms, box-shadow 120ms;
+}
+
+.sa-drp-trigger.open,
+.sa-drp-trigger:focus-within {
+    border-color: #0D756C;
+    outline: 1.5px solid #0D756C;
+    outline-offset: 0;
+}
+
+.sa-drp-icon {
+    flex-shrink: 0;
+    color: #777E7A;
+}
+
+.sa-drp-input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    color: #202421;
+    text-align: left;
+    outline: none;
+}
+
+.sa-drp-input::placeholder {
+    color: #777E7A;
+}
+
+.sa-drp-chev {
+    display: grid;
+    place-items: center;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #777E7A;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Popover: anchored below trigger, left-aligned, 8px gap, 11px radius, ~590x248 in 2-month layout */
+.sa-drp-popover {
+    position: absolute;
+    top: calc(100% + 8px);
+    left: 0;
+    z-index: 60;
+    display: flex;
+    align-items: flex-start;
+    padding: 12px;
+    background: #FFFFFF;
+    border: 1px solid #E9ECEA;
+    border-radius: 11px;
+    box-shadow: 0 10px 28px rgba(16, 24, 20, 0.12), 0 2px 6px rgba(16, 24, 20, 0.06);
+    box-sizing: border-box;
+    user-select: none;
+}
+
+/* Right-aligned trigger inside a narrow right sidebar: keep popover on screen if needed */
+.sa-stats-stack .sa-drp-popover {
+    left: auto;
+    right: 0;
+}
+
+/* Preset column: 124px wide, separated by a light vertical rule */
+.sa-drp-presets {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    width: 124px;
+    padding-right: 10px;
+    margin-right: 12px;
+    border-right: 1px solid #E9ECEA;
+    box-sizing: border-box;
+    flex-shrink: 0;
+}
+
+.sa-drp-preset {
+    display: flex;
+    align-items: center;
+    height: 30px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    color: #202421;
+    text-align: left;
+    cursor: pointer;
+}
+
+.sa-drp-preset:hover {
+    background: #F3F5F4;
+}
+
+.sa-drp-preset.active {
+    background: #D9F3ED;
+    color: #0D756C;
+    font-weight: 600;
+}
+
+/* Calendar columns: two 220px columns (or three when wide) */
+.sa-drp-calendars {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.sa-drp-nav {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #202421;
+    cursor: pointer;
+}
+
+.sa-drp-nav:hover {
+    background: #F3F5F4;
+}
+
+.sa-drp-nav.prev {
+    left: 0;
+}
+
+.sa-drp-nav.next {
+    right: 0;
+}
+
+.sa-drp-month {
+    width: 203px; /* 7 * 29px day cells; with 12px gap + padding fits ~220px per column */
+    flex-shrink: 0;
+}
+
+.sa-drp-month-title {
+    height: 24px;
+    line-height: 24px;
+    margin-bottom: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    color: #202421;
+    text-align: center;
+}
+
+.sa-drp-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 29px);
+    margin-bottom: 4px;
+}
+
+.sa-drp-weekdays span {
+    height: 18px;
+    line-height: 18px;
+    font-size: 11px;
+    color: #777E7A;
+    text-align: center;
+}
+
+.sa-drp-grid {
+    display: flex;
+    flex-direction: column;
+}
+
+.sa-drp-week {
+    display: grid;
+    grid-template-columns: repeat(7, 29px);
+}
+
+.sa-drp-cell {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 29px;
+    height: 28px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    font: inherit;
+    font-size: 13px;
+    font-variant-numeric: tabular-nums;
+    color: #202421;
+    cursor: pointer;
+}
+
+.sa-drp-cell.blank {
+    pointer-events: none;
+    cursor: default;
+}
+
+/* Continuous 22px high mint band across neighboring selected days within each week row */
+.sa-drp-cell.in-range::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 0;
+    right: 0;
+    height: 22px;
+    background: #D9F3ED;
+    z-index: 0;
+}
+
+.sa-drp-cell.in-range.cap-left::before {
+    left: 2px;
+    border-top-left-radius: 11px;
+    border-bottom-left-radius: 11px;
+}
+
+.sa-drp-cell.in-range.cap-right::before {
+    right: 2px;
+    border-top-right-radius: 11px;
+    border-bottom-right-radius: 11px;
+}
+
+.sa-drp-num {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    box-sizing: border-box;
+}
+
+.sa-drp-cell:not(.blank):not(.endpoint):hover .sa-drp-num {
+    background: rgba(13, 117, 108, 0.1);
+}
+
+/* Solid teal circle 24px over start and end dates with white numerals */
+.sa-drp-cell.endpoint .sa-drp-num {
+    background: #0D756C;
+    color: #FFFFFF;
+    font-weight: 600;
+}
+
+/* Provisional endpoint ring */
+.sa-drp-cell.provisional .sa-drp-num {
+    background: #FFFFFF;
+    color: #0D756C;
+    border: 1.5px solid #0D756C;
+}
+
+/* Today: teal numeral and a small dot below it */
+.sa-drp-cell.today:not(.endpoint) .sa-drp-num {
+    color: #0D756C;
+    font-weight: 600;
+}
+
+.sa-drp-cell.today::after {
+    content: '';
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 3px;
+    height: 3px;
+    border-radius: 50%;
+    background: #0D756C;
+    z-index: 2;
+}
+
+.sa-drp-cell.today.endpoint::after {
+    background: #FFFFFF;
+}
+
+/* Visibly separate outline for keyboard focus */
+.sa-drp-cell.focused:focus-visible,
+.sa-drp-cell.focused .sa-drp-num {
+    outline: 1.5px dashed #0D756C;
+    outline-offset: 1px;
+}

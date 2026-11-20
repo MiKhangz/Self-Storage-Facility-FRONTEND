@@ -124,16 +124,11 @@ export default function MaintenancePage() {
             <PageHeader title={tr('Maintenance')} subtitle="Repairs and cleaning that take a unit out of service">
                 {canWrite && <button type="button" className="se-btn se-btn-primary" onClick={() => { setCreating(true); setSelected(null); }}><Icon name="box" size={16} /> {tr('New order')}</button>}
             </PageHeader>
-            <div className="sa-stats">
-                <Stat icon="clock" label="Open or scheduled" value={all.filter((o) => ['Open', 'Scheduled'].includes(o.status)).length} />
-                <Stat icon="shield" tone="warn" label="In progress" value={all.filter((o) => o.status === 'InProgress').length} />
-                <Stat icon="check" label="Done" value={all.filter((o) => o.status === 'Done').length} />
-            </div>
             <Filters>
                 <SearchFilter value={search} onChange={setSearch} placeholder={tr('Search unit or description')} />
                 <SelectFilter label="Status" value={status} onChange={setStatus} all="All statuses" options={STATUSES.map((s) => ({ value: s, label: humanize(s) }))} />
             </Filters>
-            <div className="sa-split">
+            <div className="sa-split open">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Unit')}</th><th>{tr('Description')}</th><th>{tr('Planned')}</th><th>{tr('Cost')}</th><th>{tr('Status')}</th></tr></thead>
@@ -150,6 +145,11 @@ export default function MaintenancePage() {
                             <TableState query={orders} rows={shown} cols={5} empty="No maintenance orders." />
                         </tbody>
                     </table>
+                </div>
+                <div className="sa-stats-stack">
+                    <Stat icon="clock" label="Open or scheduled" value={all.filter((o) => ['Open', 'Scheduled'].includes(o.status)).length} />
+                    <Stat icon="shield" tone="warn" label="In progress" value={all.filter((o) => o.status === 'InProgress').length} />
+                    <Stat icon="check" label="Done" value={all.filter((o) => o.status === 'Done').length} />
                 </div>
                 {creating && <Modal narrow onClose={() => setCreating(false)}><NewOrder onClose={() => setCreating(false)} /></Modal>}
                 {current && !creating && <Modal narrow onClose={() => setSelected(null)}><OrderPanel key={`${current.maintenanceOrderId}-${current.status}`} order={current} canWrite={canWrite} onClose={() => setSelected(null)} /></Modal>}

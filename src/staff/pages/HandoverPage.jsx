@@ -4,8 +4,11 @@ import { accessCodesApi, handoversApi, contractsApi, reservationsApi } from '../
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
+import { formatDateTime } from '../../customer/support/support.js';
+import DateRangePicker from '../components/DateRangePicker.jsx';
+import { matchesHandoverRange } from '../components/dateRange.js';
 import HandoverPhotos, { PhotoPicker, uploadPhoto } from '../components/HandoverPhotos.jsx';
-import { PageHeader, Stat, Status } from '../components/ui.jsx';
+import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
 import { useContracts, useInvoices, useReservations, useUnits } from '../queries.js';
 import { esc, printDocument } from '../print.js';
 import { useT } from '../../i18n/I18n.jsx';
@@ -71,8 +74,6 @@ function ViewUnit({ reservation, viewed, onViewed }) {
     );
 }
 
-const dateTime = (iso) => iso && new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
-
 /** The paper contract the customer signs at the desk: who, which unit, for how long, at what price. */
 function contractHtml(reservation, contract, customer) {
     const row = (label, value) => `<tr><td>${esc(label)}</td><td>${esc(value)}</td></tr>`;
@@ -97,7 +98,7 @@ const METHOD_VI = { Cash: 'Tiền mặt', BankTransfer: 'Chuyển khoản', Gate
 /** The bill for the deposit: what was paid, when and how. */
 function receiptHtml(reservation, deposit) {
     const paid = (deposit.payments ?? []).filter((p) => p.status === 'Succeeded');
-    const lines = paid.map((p) => `<tr><td>${esc(dateTime(p.paidAt) ?? '—')}</td><td>${esc(formatVnd(p.amount))} · ${esc(METHOD_VI[p.method] ?? p.method)}${p.referenceNo ? ` · ${esc(p.referenceNo)}` : ''}</td></tr>`).join('');
+    const lines = paid.map((p) => `<tr><td>${esc(formatDateTime(p.paidAt))}</td><td>${esc(formatVnd(p.amount))} · ${esc(METHOD_VI[p.method] ?? p.method)}${p.referenceNo ? ` · ${esc(p.referenceNo)}` : ''}</td></tr>`).join('');
     return `<h1>BIÊN LAI TIỀN CỌC</h1><p class="sub">Số ${esc(deposit.invoiceNumber)} · StorEase ${esc(reservation.facilityName)}</p>
         <table><tr><td>Khách hàng</td><td>${esc(reservation.customerName)}</td></tr><tr><td>Đơn đặt kho</td><td>${esc(reservation.reservationCode)}</td></tr>
             <tr><td>Kho</td><td>${esc(reservation.unitCode)} · ${esc(reservation.unitTypeName)}</td></tr>
@@ -170,7 +171,7 @@ function SignContract({ reservation, contract, locked }) {
     );
 }
 
-function HandoverWizard({ reservation, contract, onCompleted }) {
+function HandoverWizard({ reservation, contract, onCompleted, onBack }) {
     const tr = useT();
     const [ticks, setTicks] = useState({});
     // Seeing the unit is a conversation, not a record: it lives here, and switching units resets it.
@@ -179,13 +180,12 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
     // Each unit's disc lock is named after the unit, so staff confirm they gave that one; a unit switch resets it.
     const [lockFor, setLockFor] = useState(null);
     const lockGiven = lockFor === reservation.storageUnitId;
-    const [form, setForm] = useState({ conditionNote: '' });
+    const [conditionNote, setConditionNote] = useState('');
     const [photos, setPhotos] = useState([]);
-    const set = (patch) => setForm((f) => ({ ...f, ...patch }));
     const handover = useMutation({
         // A photo belongs to a handover, so photos go up after it exists. A failed photo must not undo the handover.
         mutationFn: async () => {
-            const done = await handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, lockSerial: reservation.unitCode, ...form });
+            const done = await handoversApi.create({ reservationId: reservation.reservationId, contractId: contract.contractId, lockSerial: reservation.unitCode, conditionNote });
             const failedPhotos = [];
             for (const file of photos) await uploadPhoto(done.handoverId, file).catch(() => failedPhotos.push(file.name));
             return { ...done, failedPhotos };
@@ -199,7 +199,14 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
     return (
         <div className="se-panel">
             <div className="sa-card-title">
-                <h2>{tr('Handover')} · {reservation.customerName} → {tr('Kho')} {reservation.unitCode}</h2>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {onBack && (
+                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={onBack} aria-label={tr('Back to waiting list')}>
+                            <Icon name="arrowLeft" size={16} />
+                        </button>
+                    )}
+                    <h2>{tr('Handover')} · {reservation.customerName} → {tr('Kho')} {reservation.unitCode}</h2>
+                </div>
                 <span className="sa-muted">{reservation.reservationCode}{contract ? ` · ${contract.contractNumber}` : ''}</span>
             </div>
             <ol className="sa-steps">
@@ -224,7 +231,7 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
                             {lockGiven && <small className="sa-muted">{tr('Lock {code} given to the customer.', { code: reservation.unitCode })}</small>}
                         </div>
                     </div>
-                    <label><span className="se-label">{tr("Condition note (optional, shown again at the return inspection)")}</span><textarea className="se-textarea" rows={2} maxLength={300} value={form.conditionNote} onChange={(e) => set({ conditionNote: e.target.value })} /></label>
+                    <label><span className="se-label">{tr("Condition note (optional, shown again at the return inspection)")}</span><textarea className="se-textarea" rows={2} maxLength={300} value={conditionNote} onChange={(e) => setConditionNote(e.target.value)} /></label>
                     <PhotoPicker files={photos} onChange={setPhotos} />
                 </li>
             </ol>
@@ -239,66 +246,126 @@ function HandoverWizard({ reservation, contract, onCompleted }) {
     );
 }
 
-function HandoverDesk() {
+function HandoverDesk({ stats }) {
     const tr = useT();
     const today = todayIso();
     const reservations = useReservations({ status: 'Confirmed' });
     const drafts = useContracts({ status: 'Draft' });
     const [selected, setSelected] = useState(null);
+    const [range, setRange] = useState({ from: today, to: today });
     // Held here, not in the wizard: the lists refresh on their own and drop the handed-over booking from the queue,
     // which would otherwise close this screen before staff read the code out.
     const [done, setDone] = useState(null);
     const queryClient = useQueryClient();
     // A Confirmed booking without a unit (its handover was undone) is assigned on Reservations first.
-    const queue = [...(reservations.data ?? [])].filter((r) => r.storageUnitId).sort((a, b) => a.moveInDate.localeCompare(b.moveInDate));
-    const current = queue.find((r) => r.reservationId === selected) ?? queue[0];
+    const queue = [...(reservations.data ?? [])]
+        .filter((r) => r.storageUnitId && matchesHandoverRange(r.moveInDate, range, today))
+        .sort((a, b) => a.moveInDate.localeCompare(b.moveInDate));
+    const current = queue.find((r) => r.reservationId === selected) ?? null;
     const contract = current && (drafts.data ?? []).find((c) => c.reservationId === current.reservationId);
+    const open = !!(current || done);
+    const dueBadge = (r) => (
+        <span className={`se-badge ${r.moveInDate <= today ? 'low' : ''}`}>
+            {r.moveInDate < today ? `${tr('Due')} · ${formatDate(r.moveInDate)}` : r.moveInDate === today ? tr('Due') : formatDate(r.moveInDate)}
+        </span>
+    );
 
     return (
-        <div className="sa-split open sa-desk">
+        <div className={`sa-split open${open ? ' sa-desk' : ''}`}>
             <section className="se-panel">
-                <div className="sa-card-title"><h2>{tr('Waiting for handover')}</h2><span className="se-count">{queue.length}</span></div>
-                <div className="sa-queue">
-                    {queue.map((r) => (
-                        <button key={r.reservationId} type="button" className={`sa-queue-item${current?.reservationId === r.reservationId ? ' active' : ''}`} onClick={() => setSelected(r.reservationId)}>
-                            <span><strong>{r.customerName}</strong><small>{r.unitCode} · {r.unitTypeName}</small></span>
-                            <span className={`se-badge ${r.moveInDate <= today ? 'low' : ''}`}>{r.moveInDate <= today ? tr('Due') : formatDate(r.moveInDate)}</span>
-                        </button>
-                    ))}
-                    {!queue.length && <p className="sa-muted">{reservations.isLoading ? tr('Loading…') : tr('No confirmed reservations waiting.')}</p>}
-                </div>
-            </section>
-            <div>
-                {done ? (
-                    <div className="se-panel sa-checkin-done">
-                        <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
-                        <h2>{tr('Handover complete — unit {code} is now occupied', { code: done.unitCode })}</h2>
-                        <p className="sa-muted">{tr('Give the customer this access code. They are now checked in. The code changes each time they leave; they find the current one in their account.')}</p>
-                        <div className="se-code-digits dark">{(done.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
-                        {done.failedPhotos.length > 0 && <div className="se-alert" role="alert">{tr('Could not upload {names}. Add them again under Active rentals & access.', { names: done.failedPhotos.join(', ') })}</div>}
-                        <button type="button" className="se-btn se-btn-primary" onClick={() => {
-                            ['reservations', 'contracts', 'storage-units', 'check-ins'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
-                            setDone(null);
-                            setSelected(null);
-                        }}>{tr('Next handover')}</button>
+                <div className="sa-card-title" style={{ flexWrap: 'wrap', gap: 10 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                        <h2>{tr('Waiting for handover')}</h2>
+                        <span className="se-count">{queue.length}</span>
                     </div>
-                ) : current && !drafts.isLoading && <HandoverWizard key={current.reservationId} reservation={current} contract={contract} onCompleted={setDone} />}
-            </div>
+                    <DateRangePicker value={range} onChange={(next) => { setRange(next); setSelected(null); }} today={today} />
+                </div>
+                {open ? (
+                    <div className="sa-queue">
+                        {queue.map((r) => (
+                            <button key={r.reservationId} type="button" className={`sa-queue-item${current?.reservationId === r.reservationId ? ' active' : ''}`} onClick={() => setSelected(r.reservationId)}>
+                                <span><strong>{r.customerName}</strong><small>{r.unitCode} · {r.unitTypeName}</small></span>
+                                {dueBadge(r)}
+                            </button>
+                        ))}
+                        {!queue.length && <p className="sa-muted">{reservations.isLoading ? tr('Loading…') : tr('No confirmed reservations waiting.')}</p>}
+                    </div>
+                ) : (
+                    <div className="se-table-wrap">
+                        <table className="se-table sa-table">
+                            <thead>
+                                <tr>
+                                    <th>{tr('Code')}</th>
+                                    <th>{tr('Customer')}</th>
+                                    <th>{tr('Unit')}</th>
+                                    <th>{tr('Facility')}</th>
+                                    <th>{tr('Move-in')}</th>
+                                    <th>{tr('Period')}</th>
+                                    <th />
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {queue.map((r) => (
+                                    <tr key={r.reservationId} onClick={() => setSelected(r.reservationId)}>
+                                        <td className="strong">{r.reservationCode}</td>
+                                        <td className="strong">{r.customerName}</td>
+                                        <td>{r.unitCode} · {r.unitTypeName}</td>
+                                        <td>{r.facilityName}</td>
+                                        <td>{dueBadge(r)}</td>
+                                        <td>{tr('{n} month{n:s}', { n: r.rentalMonths })}</td>
+                                        <td className="sa-row-actions">
+                                            <button type="button" className="se-btn se-btn-outline se-btn-sm" onClick={(e) => { e.stopPropagation(); setSelected(r.reservationId); }}>
+                                                {r.customerName}
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))}
+                                <TableState query={reservations} rows={queue} cols={7} empty="No confirmed reservations waiting." />
+                            </tbody>
+                        </table>
+                    </div>
+                )}
+            </section>
+            {open ? (
+                <div>
+                    {done ? (
+                        <div className="se-panel sa-checkin-done">
+                            <span className="se-confirm-icon"><Icon name="check" size={28} /></span>
+                            <h2>{tr('Handover complete — unit {code} is now occupied', { code: done.unitCode })}</h2>
+                            <p className="sa-muted">{tr('Give the customer this access code. They are now checked in. The code changes each time they leave; they find the current one in their account.')}</p>
+                            <div className="se-code-digits dark">{(done.accessCode ?? '').split('').map((d, i) => <span key={i}>{d}</span>)}</div>
+                            {done.failedPhotos.length > 0 && <div className="se-alert" role="alert">{tr('Could not upload {names}. Add them again under Active rentals & access.', { names: done.failedPhotos.join(', ') })}</div>}
+                            <button type="button" className="se-btn se-btn-primary" onClick={() => {
+                                ['reservations', 'contracts', 'storage-units', 'check-ins'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] }));
+                                setDone(null);
+                                setSelected(null);
+                            }}>{tr('Next handover')}</button>
+                        </div>
+                    ) : current && !drafts.isLoading && (
+                        <HandoverWizard
+                            key={current.reservationId}
+                            reservation={current}
+                            contract={contract}
+                            onCompleted={setDone}
+                            onBack={() => setSelected(null)}
+                        />
+                    )}
+                </div>
+            ) : (
+                <div className="sa-stats-stack">{stats}</div>
+            )}
         </div>
     );
 }
 
 /** SR-02: undo a handover made by mistake. The reservation goes back to waiting for a unit. */
-function CancelHandover({ contractId }) {
+function CancelHandover({ handover }) {
     const tr = useT();
     const queryClient = useQueryClient();
-    const handovers = useQuery({ queryKey: ['handovers', 'Completed'], queryFn: () => handoversApi.list({ status: 'Completed', page: 1, pageSize: 100 }) });
-    const handover = handovers.data?.items?.find((c) => c.contractId === contractId);
     const cancel = useMutation({
         mutationFn: () => handoversApi.cancel(handover.handoverId),
         onSuccess: () => ['handovers', 'contracts', 'reservations', 'storage-units'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
     });
-    if (!handover) return null;
     return (
         <>
             {cancel.isError && <div className="se-alert" role="alert">{errorMessage(cancel.error)}</div>}
@@ -318,13 +385,11 @@ function RevokeCode({ contractId, accessCodeId }) {
         mutationFn: () => accessCodesApi.revoke(accessCodeId),
         onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts', contractId, 'access-code'] }),
     });
-    const confirmAndRevoke = () => {
-        confirmAction(tr('Revoke this access code? The customer cannot open the unit until they request a new code.')).then((ok) => { if (ok) revoke.mutate(); });
-    };
     return (
         <>
             {revoke.isError && <div className="se-alert" role="alert">{errorMessage(revoke.error)}</div>}
-            <button type="button" className="se-btn se-btn-ghost" disabled={revoke.isPending} onClick={confirmAndRevoke}>
+            <button type="button" className="se-btn se-btn-ghost" disabled={revoke.isPending}
+                onClick={() => confirmAction(tr('Revoke this access code? The customer cannot open the unit until they request a new code.')).then((ok) => ok && revoke.mutate())}>
                 <Icon name="key" size={16} /> {revoke.isPending ? tr('Revoking…') : tr('Revoke code')}
             </button>
         </>
@@ -377,7 +442,7 @@ function ActiveRentals() {
                     </div>
                     {handover && <HandoverPhotos handover={handover} canAdd />}
                     {code.data?.isActive && <RevokeCode key={code.data.accessCodeId} contractId={current.contractId} accessCodeId={code.data.accessCodeId} />}
-                    <CancelHandover key={current.contractId} contractId={current.contractId} />
+                    {handover && <CancelHandover key={current.contractId} handover={handover} />}
                 </section>
             )}
         </div>
@@ -392,21 +457,24 @@ export default function HandoverPage() {
     const reservations = useReservations({ status: 'Confirmed' });
     const active = useContracts({ status: 'Active' });
     const all = units.data ?? [];
+    const stats = (
+        <>
+            <Stat icon="key" label="Waiting for handover" value={reservations.data?.length ?? 0} />
+            <Stat icon="file" label="Active rentals" value={active.data?.length ?? 0} />
+            <Stat icon="grid" label="Available units" value={all.filter((u) => u.status === 'Available').length} />
+            <Stat icon="shield" tone="warn" label="In maintenance" value={all.filter((u) => u.status === 'Maintenance').length} />
+        </>
+    );
 
     return (
         <>
             <PageHeader title={tr('Handover')} subtitle={tr('Today, {date}', { date: formatDate(todayIso()) })} />
-            <div className="sa-stats">
-                <Stat icon="key" label="Waiting for handover" value={reservations.data?.length ?? 0} />
-                <Stat icon="file" label="Active rentals" value={active.data?.length ?? 0} />
-                <Stat icon="grid" label="Available units" value={all.filter((u) => u.status === 'Available').length} />
-                <Stat icon="shield" tone="warn" label="In maintenance" value={all.filter((u) => u.status === 'Maintenance').length} />
-            </div>
+            {tab !== 'desk' && <div className="sa-stats">{stats}</div>}
             <div className="se-tabs se-tabs-line" role="tablist">
                 <button role="tab" aria-selected={tab === 'desk'} className={tab === 'desk' ? 'active' : ''} onClick={() => setTab('desk')}>{tr('Handover desk')}</button>
                 <button role="tab" aria-selected={tab === 'active'} className={tab === 'active' ? 'active' : ''} onClick={() => setTab('active')}>{tr('Active rentals & access')}</button>
             </div>
-            {tab === 'desk' ? <HandoverDesk /> : <ActiveRentals />}
+            {tab === 'desk' ? <HandoverDesk stats={stats} /> : <ActiveRentals />}
         </>
     );
 }

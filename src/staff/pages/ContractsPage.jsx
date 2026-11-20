@@ -9,7 +9,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { addDays, formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { periodUsed } from '../../customer/account/queries.js';
-import { Modal, PageHeader, SearchFilter, Filters, Status, TableState, downloadFile, matches } from '../components/ui.jsx';
+import { Modal, PageHeader, SearchFilter, Filters, Stat, Status, TableState, downloadFile, matches } from '../components/ui.jsx';
 import { useContracts, useInvoices } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
@@ -176,7 +176,7 @@ export default function ContractsPage() {
                 ))}
             </div>
             <Filters><SearchFilter value={search} onChange={setSearch} placeholder={tr('Search contract, customer or unit')} /></Filters>
-            <div className="sa-split">
+            <div className="sa-split open">
                 <div className="se-card se-table-wrap">
                     <table className="se-table sa-table">
                         <thead><tr><th>{tr('Contract')}</th><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Period')}</th><th>{tr('Balance due')}</th><th>{tr('Status')}</th></tr></thead>
@@ -194,6 +194,12 @@ export default function ContractsPage() {
                             <TableState query={contracts} rows={shown} cols={6} empty="No contracts in this list." />
                         </tbody>
                     </table>
+                </div>
+                <div className="sa-stats-stack">
+                    {TABS.slice(1).map((t) => (
+                        <Stat key={t.key} icon={t.key === 'overdue' ? 'clock' : 'file'} tone={t.key === 'overdue' ? 'bad' : t.key === 'expiring' ? 'warn' : ''}
+                            label={t.label} value={all.filter((c) => t.match(c, today, owing)).length} />
+                    ))}
                 </div>
                 {current && <Modal narrow onClose={() => setSelected(null)}><ContractPanel key={current.contractId} contract={current} invoices={allInvoices.filter((i) => i.contractId === current.contractId)} onClose={() => setSelected(null)} /></Modal>}
             </div>
