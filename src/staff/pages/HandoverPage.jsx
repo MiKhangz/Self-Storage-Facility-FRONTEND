@@ -93,7 +93,7 @@ function contractHtml(reservation, contract, customer) {
         <div class="sign"><div><p>BÊN THUÊ</p>${esc(contract.customerName)}</div><div><p>ĐẠI DIỆN STOREASE</p>&nbsp;</div></div>`;
 }
 
-const METHOD_VI = { Cash: 'Tiền mặt', BankTransfer: 'Chuyển khoản', Gateway: 'Thanh toán online', Card: 'Thẻ' };
+const METHOD_VI = { Cash: 'Tiền mặt', BankTransfer: 'Chuyển khoản', Gateway: 'Thanh toán online', Card: 'Thẻ', Deposit: 'Trừ tiền cọc' };
 
 /** The bill for the deposit: what was paid, when and how. */
 function receiptHtml(reservation, deposit) {

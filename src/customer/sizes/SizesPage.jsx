@@ -34,7 +34,7 @@ export function useFacilities() {
 }
 
 /** Monthly rent per tier and free-unit count for every unit type at one facility. */
-function useTypeRows(types, facilityId) {
+function useTypeRows(types, facilityId, months) {
     const moveInDate = todayIso();
     const enabled = !!facilityId;
     const quotes = useQueries({
@@ -46,8 +46,9 @@ function useTypeRows(types, facilityId) {
     });
     const stock = useQueries({
         queries: types.map((t) => ({
-            queryKey: ['availability', { unitTypeId: t.unitTypeId, facilityId, moveInDate }],
-            queryFn: () => unitTypesApi.availability(t.unitTypeId, { facilityId, moveInDate }),
+            // Free for the whole stay chosen on this page, as the booking page checks it.
+            queryKey: ['availability', { unitTypeId: t.unitTypeId, facilityId, moveInDate, rentalMonths: months }],
+            queryFn: () => unitTypesApi.availability(t.unitTypeId, { facilityId, moveInDate, rentalMonths: months }),
             enabled,
         })),
     });
@@ -85,7 +86,7 @@ export default function SizesPage() {
     const types = (unitTypes.data ?? [])
         .filter((t) => tab !== 'climate' || t.isClimateControlled)
         .sort((a, b) => a.areaM2 - b.areaM2);
-    const rows = useTypeRows(types, activeFacility);
+    const rows = useTypeRows(types, activeFacility, months);
     const maxArea = Math.max(...types.map((t) => t.areaM2), 1);
     const highlight = tierFor(months);
     const terms = useTerms({ facilityId: activeFacility });

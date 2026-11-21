@@ -836,7 +836,7 @@
  * @property {(string|null)} [checkoutUrl]
  */
 
-/** @typedef {"Cash"|"BankTransfer"|"Gateway"|"Card"} PaymentMethod */
+/** @typedef {"Cash"|"BankTransfer"|"Gateway"|"Card"|"Deposit"} PaymentMethod */
 
 /**
  * @typedef {Object} PaymentRequest

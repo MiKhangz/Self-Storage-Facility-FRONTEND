@@ -42,7 +42,8 @@ export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-o
         // the customer back to VnPayReturnPage. Otherwise (demo) the development-only simulate-success pays at once.
         mutationFn: async () => {
             const intent = await invoicesApi.paymentsOnline(invoice.invoiceId, { amount: invoice.outstandingAmount, referenceNo: null });
-            if (intent.checkoutUrl?.includes('vnpayment.vn')) {
+            // VNPay's own parameter, so the sandbox and the production host both redirect.
+            if (intent.checkoutUrl?.includes('vnp_TmnCode=')) {
                 window.location.assign(intent.checkoutUrl);
                 return 'redirected';
             }

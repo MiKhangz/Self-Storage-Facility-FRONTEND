@@ -24,12 +24,14 @@ export default function LocationsPage() {
     const unitTypes = useQuery({ queryKey: ['unit-types'], queryFn: () => unitTypesApi.list() });
     const all = facilities.data?.items ?? [];
     const moveInDate = todayIso();
+    // The booking page opens on a 3-month stay; count units free for that same stay.
+    const rentalMonths = 3;
 
     // With a size filter, availability is per facility for that size; otherwise the list's own total is used.
     const stock = useQueries({
         queries: all.map((f) => ({
-            queryKey: ['availability', { unitTypeId: Number(unitTypeId), facilityId: f.facilityId, moveInDate }],
-            queryFn: () => unitTypesApi.availability(Number(unitTypeId), { facilityId: f.facilityId, moveInDate }),
+            queryKey: ['availability', { unitTypeId: Number(unitTypeId), facilityId: f.facilityId, moveInDate, rentalMonths }],
+            queryFn: () => unitTypesApi.availability(Number(unitTypeId), { facilityId: f.facilityId, moveInDate, rentalMonths }),
             enabled: !!unitTypeId,
         })),
     });
@@ -74,7 +76,7 @@ export default function LocationsPage() {
                                         <p className="se-loc-addr"><Icon name="pin" size={14} /> {f.address}{f.district ? `, ${f.district}` : ''}</p>
                                         <p className="se-loc-meta">{f.openingHours ? t('Mở cửa {hours}', { hours: f.openingHours }) : t('Chưa cập nhật giờ mở cửa')}{f.phone ? ` · ${f.phone}` : ''}</p>
                                     </div>
-                                    <Link to={`/booking?facilityId=${f.facilityId}${unitTypeId ? `&unitTypeId=${unitTypeId}` : ''}`} className="se-btn se-btn-outline se-btn-sm">{t('Xem kho trống')}</Link>
+                                    <Link to={`/booking?facilityId=${f.facilityId}&rentalMonths=${rentalMonths}${unitTypeId ? `&unitTypeId=${unitTypeId}` : ''}`} className="se-btn se-btn-outline se-btn-sm">{t('Xem kho trống')}</Link>
                                 </article>
                             );
                         })}
