@@ -251,6 +251,7 @@
  * @property {number} [endReminderDays] int32
  * @property {number} [overstayFeePercent] double
  * @property {number} [moveOutAfterDays] int32
+ * @property {number} [centralStorageKeepDays] int32
  */
 
 /**
@@ -861,6 +862,7 @@
  * @property {number} [endReminderDays] int32
  * @property {number} [overstayFeePercent] double
  * @property {number} [moveOutAfterDays] int32
+ * @property {number} [centralStorageKeepDays] int32
  */
 
 /**
@@ -899,6 +901,7 @@
  * @property {number} [endReminderDays] int32
  * @property {number} [overstayFeePercent] double
  * @property {number} [moveOutAfterDays] int32
+ * @property {number} [centralStorageKeepDays] int32
  */
 
 /**
@@ -1464,6 +1467,7 @@
  * @property {number} [endReminderDays] int32
  * @property {number} [overstayFeePercent] double
  * @property {number} [moveOutAfterDays] int32
+ * @property {number} [centralStorageKeepDays] int32
  */
 
 /**

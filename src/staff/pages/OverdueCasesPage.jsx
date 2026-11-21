@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { overdueCasesApi } from '../../api/generated';
+import { contractsApi, overdueCasesApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
@@ -41,6 +41,12 @@ export default function OverdueCasesPage() {
     const canLockOut = open && ['Reminder', 'LateFee'].includes(current.stage);
     const canRestore = open && ['Suspended', 'ClearOut'].includes(current.stage);
     const run = (action, question) => { confirmAction(tr(question)).then((ok) => { if (ok) act.mutate(action); }); };
+    // At clear-out the goods go to the central warehouse, the same way as an overstay (business rule BR-31).
+    const canMoveOut = open && current.stage === 'ClearOut';
+    const moveOut = useMutation({
+        mutationFn: () => contractsApi.moveToCentralStorage(current.contractId),
+        onSuccess: () => ['overdue-cases', 'contracts', 'rental-ends'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
+    });
 
     return (
         <>
@@ -91,7 +97,15 @@ export default function OverdueCasesPage() {
                             {current.resolvedAt && <div><dt>{tr('Resolved')}</dt><dd>{formatDate(current.resolvedAt)}</dd></div>}
                         </dl>
                         {open && <p className="se-hint">{tr('Paying the invoice in full closes the case and gives access back automatically.')}</p>}
+                        {canMoveOut && <p className="se-hint">{tr('The case reached clear-out: the goods can now be moved to the central warehouse.')}</p>}
                         {act.isError && <div className="se-alert" role="alert">{errorMessage(act.error)}</div>}
+                        {moveOut.isError && <div className="se-alert" role="alert">{errorMessage(moveOut.error)}</div>}
+                        {canAct && canMoveOut && (
+                            <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={moveOut.isPending}
+                                onClick={() => confirmAction(tr('Move the goods to the central warehouse? The contract closes, the unpaid rent comes out of the deposit, and the customer is emailed how long the goods are kept.')).then((ok) => ok && moveOut.mutate())}>
+                                <Icon name="box" size={16} /> {moveOut.isPending ? tr('Moving…') : tr('Move to central warehouse')}
+                            </button>
+                        )}
                         {canAct && canLockOut && (
                             <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={act.isPending}
                                 onClick={() => run('lockout', 'Lock this customer out? Their access code stops working until they pay or access is restored.')}>
