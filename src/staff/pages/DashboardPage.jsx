@@ -43,7 +43,15 @@ export default function DashboardPage() {
     const maxRevenue = Math.max(...revenue, 1);
     const urgent = (tickets.data ?? []).filter((t) => t.priority === 'Urgent' && !['Resolved', 'Closed'].includes(t.status));
     const expiring = active.filter((c) => c.endDate >= today && c.endDate <= addDays(today, 14));
-    const todaysTasks = (tasks.data ?? []).filter((t) => t.scheduledAt?.startsWith(today)).sort((a, b) => a.scheduledAt.localeCompare(b.scheduledAt));
+    const bookings = useReservations();
+    // Staff tasks plus handover appointments booked for today (handoverSlot is UTC; formatDateTime shows Vietnam time).
+    const todayVn = today.split('-').reverse().join('/');
+    const todaysTasks = [
+        ...(tasks.data ?? []).filter((t) => t.scheduledAt?.startsWith(today))
+            .map((t) => ({ key: `t${t.taskId}`, time: formatDateTime(t.scheduledAt).slice(0, 5), type: humanize(t.taskType), ref: t.referenceCode, staff: t.assignedToName, status: t.status })),
+        ...(bookings.data ?? []).filter((r) => r.handoverSlot && ['Pending', 'Confirmed'].includes(r.status) && formatDateTime(r.handoverSlot).endsWith(todayVn))
+            .map((r) => ({ key: `r${r.reservationId}`, time: formatDateTime(r.handoverSlot).slice(0, 5), type: 'Handover appointment', ref: r.reservationCode, staff: '—', status: r.status })),
+    ].sort((a, b) => a.time.localeCompare(b.time));
     const firstName = session?.fullName?.trim().split(/\s+/).at(-1);
 
     const attention = [
@@ -111,11 +119,11 @@ export default function DashboardPage() {
                             <thead><tr><th>{tr('Time')}</th><th>{tr('Type')}</th><th>{tr('Reference')}</th><th>{tr('Staff')}</th><th>{tr('Status')}</th></tr></thead>
                             <tbody>
                                 {todaysTasks.map((t) => (
-                                    <tr key={t.taskId}>
-                                        <td>{formatDateTime(t.scheduledAt).slice(0, 5)}</td>
-                                        <td>{tr(humanize(t.taskType))}</td>
-                                        <td>{t.referenceCode ?? '—'}</td>
-                                        <td>{t.assignedToName}</td>
+                                    <tr key={t.key}>
+                                        <td>{t.time}</td>
+                                        <td>{tr(t.type)}</td>
+                                        <td>{t.ref ?? '—'}</td>
+                                        <td>{t.staff}</td>
                                         <td><Status value={t.status} /></td>
                                     </tr>
                                 ))}

@@ -46,7 +46,11 @@ export function HandoverAppointment({ reservation: r }) {
     const today = todayIso();
     const [editing, setEditing] = useState(false);
     const [day, setDay] = useState(r.moveInDate > today ? r.moveInDate : today);
-    const [time, setTime] = useState('09:00');
+    const [picked, setTime] = useState('09:00');
+    // Today, only times still ahead (Vietnam time) can be booked.
+    const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
+    const slots = day === today ? SLOTS.filter((s) => s > now) : SLOTS;
+    const time = slots.includes(picked) ? picked : slots[0];
     const save = useMutation({
         mutationFn: () => reservationsApi.appointment(r.reservationId, { at: `${day}T${time}:00` }),
         onSuccess: () => { setEditing(false); refresh(queryClient); },
@@ -68,9 +72,9 @@ export function HandoverAppointment({ reservation: r }) {
             <div className="se-appointment-fields">
                 <input type="date" value={day} min={today} max={r.moveInDate} onChange={(e) => setDay(e.target.value)} required aria-label={t('Ngày hẹn')} />
                 <select value={time} onChange={(e) => setTime(e.target.value)} aria-label={t('Giờ hẹn')}>
-                    {SLOTS.map((s) => <option key={s} value={s}>{s}</option>)}
+                    {slots.map((s) => <option key={s} value={s}>{s}</option>)}
                 </select>
-                <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={save.isPending}>{save.isPending ? t('Đang lưu…') : t('Đặt lịch')}</button>
+                <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={save.isPending || !time}>{save.isPending ? t('Đang lưu…') : t('Đặt lịch')}</button>
             </div>
             <small className="se-hint">{t('Từ hôm nay đến ngày nhận kho {date}. Không đến đúng ngày hẹn, đơn sẽ hết hạn và tiền cọc không được hoàn.', { date: formatDate(r.moveInDate) })}</small>
             {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}
