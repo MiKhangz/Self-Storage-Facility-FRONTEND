@@ -520,6 +520,7 @@ export default {
     "Lịch hẹn nhận kho": "Handover appointment",
     "Đổi lịch hẹn": "Change appointment",
     "Không đến đúng ngày hẹn, đơn sẽ hết hạn và tiền cọc không được hoàn.": "If you miss the appointment day, the booking expires and the deposit is not refunded.",
+    "Đã qua giờ hẹn nên không thể đổi lịch. Hãy đến nhận kho trong ngày hẹn, nếu không đơn sẽ hết hạn và tiền cọc không được hoàn.": "The appointment time has passed, so it can no longer be changed. Come for the handover on the appointment day, or the booking expires and the deposit is not refunded.",
     "Chọn lịch hẹn nhận kho": "Book your handover appointment",
     "Ngày hẹn": "Appointment date",
     "Giờ hẹn": "Appointment time",

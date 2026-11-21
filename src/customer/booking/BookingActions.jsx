@@ -58,11 +58,15 @@ export function HandoverAppointment({ reservation: r }) {
     if (!['Pending', 'Confirmed'].includes(r.status) || r.depositStatus !== 'Paid') return null;
 
     if (r.handoverSlot && !editing) {
+        // A passed appointment cannot be moved (the server refuses it too).
+        const passed = new Date(r.handoverSlot) < new Date();
         return (
             <div className="se-appointment">
                 <span><strong>{t('Lịch hẹn nhận kho')}:</strong> {formatDateTime(r.handoverSlot)}</span>
-                <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setEditing(true)}>{t('Đổi lịch hẹn')}</button>
-                <small className="se-hint">{t('Không đến đúng ngày hẹn, đơn sẽ hết hạn và tiền cọc không được hoàn.')}</small>
+                {!passed && <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setEditing(true)}>{t('Đổi lịch hẹn')}</button>}
+                <small className="se-hint">{passed
+                    ? t('Đã qua giờ hẹn nên không thể đổi lịch. Hãy đến nhận kho trong ngày hẹn, nếu không đơn sẽ hết hạn và tiền cọc không được hoàn.')
+                    : t('Không đến đúng ngày hẹn, đơn sẽ hết hạn và tiền cọc không được hoàn.')}</small>
             </div>
         );
     }
