@@ -76,13 +76,6 @@ export const contractsApi = {
   moveToCentralStorage: (id) =>
     api.post(`/api/contracts/${id}/move-to-central-storage`, undefined).then((r) => r.data),
   /**
-   * POST /api/contracts/{id}/terminate
-   * @param {number} id
-   * @returns {Promise<ContractDto>}
-   */
-  terminate: (id) =>
-    api.post(`/api/contracts/${id}/terminate`, undefined).then((r) => r.data),
-  /**
    * POST /api/contracts/{id}/access-codes
    * @param {number} id
    * @returns {Promise<AccessCodeDto>}

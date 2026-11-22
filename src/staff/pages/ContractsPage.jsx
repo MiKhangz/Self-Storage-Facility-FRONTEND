@@ -2,7 +2,7 @@ import { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, errorMessage } from '../../api/axiosClient';
-import { contractsApi, pricingPoliciesApi, renewalsApi } from '../../api/generated';
+import { pricingPoliciesApi, renewalsApi } from '../../api/generated';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
@@ -29,7 +29,6 @@ const daysBetween = (from, to) => Math.round((Date.parse(`${to}T00:00:00Z`) - Da
 function ContractPanel({ contract, invoices, onClose }) {
     const tr = useT();
     const { session } = useAuth();
-    const queryClient = useQueryClient();
     const today = todayIso();
     const open = invoices.filter((i) => ['Issued', 'Overdue'].includes(i.status)).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
     const due = open.reduce((s, i) => s + (i.outstandingAmount ?? 0), 0);
@@ -40,11 +39,6 @@ function ContractPanel({ contract, invoices, onClose }) {
         enabled: session?.role === Roles.BusinessOperationsManager && !!oldest,
     });
     const policy = policies.data?.items?.find((p) => p.status === 'Active');
-    const terminate = useMutation({
-        mutationFn: () => contractsApi.terminate(contract.contractId),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['contracts'] }),
-    });
-    const canTerminate = session?.role === Roles.FacilityManager && !ENDED.includes(contract.status) && contract.status !== 'Draft';
 
     return (
         <aside className="se-panel sa-side-panel">
@@ -82,14 +76,7 @@ function ContractPanel({ contract, invoices, onClose }) {
                     </ul>
                 </>
             )}
-            {terminate.isError && <div className="se-alert" role="alert">{errorMessage(terminate.error)}</div>}
             {!!open.length && <Link to={`/admin/payments?invoiceId=${open[0].invoiceId}`} className="se-btn se-btn-primary se-btn-block"><Icon name="card" size={16} /> {tr('Record payment')}</Link>}
-            {canTerminate && (
-                <button type="button" className="se-btn se-btn-danger se-btn-block" disabled={terminate.isPending}
-                    onClick={() => confirmAction(tr('Terminate contract {number}? This revokes access and cannot be undone.', { number: contract.contractNumber })).then((ok) => ok && terminate.mutate())}>
-                    {tr('Terminate contract')}
-                </button>
-            )}
         </aside>
     );
 }
