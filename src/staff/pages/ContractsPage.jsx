@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { api, errorMessage } from '../../api/axiosClient';
@@ -108,6 +108,10 @@ function RenewalRequests() {
     });
     const list = (requested.data?.items ?? []).filter((r) => ['Requested', 'AwaitingCustomer'].includes(r.status));
     if (!list.length) return null;
+    const rejectButton = (r) => (
+        <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={decide.isPending}
+            onClick={() => confirmAction(tr('Reject the renewal of {number}?', { number: r.contractNumber })).then((ok) => ok && decide.mutate({ id: r.renewalId, approve: false }))}>{tr('Reject')}</button>
+    );
     return (
         <section className="se-panel" style={{ marginBottom: 20 }}>
             <div className="sa-card-title"><h2>{tr('Renewal requests')}</h2><span className="se-count">{list.length}</span></div>
@@ -117,7 +121,8 @@ function RenewalRequests() {
                     <thead><tr><th>{tr('Contract')}</th><th>{tr('Unit')}</th><th>{tr('Extend')}</th><th>{tr('End date')}</th><th>{tr('Monthly rent')}</th><th>{tr('Requested')}</th>{canDecide && <th />}</tr></thead>
                     <tbody>
                         {list.map((r) => (
-                            <tr key={r.renewalId}>
+                            <Fragment key={r.renewalId}>
+                            <tr>
                                 <td className="strong">{r.contractNumber}</td>
                                 <td>{r.unitCode}</td>
                                 <td>{tr('{n} month{n:s}', { n: r.extendMonths })}</td>
@@ -125,17 +130,25 @@ function RenewalRequests() {
                                 <td>{formatVnd(r.currentMonthlyRent)} → <strong>{formatVnd(r.newMonthlyRent)}</strong></td>
                                 <td>{formatDate(r.requestedAt)}</td>
                                 {canDecide && r.status === 'AwaitingCustomer' && (
-                                    <td className="sa-muted">{tr('Unit booked by the next customer: offered {code}, waiting for the renter', { code: r.transferUnitCode })}</td>
+                                    <td />
                                 )}
                                 {canDecide && r.status === 'Requested' && (
                                     <td className="sa-row-actions">
                                         <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={decide.isPending}
                                             onClick={() => confirmAction(tr('Approve? {number} runs to {date} at {rent} a month.', { number: r.contractNumber, date: formatDate(r.newEndDate), rent: formatVnd(r.newMonthlyRent) })).then((ok) => ok && decide.mutate({ id: r.renewalId, approve: true }))}>{tr('Approve')}</button>{' '}
-                                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={decide.isPending}
-                                            onClick={() => confirmAction(tr('Reject the renewal of {number}?', { number: r.contractNumber })).then((ok) => ok && decide.mutate({ id: r.renewalId, approve: false }))}>{tr('Reject')}</button>
+                                        {rejectButton(r)}
                                     </td>
                                 )}
                             </tr>
+                            {/* Its own wrapping row: at the end of the first one the button is off screen. */}
+                            {canDecide && r.status === 'AwaitingCustomer' && (
+                                <tr>
+                                    <td colSpan={7} className="sa-muted" style={{ whiteSpace: 'normal' }}>
+                                        {rejectButton(r)}{' '}{tr('Unit booked by the next customer: offered {code}, waiting for the renter', { code: r.transferUnitCode })}
+                                    </td>
+                                </tr>
+                            )}
+                            </Fragment>
                         ))}
                     </tbody>
                 </table>
