@@ -183,6 +183,7 @@ export default {
     "Đến Kho của tôi": "Go to My storage",
     "Về trang chủ": "Back to home",
     "Bạn chưa đóng cọc nên không mất khoản nào.": "You haven't paid a deposit, so you lose nothing.",
+    "Kho chưa sẵn sàng cho bạn nên huỷ lúc nào cũng được hoàn toàn bộ {amount} tiền cọc.": "Your unit is not ready, so cancelling at any time returns the whole {amount} deposit.",
     "Huỷ trước {time} được hoàn lại {amount} tiền cọc.": "Cancel before {time} to get the {amount} deposit back.",
     "Đã quá {hours} giờ kể từ lúc đặt nên {amount} tiền cọc sẽ không được hoàn.": "More than {hours} hour{hours:s} have passed since booking, so the {amount} deposit will not be refunded.",
     "Đã huỷ đơn {code}.": "Booking {code} cancelled.",

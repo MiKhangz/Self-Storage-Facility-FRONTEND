@@ -10,7 +10,8 @@ const time = (d) => d.toLocaleString('vi-VN', { hour: '2-digit', minute: '2-digi
 
 /**
  * The customer cancels a booking that has not been handed over. A paid deposit comes back only inside the free
- * window after booking (the policy's cancelFreeHours); the page says which before they confirm.
+ * window after booking (the policy's cancelFreeHours), or whenever StorEase has no unit ready for the booking; the
+ * page says which before they confirm.
  */
 export default function CancelBooking({ reservation }) {
     const queryClient = useQueryClient();
@@ -24,9 +25,12 @@ export default function CancelBooking({ reservation }) {
     const paid = reservation.depositStatus === 'Paid' ? reservation.depositAmount : 0;
     const freeUntil = terms && new Date(Date.parse(reservation.createdAt) + terms.cancelFreeHours * 3_600_000);
     const refundable = freeUntil && new Date() <= freeUntil;
+    const notReady = reservation.unitBlocked || !!reservation.proposedUnitCode;
     const outcome = !paid
         ? t('Bạn chưa đóng cọc nên không mất khoản nào.')
-        : refundable
+        : notReady
+            ? t('Kho chưa sẵn sàng cho bạn nên huỷ lúc nào cũng được hoàn toàn bộ {amount} tiền cọc.', { amount: formatVnd(paid) })
+            : refundable
             ? t('Huỷ trước {time} được hoàn lại {amount} tiền cọc.', { time: time(freeUntil), amount: formatVnd(paid) })
             : t('Đã quá {hours} giờ kể từ lúc đặt nên {amount} tiền cọc sẽ không được hoàn.', { hours: terms?.cancelFreeHours ?? 24, amount: formatVnd(paid) });
 

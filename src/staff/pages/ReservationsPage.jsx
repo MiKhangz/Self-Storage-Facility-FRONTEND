@@ -21,6 +21,8 @@ const TABS = [
     { status: 'Expired', label: 'Expired' },
 ];
 
+// The same test as the API: no no-show, and the whole deposit back on a cancel.
+const notReady = (r) => ['Pending', 'Confirmed'].includes(r.status) && !!(r.unitBlocked || r.proposedUnitCode);
 const waitingForUnit = (r) => r.status === 'Pending' || (r.status === 'Confirmed' && !r.storageUnitId);
 
 /** Staff end a booking before handover: cancel (deposit refunded) or, after the move-in date, a no-show (deposit kept). */
@@ -35,6 +37,7 @@ function CloseBooking({ reservation }) {
         onSuccess: () => ['storage-units', 'invoices', 'deposit-refunds'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
     });
     const late = reservation.moveInDate < todayIso();
+    const blocked = notReady(reservation);
     const paid = reservation.depositStatus === 'Paid' ? reservation.depositAmount : 0;
 
     if (close.data) {
@@ -59,13 +62,14 @@ function CloseBooking({ reservation }) {
                 <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
                     onClick={() => confirmAction(`${tr('Cancel {code}?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit will be owed back.', { amount: formatVnd(paid) })}` : ''}`).then((ok) => ok && close.mutate(false))}>
                     {tr('Cancel booking')}</button>
-                {late && (
+                {late && !blocked && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
                         onClick={() => confirmAction(`${tr('Mark {code} as a no-show?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit is kept.', { amount: formatVnd(paid) })}` : ''}`).then((ok) => ok && close.mutate(true))}>
                         {tr('Mark no-show')}</button>
                 )}
             </div>
-            {!late && <p className="se-hint">No-show is possible once the move-in date ({formatDate(reservation.moveInDate)}) has passed.</p>}
+            {blocked && <p className="se-hint">{tr('The unit is not ready, so this cannot be a no-show. Offer another unit or cancel with the deposit refunded.')}</p>}
+            {!late && !blocked && <p className="se-hint">No-show is possible once the move-in date ({formatDate(reservation.moveInDate)}) has passed.</p>}
         </>
     );
 }
@@ -142,6 +146,7 @@ export default function ReservationsPage() {
     const all = reservations.data ?? [];
     const shown = all.filter((r) => r.status === tab);
     const current = all.find((r) => r.reservationId === selected);
+    const blocked = all.filter(notReady);
     // The API lets facility staff and managers assign units; admins only view the queue.
     const canAssign = [Roles.FacilityStaff, Roles.FacilityManager].includes(useAuth().session?.role);
 
@@ -150,6 +155,11 @@ export default function ReservationsPage() {
             <PageHeader title={tr('Reservations')} subtitle="Review online bookings, assign a suitable unit and schedule handover">
                 {canAssign && <Link to="/admin/walk-in" className="se-btn se-btn-primary"><Icon name="box" size={16} /> {tr('New walk-in booking')}</Link>}
             </PageHeader>
+            {blocked.length > 0 && (
+                <div className="se-alert" role="status">
+                    {tr('Unit not ready for {codes}: call the customer.', { codes: blocked.map((r) => r.reservationCode).join(', ') })}
+                </div>
+            )}
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
                     <button key={t.status} role="tab" aria-selected={tab === t.status} className={tab === t.status ? 'active' : ''} onClick={() => { setTab(t.status); setSelected(null); }}>
@@ -165,7 +175,7 @@ export default function ReservationsPage() {
                             <tr key={r.reservationId} className={selected === r.reservationId ? 'active' : ''} onClick={() => setSelected(r.reservationId)}>
                                 <td className="strong">{r.reservationCode}</td>
                                 <td>{r.customerName}</td>
-                                <td>{r.unitTypeName}{r.unitCode ? ` · ${r.unitCode}` : ''}{r.proposedUnitCode && <div className="sa-muted">{tr('Offered {code}, waiting for the customer', { code: r.proposedUnitCode })}</div>}</td>
+                                <td>{r.unitTypeName}{r.unitCode ? ` · ${r.unitCode}` : ''}{notReady(r) && <div><span className="se-badge none">{tr('Unit not ready')}</span></div>}{r.proposedUnitCode && <div className="sa-muted">{tr('Offered {code}, waiting for the customer', { code: r.proposedUnitCode })}</div>}</td>
                                 <td>{r.facilityName}</td>
                                 <td>{formatDate(r.moveInDate)}{r.handoverSlot && <div className="sa-muted">{tr('Appointment {time}', { time: formatDateTime(r.handoverSlot) })}</div>}</td>
                                 <td>{tr('{n} month{n:s}', { n: r.rentalMonths })}</td>

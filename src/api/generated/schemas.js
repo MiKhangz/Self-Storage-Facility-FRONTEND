@@ -1060,6 +1060,7 @@
  * @property {(number|null)} [proposedStorageUnitId] int32
  * @property {(string|null)} [proposedUnitCode]
  * @property {(string|null)} [handoverSlot] date-time
+ * @property {boolean} [unitBlocked]
  */
 
 /**

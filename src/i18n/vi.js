@@ -1019,6 +1019,9 @@ export default {
     "Not booked yet (move-in day counts)": "Chưa đặt (tính theo ngày nhận kho)",
     "Expected": "Dự kiến",
     "The customer was promised {code}. Choosing another unit asks them to accept it or cancel with the deposit refunded.": "Khách đã được báo kho {code}. Chọn kho khác sẽ hỏi khách đồng ý hoặc huỷ và được hoàn cọc.",
+    "Unit not ready": "Kho chưa sẵn sàng",
+    "Unit not ready for {codes}: call the customer.": "Kho chưa sẵn sàng cho {codes}: hãy gọi cho khách.",
+    "The unit is not ready, so this cannot be a no-show. Offer another unit or cancel with the deposit refunded.": "Kho chưa sẵn sàng nên không tính là khách không đến. Hãy đề xuất kho khác hoặc huỷ đơn và hoàn tiền cọc.",
     "Offered {code}, waiting for the customer": "Đề xuất {code}, chờ khách xác nhận",
     "Appointment {time}": "Hẹn {time}",
 };
