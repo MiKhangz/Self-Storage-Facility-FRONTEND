@@ -8,6 +8,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize, useFacilities, useUnits } from '../queries.js';
+import { pollIfOnePage } from '../polling.js';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
 
@@ -114,6 +115,7 @@ export default function MaintenancePage() {
     const orders = useQuery({
         queryKey: ['maintenance-orders', { status }],
         queryFn: () => fetchAll(maintenanceOrdersApi.list, { status: status || undefined }),
+        refetchInterval: pollIfOnePage,
     });
     const all = orders.data ?? [];
     const shown = all.filter((o) => matches(search, o.unitCode, o.description, o.workNote));

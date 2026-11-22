@@ -9,6 +9,7 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
+import { pollIfOnePage } from '../polling.js';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
 
@@ -61,7 +62,7 @@ export default function DepositRefundsPage() {
     const [status, setStatus] = useState('Pending');
     const [selected, setSelected] = useState(null);
     const canPay = useAuth().session?.role === Roles.BusinessOperationsManager;
-    const refunds = useQuery({ queryKey: ['deposit-refunds', status], queryFn: () => fetchAll(depositRefundsApi.list, { status: status || undefined }) });
+    const refunds = useQuery({ queryKey: ['deposit-refunds', status], queryFn: () => fetchAll(depositRefundsApi.list, { status: status || undefined }), refetchInterval: pollIfOnePage });
     const all = refunds.data ?? [];
     const shown = all.filter((r) => matches(search, r.customerName, r.customerPhone, r.reservationCode, r.facilityName));
     const current = all.find((r) => r.depositRefundId === selected);

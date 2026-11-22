@@ -10,6 +10,7 @@ import { formatDate, formatVnd } from '../../customer/components/format.js';
 import RentalEnds from '../components/RentalEnds.jsx';
 import { Modal, Filters, PageHeader, SearchFilter, SelectFilter, Stat, Status, TableState, matches } from '../components/ui.jsx';
 import { fetchAll, humanize } from '../queries.js';
+import { pollIfOnePage } from '../polling.js';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
 
@@ -28,6 +29,7 @@ export default function OverdueCasesPage() {
     const cases = useQuery({
         queryKey: ['overdue-cases', { stage, openOnly }],
         queryFn: () => fetchAll(overdueCasesApi.list, { stage: stage || undefined, openOnly }),
+        refetchInterval: pollIfOnePage,
     });
     const all = cases.data ?? [];
     const shown = all.filter((c) => matches(search, c.customerName, c.contractNumber, c.unitCode, c.invoiceNumber));

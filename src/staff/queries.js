@@ -3,8 +3,7 @@ import {
     contractsApi, facilitiesApi, invoicesApi, returnsApi, reservationsApi, shiftsApi, staffApi,
     staffTasksApi, storageUnitsApi, ticketQueueApi, unitTypesApi,
 } from '../api/generated';
-
-const PAGE_SIZE = 100; // the backend's PagedResult cap
+import { PAGE_SIZE, pollIfOnePage } from './polling.js';
 
 /** Every page of a paged list endpoint, so counts and charts are not cut off at 100 rows. */
 export async function fetchAll(list, params = {}) {
@@ -16,7 +15,7 @@ export async function fetchAll(list, params = {}) {
     }
 }
 
-const all = (key, list, params) => ({ queryKey: [key, 'all', params ?? {}], queryFn: () => fetchAll(list, params) });
+const all = (key, list, params) => ({ queryKey: [key, 'all', params ?? {}], queryFn: () => fetchAll(list, params), refetchInterval: pollIfOnePage });
 
 export const useFacilities = (params) => useQuery(all('facilities', facilitiesApi.list, params));
 export const useUnits = (params) => useQuery(all('storage-units', storageUnitsApi.list, params));
