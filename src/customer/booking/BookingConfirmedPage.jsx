@@ -3,7 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
-import { formatDate, formatVnd, rentalEndDate } from '../components/format.js';
+import { depositDeadline, formatDate, formatVnd, rentalEndDate } from '../components/format.js';
+import { formatDateTime } from '../support/support.js';
 import PayInvoiceButton from '../account/PayInvoiceButton.jsx';
 import BookingStepper from './BookingStepper.jsx';
 import CancelBooking from './CancelBooking.jsx';
@@ -20,6 +21,7 @@ export default function BookingConfirmedPage() {
     const t = useT();
     const reservation = useQuery({ queryKey: ['reservations', Number(id)], queryFn: () => reservationsApi.getById(Number(id)) });
     const r = reservation.data;
+    const depositOwed = !!r?.depositInvoiceId && r.depositStatus !== 'Paid' && !CLOSED.includes(r.status);
 
     return (
         <>
@@ -44,9 +46,9 @@ export default function BookingConfirmedPage() {
                                     <dt>{t('Cơ sở')}</dt><dd>{r.facilityName}</dd>
                                     <dt>{t('Thời hạn thuê')}</dt><dd>{formatDate(r.moveInDate)} → {formatDate(rentalEndDate(r.moveInDate, r.rentalMonths))} ({t('{months} tháng', { months: r.rentalMonths })})</dd>
                                     <dt>{t('Ngày nhận kho')}</dt><dd>{formatDate(r.moveInDate)}</dd>
-                                    {r.depositInvoiceId && <><dt>{t('Tiền cọc')}</dt><dd>{formatVnd(r.depositAmount)} · {r.depositStatus === 'Paid' ? t('Đã thanh toán') : t('Cần thanh toán trước ngày nhận kho')}</dd></>}
+                                    {r.depositInvoiceId && <><dt>{t('Tiền cọc')}</dt><dd>{formatVnd(r.depositAmount)}{r.depositStatus === 'Paid' ? ` · ${t('Đã thanh toán')}` : depositOwed ? ` · ${t('Cần thanh toán trước {time}, nếu không đơn sẽ bị huỷ', { time: formatDateTime(depositDeadline(r.createdAt, r.moveInDate)) })}` : ''}</dd></>}
                                 </dl>
-                                {r.depositInvoiceId && r.depositStatus !== 'Paid' && (
+                                {depositOwed && (
                                     <PayInvoiceButton invoice={{ invoiceId: r.depositInvoiceId, outstandingAmount: r.depositAmount, invoiceNumber: `DEP${r.reservationCode}` }}
                                         title="Thanh toán tiền cọc" paidText="Tiền cọc của bạn đã được thanh toán." className="se-btn se-btn-primary se-btn-block">{t('Thanh toán tiền cọc ngay')}</PayInvoiceButton>
                                 )}
@@ -63,7 +65,7 @@ export default function BookingConfirmedPage() {
                                 </ul>
                             </div>
                             <div className="se-confirm-actions">
-                                <Link to="/my-storage" className={`se-btn ${r.depositInvoiceId && r.depositStatus !== 'Paid' ? 'se-btn-outline' : 'se-btn-primary'}`}>{t('Đến Kho của tôi')}</Link>
+                                <Link to="/my-storage" className={`se-btn ${depositOwed ? 'se-btn-outline' : 'se-btn-primary'}`}>{t('Đến Kho của tôi')}</Link>
                                 <Link to="/" className="se-btn se-btn-ghost">{t('Về trang chủ')}</Link>
                             </div>
                             {['Pending', 'Confirmed'].includes(r.status) && <CancelBooking key={r.reservationId} reservation={r} />}

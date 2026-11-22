@@ -15,6 +15,7 @@ import { useT } from '../../i18n/I18n.jsx';
 const agreement = (terms, t) => [
     t('Tiền cọc (bằng {months} tháng tiền thuê) được hoàn lại sau khi trả kho trong tình trạng tốt, trừ các khoản phí phát sinh.', { months: terms.depositMonths }),
     `${t('Tiền thuê thanh toán hằng tháng.')} ${lateFeeText(terms, t)}`,
+    t('Chưa thanh toán tiền cọc trong 24 giờ sau khi đặt, hoặc đến hết ngày nhận kho nếu sớm hơn, đơn sẽ tự động bị huỷ và kho được nhường cho khách khác.'),
     t('Hủy trong vòng {hours} giờ sau khi đặt kho được hoàn đủ tiền cọc; sau thời gian này tiền cọc không được hoàn lại.', { hours: terms.cancelFreeHours }),
     earlyReturnText(terms, t),
     t('Không cất hàng dễ cháy nổ, hàng dễ hư hỏng và hàng cấm theo quy định pháp luật.'),
@@ -80,7 +81,7 @@ export default function BookingDetailsPage() {
 
                             <section className="se-panel">
                                 <h2>{t('Thanh toán')}</h2>
-                                <div className="se-alert info">{t('Khi đặt kho, hệ thống tạo hóa đơn tiền cọc. Bạn có thể thanh toán trực tuyến ngay ở bước sau hoặc trong mục Thanh toán; cần đóng cọc trước khi nhận kho.')}</div>
+                                <div className="se-alert info">{t('Khi đặt kho, hệ thống tạo hóa đơn tiền cọc. Bạn có thể thanh toán trực tuyến ngay ở bước sau hoặc trong mục Thanh toán; cần đóng cọc trong 24 giờ và không muộn hơn ngày nhận kho.')}</div>
                             </section>
 
                             <section className="se-panel">
