@@ -29,7 +29,7 @@ export const ACTIONS = {
     'PricingPolicies.Activate': 'Put a price version live', 'PricingPolicies.UpsertUnitPrice': 'Set a unit price',
     'PricingPolicies.CreateFeeType': 'Added a fee', 'PricingPolicies.UpdateFeeType': 'Edited a fee', 'PricingPolicies.DeleteFeeType': 'Deleted a fee',
     'Profile.Update': 'Edited their profile', 'Profile.ChangePassword': 'Changed their password',
-    'Profile.UpdateNotificationSettings': 'Changed notification settings',
+    'Profile.UpdateNotificationSettings': 'Changed notification settings', 'Notifications.MarkRead': 'Read their notifications',
     'Renewals.Create': 'Asked to renew', 'Renewals.Approve': 'Approved a renewal', 'Renewals.Reject': 'Declined a renewal',
     'Reservations.WalkIn': 'Booked for a walk-in customer', 'Reservations.Create': 'Booked a unit',
     'Reservations.Cancel': 'Cancelled a booking', 'Reservations.NoShow': 'Marked a booking as no-show',

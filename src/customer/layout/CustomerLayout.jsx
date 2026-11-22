@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
+import { Roles } from '../../features/auth/roles';
 import { PaidPopup } from '../account/PayInvoiceButton.jsx';
 import Icon from '../components/Icon.jsx';
 import { LanguageSelect, useT } from '../../i18n/I18n.jsx';
+import NotificationBell from './NotificationBell.jsx';
 import './CustomerLayout.css';
 
 const NAV = [
@@ -73,6 +75,7 @@ export default function CustomerLayout() {
                         <LanguageSelect />
                         {session ? (
                             <>
+                                {session.role === Roles.StorageCustomer && <NotificationBell />}
                                 <Link to="/my-storage" className="se-account">
                                     <span className="se-avatar">{initials(session.fullName)}</span> {t('Kho của tôi')}
                                 </Link>

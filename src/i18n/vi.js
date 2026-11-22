@@ -103,6 +103,7 @@ export default {
     "Booked for a walk-in customer": "Đặt chỗ cho khách tại quầy",
     "Booked a unit": "Đặt kho",
     "Cancelled a booking": "Huỷ đặt chỗ",
+    "Read their notifications": "Đã đọc thông báo",
     "Marked a booking as no-show": "Đánh dấu khách không đến",
     "Assigned a unit": "Gán kho",
     "Changed the assigned unit": "Đổi kho đã gán",

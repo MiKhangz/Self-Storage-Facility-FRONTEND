@@ -12,6 +12,8 @@ import { useT } from '../../i18n/I18n.jsx';
 
 const STATUS_LABEL = { Pending: 'Đang chờ xếp kho', Confirmed: 'Chờ nhận kho', HandedOver: 'Đã nhận kho', Cancelled: 'Đã hủy', Expired: 'Đã hết hạn', Rejected: 'Bị từ chối' };
 
+const CLOSED = ['Cancelled', 'Expired'];
+
 /** U08: the saved reservation, re-read from the API so a refresh still shows it. */
 export default function BookingConfirmedPage() {
     const { id } = useParams();
@@ -28,9 +30,9 @@ export default function BookingConfirmedPage() {
                     {reservation.isError && <div className="se-alert" role="alert">{errorMessage(reservation.error)}</div>}
                     {r && (
                         <>
-                            <div className="se-confirm-icon"><Icon name={r.status === 'Cancelled' ? 'arrowLeft' : 'check'} size={30} /></div>
-                            <h1>{r.status === 'Cancelled' ? t('Đơn đặt kho đã huỷ') : t('Bạn đã đặt kho thành công!')}</h1>
-                            <p>{t('Chúng tôi giữ một kho {type} cho bạn tại {facility}.', { type: r.unitTypeName, facility: r.facilityName })}</p>
+                            <div className="se-confirm-icon"><Icon name={CLOSED.includes(r.status) ? 'arrowLeft' : 'check'} size={30} /></div>
+                            <h1>{r.status === 'Cancelled' ? t('Đơn đặt kho đã huỷ') : r.status === 'Expired' ? t('Đơn đặt kho đã hết hạn') : t('Bạn đã đặt kho thành công!')}</h1>
+                            {!CLOSED.includes(r.status) && <p>{t('Chúng tôi giữ một kho {type} cho bạn tại {facility}.', { type: r.unitTypeName, facility: r.facilityName })}</p>}
 
                             <div className="se-ticket">
                                 <div className="se-ticket-head">

@@ -753,6 +753,22 @@
  */
 
 /**
+ * @typedef {Object} NotificationDto
+ * @property {number} [notificationId] int32
+ * @property {(string|null)} [title]
+ * @property {(string|null)} [body]
+ * @property {(string|null)} [link]
+ * @property {string} [createdAt] date-time
+ * @property {(string|null)} [readAt] date-time
+ */
+
+/**
+ * @typedef {Object} NotificationListDto
+ * @property {(Array<NotificationDto>|null)} [items]
+ * @property {number} [unreadCount] int32
+ */
+
+/**
  * @typedef {Object} NotificationSettingsDto
  * @property {boolean} [emailReminders]
  * @property {boolean} [smsReminders]
@@ -936,6 +952,11 @@
  * @property {(string|null)} [code]
  * @property {(string|null)} [name]
  * @property {number} [amount] double
+ */
+
+/**
+ * @typedef {Object} ReadNotificationsRequest
+ * @property {number} [upToId] int32
  */
 
 /**
