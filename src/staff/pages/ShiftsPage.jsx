@@ -9,10 +9,9 @@ import { addDays, formatDate, todayIso } from '../../customer/components/format.
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { PageHeader, SelectFilter } from '../components/ui.jsx';
 import { useFacilities, useShifts, useStaff, useTasks } from '../queries.js';
+import { TIMES, nextShift } from '../shifts.js';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
-
-const TIMES = { Morning: ['07:00', '15:00'], Afternoon: ['15:00', '23:00'], Night: ['23:00', '07:00'] };
 
 /** Monday of the week containing an ISO date. */
 export function weekStart(iso) {
@@ -20,7 +19,7 @@ export function weekStart(iso) {
     return addDays(iso, day === 0 ? -6 : 1 - day);
 }
 
-/** A13: weekly shift roster per facility, with add and remove for managers. */
+/** A13: weekly shift roster per facility, with add and remove for managers; staff see their own week. */
 export default function ShiftsPage() {
     const tr = useT();
     const { session } = useAuth();
@@ -28,23 +27,33 @@ export default function ShiftsPage() {
     const [start, setStart] = useState(weekStart(todayIso()));
     const facilities = useFacilities().data ?? [];
     const [facilityId, setFacilityId] = useState('');
-    const fid = Number(facilityId) || facilities[0]?.facilityId;
     const days = Array.from({ length: 7 }, (_, i) => addDays(start, i));
-    const shifts = useShifts(fid ? { facilityId: fid, from: days[0], to: days[6] } : undefined).data ?? [];
-    const tasks = useTasks().data ?? [];
     const isAdmin = session?.role === Roles.SystemAdministrator;
     const canWrite = isAdmin || session?.role === Roles.FacilityManager;
-    // Admins and managers can list staff accounts; others pick from people already on the roster.
+    // Staff get their own shifts at every facility, so they have no facility to choose.
+    const ownWeek = session?.role === Roles.FacilityStaff;
     const staff = useStaff(undefined, canWrite).data ?? [];
-    const people = new Map([...staff.map((s) => [s.userId, s.fullName]), ...shifts.map((s) => [s.userId, s.userName]), [session?.userId, session?.fullName]]);
+    // Open on a facility the manager works at: they can plan nowhere else.
+    const worksAt = staff.find((s) => s.userId === session?.userId)?.facilities ?? [];
+    const home = facilities.find((f) => worksAt.some((w) => w.facilityId === f.facilityId)) ?? facilities[0];
+    const fid = ownWeek ? undefined : Number(facilityId) || home?.facilityId;
+    const shifts = useShifts(fid || ownWeek ? { facilityId: fid, from: days[0], to: days[6] } : undefined).data ?? [];
+    const tasks = useTasks().data ?? [];
+    // Only whom the API accepts: active staff and managers assigned to this facility.
+    const people = staff.filter((s) => s.status === 'Active' && [Roles.FacilityStaff, Roles.FacilityManager].includes(s.role)
+        && s.facilities.some((f) => f.facilityId === fid));
 
     const [form, setForm] = useState(null);
     const create = useMutation({
         mutationFn: () => shiftsApi.create({ userId: Number(form.userId), facilityId: fid, shiftDate: form.shiftDate, startTime: `${form.startTime}:00`, endTime: `${form.endTime}:00`, shiftType: form.shiftType }),
-        onSuccess: () => { setForm(null); queryClient.invalidateQueries({ queryKey: ['shifts'] }); },
+        onSuccess: () => { setStart(weekStart(form.shiftDate)); setForm(null); queryClient.invalidateQueries({ queryKey: ['shifts'] }); },
     });
     const remove = useMutation({ mutationFn: (id) => shiftsApi.remove(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['shifts'] }) });
-    const openForm = () => setForm({ userId: [...people.keys()][0] ?? '', shiftDate: days.includes(todayIso()) ? todayIso() : days[0], shiftType: 'Morning', startTime: TIMES.Morning[0], endTime: TIMES.Morning[1] });
+    const openForm = () => {
+        const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
+        create.reset();
+        setForm({ userId: people[0]?.userId ?? '', ...nextShift(days.includes(todayIso()) ? todayIso() : days[0], todayIso(), now) });
+    };
 
     return (
         <>
@@ -54,16 +63,19 @@ export default function ShiftsPage() {
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, 7))} aria-label={tr('Next week')}><Icon name="arrow" size={16} /></button>
                 {canWrite && <button type="button" className="se-btn se-btn-primary" onClick={openForm}><Icon name="calendar" size={16} /> {tr('Add shift')}</button>}
             </PageHeader>
-            <div className="sa-filters">
-                <SelectFilter label="Facility" value={fid ?? ''} onChange={setFacilityId} all="Choose facility" options={facilities.map((f) => ({ value: f.facilityId, label: f.name }))} />
-            </div>
+            {!ownWeek && (
+                <div className="sa-filters">
+                    <SelectFilter label="Facility" value={fid ?? ''} onChange={(id) => { setFacilityId(id); setForm(null); }} all="Choose facility" options={facilities.map((f) => ({ value: f.facilityId, label: f.name }))} />
+                </div>
+            )}
 
             {form && (
                 <form className="sa-inline-form" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
                     <div className="se-panel-grid">
                         <label><span className="se-label">{tr('Staff member')}</span>
                             <div className="se-field"><select value={form.userId} onChange={(e) => setForm({ ...form, userId: e.target.value })} required>
-                                {[...people].map(([id, name]) => <option key={id} value={id}>{name}</option>)}</select></div></label>
+                                {!form.userId && <option value="">{people.length ? '—' : tr('No staff assigned')}</option>}
+                                {people.map((p) => <option key={p.userId} value={p.userId}>{p.fullName}</option>)}</select></div></label>
                         <label><span className="se-label">{tr('Date')}</span><div className="se-input"><input type="date" min={todayIso()} value={form.shiftDate} onChange={(e) => setForm({ ...form, shiftDate: e.target.value })} required /></div></label>
                         <label><span className="se-label">{tr('Shift')}</span>
                             <div className="se-field"><select value={form.shiftType} onChange={(e) => { const t = e.target.value; setForm({ ...form, shiftType: t, startTime: TIMES[t][0], endTime: TIMES[t][1] }); }}>
@@ -95,6 +107,7 @@ export default function ShiftsPage() {
                                             {mine.map((s) => (
                                                 <div key={s.shiftId} className={`sa-shift ${s.shiftType}`}>
                                                     <strong>{s.startTime.slice(0, 5)}–{s.endTime.slice(0, 5)}</strong>
+                                                    {ownWeek && <small>{s.facilityName}</small>}
                                                     <small>{tr('{n} task{n:s}', { n: tasks.filter((t) => t.shiftId === s.shiftId).length })}</small>
                                                     {canWrite && <button type="button" aria-label={tr("Remove {name}'s shift on {date}", { name, date: formatDate(d) })} onClick={() => confirmAction(tr('Remove this shift?')).then((ok) => ok && remove.mutate(s.shiftId))}>×</button>}
                                                 </div>

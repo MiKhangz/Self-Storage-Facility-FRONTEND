@@ -21,7 +21,7 @@ const NAV = [
             { to: '/admin/handover', icon: 'key', label: 'Handover', roles: [FS, FM] },
             { to: '/admin/check-in', icon: 'check', label: 'Check-in / out', roles: [FS, FM] },
             { to: '/admin/returns', icon: 'arrowLeft', label: 'Returns', roles: [FS, FM, BOM], badge: 'returns' },
-            { to: '/admin/staff', icon: 'clock', label: 'Staff & Shifts', roles: [FM, ADMIN] },
+            { to: '/admin/staff', icon: 'clock', label: 'Staff & Shifts', roles: [FS, FM, ADMIN] },
             { to: '/admin/contracts', icon: 'file', label: 'Customers & Contracts', roles: OPS },
             { to: '/admin/payments', icon: 'card', label: 'Payments', roles: [FS, FM, BOM] },
             { to: '/admin/overdue', icon: 'clock', label: 'Overdue Cases', roles: [FM, BOM] },

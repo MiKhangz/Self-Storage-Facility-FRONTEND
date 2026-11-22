@@ -4,7 +4,8 @@ import Icon from '../../customer/components/Icon.jsx';
 import { addDays, formatVnd, todayIso, vietnamDay } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
-import { humanize, useContracts, useFacilities, useInvoices, useReservations, useTasks, useTickets, useUnits } from '../queries.js';
+import { humanize, useContracts, useFacilities, useInvoices, useReservations, useShifts, useTasks, useTickets, useUnits } from '../queries.js';
+import { shiftsOn } from '../shifts.js';
 import { useLang, useT } from '../../i18n/I18n.jsx';
 
 const MONTHS = ['J', 'F', 'M', 'A', 'M', 'J', 'J', 'A', 'S', 'O', 'N', 'D'];
@@ -44,14 +45,19 @@ export default function DashboardPage() {
     const urgent = (tickets.data ?? []).filter((t) => t.priority === 'Urgent' && !['Resolved', 'Closed'].includes(t.status));
     const expiring = active.filter((c) => c.endDate >= today && c.endDate <= addDays(today, 14));
     const bookings = useReservations();
-    // Staff tasks plus handover appointments booked for today (handoverSlot is UTC; formatDateTime shows Vietnam time).
+    // From yesterday, for the night shift still running. The API gives staff their own, managers their facilities'.
+    const shifts = useShifts({ from: addDays(today, -1), to: today });
+    const scheduleQuery = [shifts, tasks, bookings].find((q) => q.isLoading || q.isError) ?? tasks;
+    // Shifts, staff tasks and handover appointments for today (handoverSlot is UTC; formatDateTime shows Vietnam time).
     const todayVn = today.split('-').reverse().join('/');
     const todaysTasks = [
+        ...shiftsOn(shifts.data ?? [], today)
+            .map((s) => ({ key: `s${s.shiftId}`, at: s.from, time: `${s.startTime.slice(0, 5)}–${s.endTime.slice(0, 5)}`, type: 'Shift', ref: s.facilityName, staff: s.userName })),
         ...(tasks.data ?? []).filter((t) => t.scheduledAt && vietnamDay(t.scheduledAt) === today)
             .map((t) => ({ key: `t${t.taskId}`, time: formatDateTime(t.scheduledAt).slice(0, 5), type: humanize(t.taskType), ref: t.referenceCode, staff: t.assignedToName, status: t.status })),
         ...(bookings.data ?? []).filter((r) => r.handoverSlot && ['Pending', 'Confirmed'].includes(r.status) && formatDateTime(r.handoverSlot).endsWith(todayVn))
             .map((r) => ({ key: `r${r.reservationId}`, time: formatDateTime(r.handoverSlot).slice(0, 5), type: 'Handover appointment', ref: r.reservationCode, staff: '—', status: r.status })),
-    ].sort((a, b) => a.time.localeCompare(b.time));
+    ].sort((a, b) => (a.at ?? a.time).localeCompare(b.at ?? b.time));
     const firstName = session?.fullName?.trim().split(/\s+/).at(-1);
 
     const attention = [
@@ -97,6 +103,26 @@ export default function DashboardPage() {
             </section>
 
             <div className="sa-dashboard-row">
+                <section className="se-panel sa-schedule">
+                    <div className="sa-card-title"><h2>{tr("Today's schedule")}</h2><Link to="/admin/handover" className="se-link">{tr('Open handover desk')} <Icon name="arrow" size={14} /></Link></div>
+                    <div className="se-table-wrap">
+                        <table className="se-table">
+                            <thead><tr><th>{tr('Time')}</th><th>{tr('Type')}</th><th>{tr('Reference')}</th><th>{tr('Staff')}</th><th>{tr('Status')}</th></tr></thead>
+                            <tbody>
+                                {todaysTasks.map((t) => (
+                                    <tr key={t.key}>
+                                        <td>{t.time}</td>
+                                        <td>{tr(t.type)}</td>
+                                        <td>{t.ref ?? '—'}</td>
+                                        <td>{t.staff}</td>
+                                        <td>{t.status ? <Status value={t.status} /> : '—'}</td>
+                                    </tr>
+                                ))}
+                                <TableState query={scheduleQuery} rows={todaysTasks} cols={5} empty="Nothing scheduled today." />
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
                 <section className="se-panel">
                     <div className="sa-card-title"><h2>{tr('Occupancy by facility')}</h2></div>
                     <div className="sa-occupancy">
@@ -110,26 +136,6 @@ export default function DashboardPage() {
                             );
                         })}
                         {!facilities.data?.length && <p className="sa-muted">{facilities.isLoading ? tr('Loading…') : tr('No facilities.')}</p>}
-                    </div>
-                </section>
-                <section className="se-panel">
-                    <div className="sa-card-title"><h2>{tr("Today's schedule")}</h2><Link to="/admin/handover" className="se-link">{tr('Open handover desk')} <Icon name="arrow" size={14} /></Link></div>
-                    <div className="se-table-wrap">
-                        <table className="se-table">
-                            <thead><tr><th>{tr('Time')}</th><th>{tr('Type')}</th><th>{tr('Reference')}</th><th>{tr('Staff')}</th><th>{tr('Status')}</th></tr></thead>
-                            <tbody>
-                                {todaysTasks.map((t) => (
-                                    <tr key={t.key}>
-                                        <td>{t.time}</td>
-                                        <td>{tr(t.type)}</td>
-                                        <td>{t.ref ?? '—'}</td>
-                                        <td>{t.staff}</td>
-                                        <td><Status value={t.status} /></td>
-                                    </tr>
-                                ))}
-                                <TableState query={tasks} rows={todaysTasks} cols={5} empty="Nothing scheduled today." />
-                            </tbody>
-                        </table>
                     </div>
                 </section>
                 <section className="se-panel">
