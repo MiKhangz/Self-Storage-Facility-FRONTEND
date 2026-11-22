@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { checkInsApi, contractsApi, renewalsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
-import { addMonths, formatDate, formatVnd, todayIso } from '../components/format.js';
+import { formatDate, formatVnd, renewedEndDate, todayIso } from '../components/format.js';
 import PayInvoiceButton from './PayInvoiceButton.jsx';
 import { discountLabel, useTerms } from '../components/terms.js';
 import { CONTRACT_BADGE, OPEN_INVOICE, invoiceBadge, periodUsed, useMyInvoices, useMyReservations } from './queries.js';
@@ -120,7 +120,7 @@ function RenewCard({ contract, facilityId, unitTypeId, quiet }) {
                             );
                         })}
                     </div>
-                    <div className="se-renew-preview">{t('Ngày kết thúc mới:')} <strong>{formatDate(addMonths(contract.endDate, months))}</strong></div>
+                    <div className="se-renew-preview">{t('Ngày kết thúc mới:')} <strong>{formatDate(renewedEndDate(contract.startDate, contract.endDate, months))}</strong></div>
                     {renew.isError && <div className="se-alert" role="alert">{errorMessage(renew.error)}</div>}
                     <button type="button" className={`se-btn se-btn-block ${quiet ? 'se-btn-outline' : 'se-btn-primary'}`} onClick={() => renew.mutate()} disabled={renew.isPending}>
                         {t(renew.isPending ? 'Đang gửi…' : 'Gửi yêu cầu gia hạn')}

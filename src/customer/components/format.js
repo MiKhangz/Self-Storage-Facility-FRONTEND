@@ -32,5 +32,12 @@ export function rentalEndDate(isoDate, months) {
     return addDays(addMonths(isoDate, months), -1);
 }
 
+/** The end date a renewal gives, as the API works it out: whole billing months counted from the start date. */
+export function renewedEndDate(start, end, months) {
+    let billed = 0;
+    while (addMonths(start, billed) <= end) billed++;
+    return rentalEndDate(start, billed + months);
+}
+
 /** 2026-10-20 → 20/10/2026, without shifting the day through a time zone. */
 export const formatDate = (isoDate) => (isoDate ? isoDate.slice(0, 10).split('-').reverse().join('/') : '—');
