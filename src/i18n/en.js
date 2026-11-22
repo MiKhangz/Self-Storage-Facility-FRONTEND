@@ -193,6 +193,7 @@ export default {
     "Huỷ đơn đặt kho {code}?": "Cancel booking {code}?",
     "Đang huỷ…": "Cancelling…",
     "Huỷ đặt kho": "Cancel booking",
+    "Thanh toán sau khi đơn đã đóng": "Paid after the booking closed",
     "{n} cơ sở của StorEase": "{n} StorEase location{n:s}",
     "Các cơ sở của StorEase": "StorEase locations",
     "Mỗi kho có khóa riêng và mã ra vào cá nhân. Giờ mở cửa và số điện thoại của từng cơ sở ở bên dưới.": "Every unit has its own lock and a personal access code. Opening hours and phone numbers of each location are below.",

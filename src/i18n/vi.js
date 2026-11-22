@@ -736,6 +736,7 @@ export default {
     "Rent": "Tiền thuê",
     "Return": "Trả kho",
     "Cancellation": "Hủy đặt",
+    "Paid after the booking closed": "Thanh toán sau khi đơn đã đóng",
     "Notified": "Đã thông báo",
     "Locked out": "Đã khóa ra vào",
     "Restored": "Đã khôi phục",

@@ -30,7 +30,7 @@ function DepositRefunds() {
                         {list.map((r) => (
                             <tr key={r.depositRefundId}>
                                 <td className="strong se-stack-title">{r.reservationCode}</td>
-                                <td data-label={t('Lý do')}>{t(r.source === 'Return' ? 'Trả kho' : 'Huỷ đặt kho')}</td>
+                                <td data-label={t('Lý do')}>{t(r.source === 'Return' ? 'Trả kho' : r.source === 'LatePayment' ? 'Thanh toán sau khi đơn đã đóng' : 'Huỷ đặt kho')}</td>
                                 <td data-label={t('Số tiền')} className="price">{formatVnd(r.amount)}</td>
                                 <td data-label={t('Trạng thái')}>
                                     {r.status === 'Paid'

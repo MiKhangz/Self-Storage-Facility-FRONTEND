@@ -400,7 +400,7 @@
  * @property {number} [totalPages] int32
  */
 
-/** @typedef {"Cancellation"|"Return"} DepositRefundSource */
+/** @typedef {"Cancellation"|"Return"|"LatePayment"} DepositRefundSource */
 
 /** @typedef {"Pending"|"Paid"} DepositRefundStatus */
 

@@ -12,7 +12,7 @@ import { fetchAll, humanize } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
 
-const SOURCE = { Cancellation: 'Booking cancelled', Return: 'Unit handed back' };
+const SOURCE = { Cancellation: 'Booking cancelled', Return: 'Unit handed back', LatePayment: 'Paid after the booking closed' };
 
 /** Business Operations record how the deposit went back; the customer sees it as paid on their Payments page. */
 function PayPanel({ refund, onClose }) {
