@@ -562,15 +562,6 @@
  */
 
 /**
- * @typedef {Object} GatewayCallbackRequest
- * @property {(string|null)} [paymentCode]
- * @property {PaymentStatus} [status]
- * @property {number} [amount] double
- * @property {(string|null)} [referenceNo]
- * @property {(string|null)} [signature]
- */
-
-/**
  * @typedef {Object} HandoverChecklistDto
  * @property {number} [reservationId] int32
  * @property {(string|null)} [reservationCode]
