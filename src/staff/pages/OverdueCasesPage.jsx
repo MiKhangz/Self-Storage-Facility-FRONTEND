@@ -63,7 +63,7 @@ export default function OverdueCasesPage() {
                         <thead><tr><th>{tr('Customer')}</th><th>{tr('Unit')}</th><th>{tr('Invoice')}</th><th>{tr('Outstanding')}</th><th>{tr('Days overdue')}</th><th>{tr('Late fee')}</th><th>{tr('Stage')}</th></tr></thead>
                         <tbody>
                             {shown.map((c) => (
-                                <tr key={c.overdueCaseId} className={selected === c.overdueCaseId ? 'active' : ''} onClick={() => { setSelected(c.overdueCaseId); act.reset(); }}>
+                                <tr key={c.overdueCaseId} className={selected === c.overdueCaseId ? 'active' : ''} onClick={() => { setSelected(c.overdueCaseId); act.reset(); moveOut.reset(); }}>
                                     <td className="strong">{c.customerName}<div className="sa-muted">{c.contractNumber}</div></td>
                                     <td>{c.unitCode}</td>
                                     <td>{c.invoiceNumber ?? '—'}</td>

@@ -36,12 +36,14 @@ function ContactNote({ row, onClose }) {
 
 /**
  * Rentals near or past their end date. Staff call the renter (reminder sent 10 days before); past the end date the
- * overstay fee grows daily, and after the grace days a manager moves the goods to the central warehouse.
+ * overstay fee grows daily, and after the grace days a manager or Business Operations moves the goods to the central warehouse.
  */
 export default function RentalEnds({ overstayOnly = false }) {
     const tr = useT();
     const queryClient = useQueryClient();
-    const isManager = useAuth().session?.role === Roles.FacilityManager;
+    const role = useAuth().session?.role;
+    const isOperations = role === Roles.BusinessOperationsManager;
+    const canMove = isOperations || role === Roles.FacilityManager;
     const [calling, setCalling] = useState(null);
     const list = useQuery({ queryKey: ['rental-ends', overstayOnly], queryFn: () => contractsApi.ending({ overstayOnly }) });
     const moveOut = useMutation({
@@ -72,8 +74,8 @@ export default function RentalEnds({ overstayOnly = false }) {
                                 <td className="price">{r.overstayFee ? formatVnd(r.overstayFee) : '—'}</td>
                                 <td className="sa-muted">{r.endContactNote ?? (r.endReminderAt ? tr('Reminder sent') : '—')}</td>
                                 <td className="sa-row-actions">
-                                    <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setCalling(r)}>{tr('Record call')}</button>
-                                    {isManager && r.canMoveOut && (
+                                    {!isOperations && <button type="button" className="se-btn se-btn-ghost se-btn-sm" onClick={() => setCalling(r)}>{tr('Record call')}</button>}
+                                    {canMove && r.canMoveOut && (
                                         <button type="button" className="se-btn se-btn-danger se-btn-sm" disabled={moveOut.isPending}
                                             onClick={() => confirmAction(tr('Move the goods in {unit} to the central warehouse? The contract closes, the overstay fee and unpaid rent come out of the deposit, and the unit goes to the next booking.', { unit: r.unitCode })).then((ok) => ok && moveOut.mutate(r.contractId))}>
                                             {tr('Move to central warehouse')}

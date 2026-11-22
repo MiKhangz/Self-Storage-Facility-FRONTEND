@@ -47,10 +47,10 @@ test.describe.serial('front desk: walk-in, then overdue rent', () => {
   })
 
   test('E10 unpaid rent opens an overdue case; the manager locks the customer out; paying at the desk restores access', async ({ browser, baseURL }) => {
-    // Billing issues the first month today; a run 8 days later is past the 5-day grace period.
+    // Billing issues the first month today; day 7 is past the 5-day grace and before the automatic lock on day 8.
     const ops = await apiAs(baseURL, ACCOUNTS.ops)
     await ops.post(`/api/billing/run?date=${today}`)
-    await ops.post(`/api/billing/run?date=${daysFromToday(8)}`)
+    await ops.post(`/api/billing/run?date=${daysFromToday(7)}`)
     await ops.dispose()
 
     const manager = await (await browser.newContext()).newPage()
