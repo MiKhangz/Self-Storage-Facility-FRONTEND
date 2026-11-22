@@ -41,5 +41,6 @@
 @media (max-width: 370px) {
     .se-header:has(.se-bell) .se-header-row,
     .se-header:has(.se-bell) .se-header-actions { gap: 5px; }
-    .se-header:has(.se-bell) .se-lang select { max-width: 92px; }
+    .se-header:has(.se-bell) .se-header-row { padding-inline: 10px; }
+    .se-header:has(.se-bell) .se-lang select { padding: 0 2px 0 6px; }
 }

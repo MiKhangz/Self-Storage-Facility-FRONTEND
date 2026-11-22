@@ -58,7 +58,7 @@ export default function CustomerLayout() {
 
     return (
         <div className="se-page">
-            <header className="se-header">
+            <header className={`se-header${session ? '' : ' guest'}`}>
                 <div className="se-container se-header-row">
                     <Brand />
                     <nav id="se-nav" className={`se-nav${menuOpen ? ' open' : ''}`} aria-label={t('Điều hướng chính')}>

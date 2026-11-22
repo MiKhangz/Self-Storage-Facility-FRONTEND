@@ -43,9 +43,9 @@
 .se-confirm h1 { margin: 0 0 14px; font-size: 32px; font-weight: 800; color: var(--se-dark); }
 .se-confirm > p { margin: 0 0 24px; color: var(--se-muted); }
 .se-ticket { text-align: left; border-radius: 14px; overflow: hidden; background: #fff; box-shadow: 0 10px 30px rgba(17, 24, 39, 0.08); }
-.se-ticket-head { background: var(--se-dark); color: #fff; padding: 18px 24px; display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.se-ticket-head { background: var(--se-dark); color: #fff; padding: 18px 24px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 12px; }
 .se-ticket-head small { display: block; font-size: 11px; letter-spacing: 1px; color: var(--se-on-dark-muted); }
-.se-ticket-head strong { font-size: 22px; letter-spacing: 0.5px; }
+.se-ticket-head strong { font-size: 22px; letter-spacing: 0.5px; overflow-wrap: anywhere; }
 .se-ticket dl { margin: 0; padding: 20px 24px; display: grid; grid-template-columns: 110px 1fr; gap: 10px 16px; font-size: 14px; }
 .se-ticket dt { color: var(--se-muted); }
 .se-ticket dd { margin: 0; font-weight: 600; color: var(--se-ink); }
