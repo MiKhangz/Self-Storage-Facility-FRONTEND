@@ -89,6 +89,7 @@ export default function MyStoragePage() {
                     const r = reservationOf[c.reservationId];
                     const code = codeOf[c.contractId];
                     const used = periodUsed(c.startDate, c.endDate, today);
+                    const offered = c.status === 'Draft' && r?.proposedUnitCode;
                     return (
                         <article key={c.contractId} className="se-card se-unit">
                             <header>
@@ -101,9 +102,11 @@ export default function MyStoragePage() {
                                 <div><dt>{t('Mã ra vào')}</dt><dd>{code?.isActive ? t('Đang dùng · hết hạn {date}', { date: formatDate(code.expiresAt) }) : t(c.status === 'Draft' ? 'Cấp khi nhận kho' : 'Chưa có mã đang dùng')}</dd></div>
                                 <div><dt>{t('Thời hạn thuê')}</dt><dd>{formatDate(c.startDate)} → {formatDate(c.endDate)}</dd></div>
                             </dl>
+                            {offered && <p className="se-alert info">{t('Kho cần đổi sang {code}: hãy xác nhận trong đơn đặt kho.', { code: r.proposedUnitCode })}</p>}
                             <p className="se-unit-progress-label">{c.status === 'Draft' ? t('Bắt đầu tính sau khi nhận kho') : t('Đã dùng {used}% thời hạn thuê', { used })}</p>
                             <div className="se-progress"><span style={{ width: `${c.status === 'Draft' ? 1 : used}%` }} /></div>
                             <div className="se-unit-actions">
+                                {offered && <Link to={`/booking/confirmed/${r.reservationId}`} className="se-btn se-btn-primary se-btn-sm">{t('Xem đơn đặt kho')}</Link>}
                                 <Link to={`/my-storage/units/${c.contractId}`} className="se-btn se-btn-outline se-btn-sm">{t('Xem chi tiết')}</Link>
                                 <Link to={`/support/new?contractId=${c.contractId}`} className="se-btn se-btn-ghost se-btn-sm">{t('Báo sự cố')}</Link>
                             </div>
