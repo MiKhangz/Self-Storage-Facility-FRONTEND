@@ -8,6 +8,7 @@ import { Roles } from '../../features/auth/roles';
 import { formatDate, formatVnd } from '../../customer/components/format.js';
 import { confirmAction } from '../../customer/components/confirm.js';
 import { Modal, Status } from './ui.jsx';
+import { RENTAL_END_ROLES } from '../permissions.js';
 import { useT } from '../../i18n/I18n.jsx';
 
 /** Staff note after calling the renter: what they decided, so the next shift does not call again. */
@@ -45,7 +46,7 @@ export default function RentalEnds({ overstayOnly = false }) {
     const isOperations = role === Roles.BusinessOperationsManager;
     const canMove = isOperations || role === Roles.FacilityManager;
     const [calling, setCalling] = useState(null);
-    const list = useQuery({ queryKey: ['rental-ends', overstayOnly], queryFn: () => contractsApi.ending({ overstayOnly }) });
+    const list = useQuery({ queryKey: ['rental-ends', overstayOnly], queryFn: () => contractsApi.ending({ overstayOnly }), enabled: RENTAL_END_ROLES.includes(role) });
     const moveOut = useMutation({
         mutationFn: (id) => contractsApi.moveToCentralStorage(id),
         onSuccess: () => ['rental-ends', 'contracts', 'storage-units', 'deposit-refunds', 'invoices'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),

@@ -227,3 +227,46 @@ test('E23 ops publish their own prices for one facility; its quote changes and a
   expect(await quote(other.facilityId)).toBe(standard)
   await ops.dispose()
 })
+
+test('E24 each role gets only the contract export and rental-end list it may use', async ({ browser }) => {
+  // The SRD's permission table: staff and managers export; rental ends are theirs and Business Operations'.
+  const roles = [
+    { who: 'staff', exports: true, ends: true, reports: false },
+    { who: 'manager', exports: true, ends: true, reports: true },
+    { who: 'ops', exports: false, ends: true, reports: true },
+    { who: 'admin', exports: false, ends: false, reports: true },
+  ]
+  for (const { who, exports, ends, reports } of roles) {
+    const page = await (await browser.newContext()).newPage()
+    const refused = []
+    page.on('response', (r) => { if (r.status() === 403) refused.push(new URL(r.url()).pathname) })
+    await loginStaff(page, ACCOUNTS[who])
+
+    const loaded = page.waitForResponse((r) => r.url().includes(ends ? '/api/contracts/ending' : '/api/renewals'))
+    await openAdmin(page, 'Customers & Contracts')
+    await loaded
+    await expect(page.getByRole('heading', { name: /^Customers & contracts$/i })).toBeVisible()
+    const exportButton = page.getByRole('button', { name: 'Export CSV' })
+    if (exports) {
+      const download = page.waitForEvent('download')
+      await exportButton.click()
+      expect((await download).suggestedFilename(), who).toMatch(/^contracts-.+\.csv$/)
+    } else {
+      await expect(exportButton, who).toHaveCount(0)
+    }
+
+    if (reports) {
+      await openAdmin(page, 'Reports & Exports')
+      await expect(page.getByRole('button', { name: 'Export report' })).toBeVisible()
+      await expect(page.getByRole('button', { name: 'Contracts CSV' }), who).toHaveCount(exports ? 1 : 0)
+    }
+    if (!ends) {
+      // Not in their menu, but the address works.
+      const cases = page.waitForResponse((r) => r.url().includes('/api/overdue-cases'))
+      await page.goto('/admin/overdue')
+      await cases
+    }
+    expect(refused, who).toEqual([])
+    await page.context().close()
+  }
+})

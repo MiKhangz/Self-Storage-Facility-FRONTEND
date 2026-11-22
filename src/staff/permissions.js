@@ -2,6 +2,11 @@ import { Roles } from '../features/auth/roles';
 
 const { SystemAdministrator: SA, BusinessOperationsManager: BO, FacilityManager: FM, FacilityStaff: ST } = Roles;
 
+/** Who may download the contracts CSV. */
+export const CONTRACT_EXPORTERS = [FM, ST];
+/** Who follows up rentals near or past their end date. */
+export const RENTAL_END_ROLES = [BO, FM, ST];
+
 export const ROLE_INFO = [
     { role: SA, short: 'SA', title: 'System Administrator', text: 'Staff accounts, roles and permissions' },
     { role: BO, short: 'BO', title: 'Business Operations Manager', text: 'All facilities, pricing and deposit settlement' },
@@ -19,7 +24,7 @@ export const PERMISSIONS = [
     { group: 'Customers & contracts', feature: 'Assign units to reservations', roles: [FM, ST] },
     { group: 'Customers & contracts', feature: 'Handover', roles: [FM, ST] },
     { group: 'Customers & contracts', feature: 'Check customers in and out', roles: [FM, ST] },
-    { group: 'Customers & contracts', feature: 'Export contracts', roles: [FM, ST] },
+    { group: 'Customers & contracts', feature: 'Export contracts', roles: CONTRACT_EXPORTERS },
     { group: 'Money', feature: 'Record a payment', roles: [FM, ST] },
     { group: 'Money', feature: 'Settle a deposit refund', roles: [BO] },
     { group: 'Money', feature: 'Change prices and policies', roles: [BO, SA] },

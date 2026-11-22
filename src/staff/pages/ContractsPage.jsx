@@ -12,6 +12,7 @@ import { periodUsed } from '../../customer/account/queries.js';
 import { Modal, PageHeader, SearchFilter, Filters, Stat, Status, TableState, downloadFile, matches } from '../components/ui.jsx';
 import { useContracts, useInvoices } from '../queries.js';
 import RentalEnds from '../components/RentalEnds.jsx';
+import { CONTRACT_EXPORTERS } from '../permissions.js';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
 
@@ -146,6 +147,7 @@ function RenewalRequests() {
 
 export default function ContractsPage() {
     const tr = useT();
+    const canExport = CONTRACT_EXPORTERS.includes(useAuth().session?.role);
     const today = todayIso();
     const [tab, setTab] = useState('all');
     const [search, setSearch] = useState('');
@@ -170,7 +172,7 @@ export default function ContractsPage() {
     return (
         <>
             <PageHeader title={tr('Customers & contracts')} subtitle="Monitor rental periods, payment status, renewals and overdue cases">
-                <button type="button" className="se-btn se-btn-primary" onClick={exportCsv}><Icon name="file" size={16} /> {tr('Export CSV')}</button>
+                {canExport && <button type="button" className="se-btn se-btn-primary" onClick={exportCsv}><Icon name="file" size={16} /> {tr('Export CSV')}</button>}
             </PageHeader>
             {exportError && <div className="se-alert" role="alert">{exportError}</div>}
             <RenewalRequests />

@@ -6,6 +6,8 @@ import Icon from '../../customer/components/Icon.jsx';
 import { formatVnd, todayIso } from '../../customer/components/format.js';
 import { PageHeader, Stat, TableState, downloadFile } from '../components/ui.jsx';
 import { useT } from '../../i18n/I18n.jsx';
+import { useAuth } from '../../features/auth/AuthContext';
+import { CONTRACT_EXPORTERS } from '../permissions.js';
 
 const csvCell = (v) => `"${String(v).replace(/"/g, '""')}"`;
 const lastDayOf = (month) => { const [y, m] = month.split('-').map(Number); return `${month}-${String(new Date(y, m, 0).getDate()).padStart(2, '0')}`; };
@@ -24,6 +26,7 @@ function byFacility(rows) {
 /** A11 / TH-08: revenue and occupancy from the backend's report endpoints (managers see their own facilities). */
 export default function ReportsPage() {
     const tr = useT();
+    const canExport = CONTRACT_EXPORTERS.includes(useAuth().session?.role);
     const [month, setMonth] = useState(todayIso().slice(0, 7));
     const [error, setError] = useState('');
     const period = { from: `${month}-01`, to: lastDayOf(month) };
@@ -56,9 +59,9 @@ export default function ReportsPage() {
     return (
         <>
             <PageHeader title={tr('Reports & exports')} subtitle={tr('Revenue, occupancy and collection figures by facility')}>
-                <button type="button" className="se-btn se-btn-ghost" onClick={() => downloadFile(api, '/api/contracts/export', {}, `contracts-${todayIso()}.csv`).catch((e) => setError(errorMessage(e)))}>
+                {canExport && <button type="button" className="se-btn se-btn-ghost" onClick={() => downloadFile(api, '/api/contracts/export', {}, `contracts-${todayIso()}.csv`).catch((e) => setError(errorMessage(e)))}>
                     <Icon name="file" size={16} /> {tr('Contracts CSV')}
-                </button>
+                </button>}
                 <button type="button" className="se-btn se-btn-primary" onClick={exportTable}><Icon name="file" size={16} /> {tr('Export report')}</button>
             </PageHeader>
             {[error, dashboard.error && errorMessage(dashboard.error), revenue.error && errorMessage(revenue.error)].filter(Boolean)
