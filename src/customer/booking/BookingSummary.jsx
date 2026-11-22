@@ -32,7 +32,6 @@ export default function BookingSummary({ facility, type, moveInDate, rentalMonth
                         <div><dt>{t('Tiền thuê mỗi tháng')}</dt><dd>{formatVnd(q.monthlyRent)}</dd></div>
                         <div><dt>{t('Tiền thuê × {months} tháng', { months: rentalMonths })}</dt><dd>{formatVnd(q.rentSubtotal)}</dd></div>
                         <div><dt>{t('Tiền cọc (được hoàn lại)')}</dt><dd>{formatVnd(q.depositAmount)}</dd></div>
-                        {q.fees?.map((f) => <div key={f.code}><dt>{f.name}</dt><dd>{formatVnd(f.amount)}</dd></div>)}
                     </dl>
                     <div className="se-summary-total"><span>{t('Tổng cộng')}</span><strong>{formatVnd(q.totalAmount)}</strong></div>
                 </>

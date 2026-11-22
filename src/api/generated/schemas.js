@@ -948,13 +948,6 @@
  */
 
 /**
- * @typedef {Object} QuoteFeeDto
- * @property {(string|null)} [code]
- * @property {(string|null)} [name]
- * @property {number} [amount] double
- */
-
-/**
  * @typedef {Object} ReadNotificationsRequest
  * @property {number} [upToId] int32
  */
@@ -1445,7 +1438,6 @@
  * @property {number} [monthlyRent] double
  * @property {number} [rentSubtotal] double
  * @property {number} [depositAmount] double
- * @property {(Array<QuoteFeeDto>|null)} [fees]
  * @property {number} [totalAmount] double
  * @property {(string|null)} [expectedUnitCode]
  */
