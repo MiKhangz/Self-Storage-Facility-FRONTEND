@@ -47,5 +47,15 @@ export function depositDeadline(createdAt, moveInDate) {
     return new Date(Math.min(held, Date.parse(`${moveInDate}T23:59:00+07:00`))).toISOString();
 }
 
-/** 2026-10-20 → 20/10/2026, without shifting the day through a time zone. */
-export const formatDate = (isoDate) => (isoDate ? isoDate.slice(0, 10).split('-').reverse().join('/') : '—');
+/**
+ * The Vietnam calendar day, as YYYY-MM-DD, of what the API sends: a date stays as it is; a moment is UTC, with or
+ * without its Z, and before 07:00 in Vietnam its UTC day is still the day before.
+ */
+export function vietnamDay(iso) {
+    if (iso.length <= 10) return iso;
+    const moment = new Date(/(?:Z|[+-]\d{2}:?\d{2})$/i.test(iso) ? iso : `${iso}Z`);
+    return moment.toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
+}
+
+/** A date or a UTC moment as its day in Vietnam: 2026-10-20 → 20/10/2026. */
+export const formatDate = (iso) => (iso ? vietnamDay(iso).split('-').reverse().join('/') : '—');

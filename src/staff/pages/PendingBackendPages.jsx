@@ -63,7 +63,7 @@ export function ActivityLogPage() {
                                 <Fragment key={l.logId}>
                                     {(i === 0 || dayOf(rows[i - 1].createdAt) !== day) && <tr className="sa-day-row"><th colSpan={5} scope="rowgroup">{day}</th></tr>}
                                     <tr className={l.result === 'Failure' ? 'sa-row-failed' : ''}>
-                                        <td>{new Date(l.createdAt).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })}</td>
+                                        <td>{new Date(l.createdAt).toLocaleTimeString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', hour: '2-digit', minute: '2-digit' })}</td>
                                         <td>{userId ? <strong>{l.userName}</strong> : <Link to={`?userId=${l.userId}`} onClick={() => setPage(1)}><strong>{l.userName}</strong></Link>}
                                             <br /><small className="sa-muted">{l.userEmail}</small>
                                             <br /><span className="se-badge info">{tr(humanize(l.userRole))}</span></td>

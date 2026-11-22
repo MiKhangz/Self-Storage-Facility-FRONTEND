@@ -6,7 +6,7 @@ import { VisitsTable } from './CheckInPage.jsx';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
-import { formatDate, formatVnd } from '../../customer/components/format.js';
+import { formatDate, formatVnd, vietnamDay } from '../../customer/components/format.js';
 import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
@@ -22,7 +22,7 @@ const SEE_VISITS = [Roles.SystemAdministrator, Roles.BusinessOperationsManager, 
 export function onTimeShare(invoices) {
     const paid = invoices.filter((i) => i.status === 'Paid');
     if (!paid.length) return null;
-    const onTime = paid.filter((i) => (i.payments ?? []).every((p) => !p.paidAt || p.paidAt.slice(0, 10) <= i.dueDate));
+    const onTime = paid.filter((i) => (i.payments ?? []).every((p) => !p.paidAt || vietnamDay(p.paidAt) <= i.dueDate));
     return Math.round((onTime.length / paid.length) * 100);
 }
 

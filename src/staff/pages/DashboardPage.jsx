@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useAuth } from '../../features/auth/AuthContext';
 import Icon from '../../customer/components/Icon.jsx';
-import { addDays, formatVnd, todayIso } from '../../customer/components/format.js';
+import { addDays, formatVnd, todayIso, vietnamDay } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
 import { PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
 import { humanize, useContracts, useFacilities, useInvoices, useReservations, useTasks, useTickets, useUnits } from '../queries.js';
@@ -47,7 +47,7 @@ export default function DashboardPage() {
     // Staff tasks plus handover appointments booked for today (handoverSlot is UTC; formatDateTime shows Vietnam time).
     const todayVn = today.split('-').reverse().join('/');
     const todaysTasks = [
-        ...(tasks.data ?? []).filter((t) => t.scheduledAt?.startsWith(today))
+        ...(tasks.data ?? []).filter((t) => t.scheduledAt && vietnamDay(t.scheduledAt) === today)
             .map((t) => ({ key: `t${t.taskId}`, time: formatDateTime(t.scheduledAt).slice(0, 5), type: humanize(t.taskType), ref: t.referenceCode, staff: t.assignedToName, status: t.status })),
         ...(bookings.data ?? []).filter((r) => r.handoverSlot && ['Pending', 'Confirmed'].includes(r.status) && formatDateTime(r.handoverSlot).endsWith(todayVn))
             .map((r) => ({ key: `r${r.reservationId}`, time: formatDateTime(r.handoverSlot).slice(0, 5), type: 'Handover appointment', ref: r.reservationCode, staff: '—', status: r.status })),
