@@ -108,6 +108,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await staff.getByRole('button', { name: 'Confirm lock given' }).click()
     await staff.getByLabel('Add photos').setInputFiles({ name: 'unit.png', mimeType: 'image/png', buffer: PNG })
     await expect.poll(() => staff.getByRole('img', { name: 'unit.png' }).evaluate((i) => i.naturalWidth)).toBeGreaterThan(0)
+    await staff.getByLabel(/Condition note/).fill('Small scratch on the door')
     await staff.getByRole('button', { name: 'Complete handover' }).click()
 
     await expect(staff.getByRole('heading', { name: /Handover complete/ })).toBeVisible()
@@ -255,6 +256,9 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await openAdmin(ops, 'Returns')
     await ops.getByRole('tab', { name: /Inspected/ }).click()
     await ops.getByRole('row', { name: new RegExp(name) }).click()
+    // Before charging damage, ops see what staff noted and photographed at the handover.
+    await expect(ops.getByText(/Small scratch on the door/)).toBeVisible()
+    await expect.poll(() => ops.getByRole('img', { name: 'unit.png' }).evaluate((i) => i.naturalWidth)).toBeGreaterThan(0)
     await ops.getByRole('button', { name: 'Settle deposit & close' }).click()
     await expect(ops.getByText('Refund', { exact: true })).toBeVisible()
 
