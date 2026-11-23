@@ -9,7 +9,9 @@ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR
 test.describe.serial('rental: book, deposit, assign, contract, check in, rent, renew, hand back', () => {
   const name = `Khách E2E ${Date.now()}`
   const email = uniqueEmail('rental')
-  const today = new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' })
+  const vietnam = (options) => new Date(Date.now() + (options?.days ?? 0) * 864e5).toLocaleString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh', hourCycle: 'h23' })
+  // Handover times end at 21:00, so a late run moves in tomorrow; the rest of the chain follows the move-in day.
+  const moveIn = vietnam().slice(12, 14) < '20' ? vietnam().slice(0, 10) : vietnam({ days: 1 }).slice(0, 10)
   let customer, staff, staffApi, reservationCode, reservationId, contract, accessCode
 
   test.beforeAll(async ({ browser, baseURL }) => {
@@ -34,7 +36,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await expect(customer.getByRole('status')).toContainText('Đã tạo tài khoản')
 
     // Choosing a unit is public; the details step asks for a sign-in and comes back.
-    await customer.goto('/booking')
+    await customer.goto(`/booking?moveInDate=${moveIn}`)
     await customer.getByLabel('Cơ sở').selectOption({ label: 'StorEase Gò Vấp' })
     await customer.getByRole('radiogroup', { name: 'Kích thước kho' }).getByRole('radio').first().click()
     await customer.getByRole('radiogroup', { name: 'Thời hạn thuê' }).getByRole('radio', { name: /^1 tháng/ }).click()
@@ -76,6 +78,14 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
 
   test('E04 at the handover the customer sees the unit, likes it and signs the paper contract', async () => {
     await openAdmin(staff, 'Handover')
+    if (moveIn !== vietnam().slice(0, 10)) {
+      // A late run moved in tomorrow: the desk opens on today, so show tomorrow's handovers.
+      await staff.getByLabel('Date range').click()
+      const day = staff.getByRole('gridcell', { name: moveIn }).first()
+      await day.click()
+      await day.click()
+      await staff.keyboard.press('Escape')
+    }
     await staff.getByRole('button', { name: new RegExp(name) }).click()
     await expect(staff.getByRole('heading', { name: new RegExp(`Handover · ${name}`) })).toBeVisible()
     for (const step of ['Verify identity', 'Verify payment'])
@@ -202,7 +212,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
 
   test('E06 the billing run issues rent and the customer pays it online', async ({ baseURL }) => {
     const ops = await apiAs(baseURL, ACCOUNTS.ops)
-    await ops.post(`/api/billing/run?date=${today}`)
+    await ops.post(`/api/billing/run?date=${moveIn}`)
     await ops.dispose()
 
     await customer.getByRole('link', { name: 'Thanh toán và hóa đơn' }).click()
@@ -235,7 +245,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
 
   test('E08 the customer hands the unit back; staff inspect, ops settle and pay back the deposit', async ({ browser }) => {
     await customer.getByRole('link', { name: 'Yêu cầu trả kho' }).click()
-    await customer.getByLabel('Ngày dự kiến trả kho').fill(today)
+    await customer.getByLabel('Ngày dự kiến trả kho').fill(moveIn)
     for (const box of await customer.locator('.se-checklist').getByRole('checkbox').all()) await box.check()
     await customer.getByLabel('Cách nhận tiền cọc').selectOption('Cash')
     await customer.getByRole('button', { name: /Gửi yêu cầu trả kho/ }).click()
