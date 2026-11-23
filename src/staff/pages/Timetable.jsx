@@ -13,7 +13,9 @@ import { useT } from '../../i18n/I18n.jsx';
 export default function Timetable({ facilityId, people, onClose }) {
     const tr = useT();
     const queryClient = useQueryClient();
-    const [userId, setUserId] = useState(people[0]?.userId ?? '');
+    const [chosen, setUserId] = useState('');
+    // The staff list may arrive after the panel opens: until someone is picked, it is the first person.
+    const userId = chosen || (people[0]?.userId ?? '');
     const saved = useQuery({
         queryKey: ['timetable', userId, facilityId],
         queryFn: () => shiftsApi.getTimetable({ userId, facilityId }),
