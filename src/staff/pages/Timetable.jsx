@@ -30,6 +30,8 @@ export default function Timetable({ facilityId, people, onClose }) {
             queryClient.invalidateQueries({ queryKey: ['shifts'] });
         },
     });
+    // Until this person's saved week has loaded, editing is off: the load would overwrite the ticks.
+    const locked = !userId || !saved.isSuccess;
     const ticked = (day, type) => slots.some((s) => s.day === day && s.shiftType === type);
     const pick = (id) => { setUserId(id); save.reset(); };
 
@@ -42,7 +44,7 @@ export default function Timetable({ facilityId, people, onClose }) {
                         {people.map((p) => <option key={p.userId} value={p.userId}>{p.fullName}</option>)}</select></div></label>
                 <div className="sa-timetable-presets">
                     {Object.entries(PRESETS).map(([name, cells]) => (
-                        <button key={name} type="button" className="se-btn se-btn-ghost" onClick={() => setSlots(cells)}>{tr(name)}</button>
+                        <button key={name} type="button" className="se-btn se-btn-ghost" disabled={locked} onClick={() => setSlots(cells)}>{tr(name)}</button>
                     ))}
                 </div>
             </div>
@@ -57,7 +59,7 @@ export default function Timetable({ facilityId, people, onClose }) {
                                 {WEEKDAYS.map((day) => (
                                     <td key={day}>
                                         <label className={`sa-slot ${type}${ticked(day, type) ? ' on' : ''}`}>
-                                            <input type="checkbox" checked={ticked(day, type)} disabled={!userId}
+                                            <input type="checkbox" checked={ticked(day, type)} disabled={locked}
                                                 onChange={() => { setSlots(toggleSlot(slots, day, type)); save.reset(); }}
                                                 aria-label={tr('{shift} on {day}', { shift: tr(type), day: tr(day) })} />
                                             <span aria-hidden="true">{ticked(day, type) ? '✓' : ''}</span>
@@ -85,7 +87,7 @@ export default function Timetable({ facilityId, people, onClose }) {
             )}
             <div className="sa-form-actions">
                 <button type="button" className="se-btn se-btn-ghost" onClick={onClose}>{tr('Close')}</button>
-                <button type="button" className="se-btn se-btn-primary" disabled={!userId || save.isPending} onClick={() => save.mutate()}>{tr('Save timetable')}</button>
+                <button type="button" className="se-btn se-btn-primary" disabled={locked || save.isPending} onClick={() => save.mutate()}>{tr('Save timetable')}</button>
             </div>
         </section>
     );
