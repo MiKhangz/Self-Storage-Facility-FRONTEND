@@ -266,6 +266,7 @@
  * @property {number} [unitTypeId] int32
  * @property {string} [moveInDate] date
  * @property {number} [rentalMonths] int32
+ * @property {(string|null)} [handoverAt] date-time
  */
 
 /**

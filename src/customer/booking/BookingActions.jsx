@@ -39,23 +39,50 @@ export function UnitProposal({ reservation: r }) {
 // Opening hours for handovers, as the backend checks them (07:00–21:00, Vietnam time).
 const SLOTS = Array.from({ length: 28 }, (_, i) => `${String(7 + Math.floor(i / 2)).padStart(2, '0')}:${i % 2 ? '30' : '00'}`);
 
-/** After the deposit, the customer books a time to receive the unit. Missing it forfeits the deposit. */
-export function HandoverAppointment({ reservation: r }) {
-    const t = useT();
-    const queryClient = useQueryClient();
+/** A day from today to move-in and a time still ahead; `at` is what the API takes (Vietnam time). */
+export function useAppointmentPicker(moveInDate) {
     const today = todayIso();
-    const [editing, setEditing] = useState(false);
-    const [day, setDay] = useState(r.moveInDate > today ? r.moveInDate : today);
+    const [day, setDay] = useState(moveInDate > today ? moveInDate : today);
     const [picked, setTime] = useState('09:00');
     // Today, only times still ahead (Vietnam time) can be booked.
     const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
     const slots = day === today ? SLOTS.filter((s) => s > now) : SLOTS;
     const time = slots.includes(picked) ? picked : slots[0];
+    return { day, setDay, time, setTime, slots, today, moveInDate, at: time ? `${day}T${time}:00` : null };
+}
+
+/** The date and time boxes, shared by the booking form and the change-appointment form. */
+export function AppointmentFields({ picker: p }) {
+    const t = useT();
+    return (
+        <>
+            <input type="date" value={p.day} min={p.today} max={p.moveInDate} onChange={(e) => p.setDay(e.target.value)} required aria-label={t('Ngày hẹn')} />
+            <select value={p.time ?? ''} onChange={(e) => p.setTime(e.target.value)} aria-label={t('Giờ hẹn')}>
+                {p.slots.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+        </>
+    );
+}
+
+/** The time picked with the booking; once the deposit is paid it can be changed until it has passed. */
+export function HandoverAppointment({ reservation: r }) {
+    const t = useT();
+    const queryClient = useQueryClient();
+    const [editing, setEditing] = useState(false);
+    const picker = useAppointmentPicker(r.moveInDate);
     const save = useMutation({
-        mutationFn: () => reservationsApi.appointment(r.reservationId, { at: `${day}T${time}:00` }),
+        mutationFn: () => reservationsApi.appointment(r.reservationId, { at: picker.at }),
         onSuccess: () => { setEditing(false); refresh(queryClient); },
     });
-    if (!['Pending', 'Confirmed'].includes(r.status) || r.depositStatus !== 'Paid') return null;
+    if (!['Pending', 'Confirmed'].includes(r.status)) return null;
+    if (r.depositStatus !== 'Paid') {
+        return r.handoverSlot ? (
+            <div className="se-appointment">
+                <span><strong>{t('Lịch hẹn nhận kho')}:</strong> {formatDateTime(r.handoverSlot)}</span>
+                <small className="se-hint">{t('Lịch hẹn có hiệu lực khi đã thanh toán tiền cọc.')}</small>
+            </div>
+        ) : null;
+    }
 
     if (r.handoverSlot && !editing) {
         // A passed appointment cannot be moved (the server refuses it too).
@@ -74,11 +101,8 @@ export function HandoverAppointment({ reservation: r }) {
         <form className="se-appointment" onSubmit={(e) => { e.preventDefault(); save.mutate(); }}>
             <strong>{t('Chọn lịch hẹn nhận kho')}</strong>
             <div className="se-appointment-fields">
-                <input type="date" value={day} min={today} max={r.moveInDate} onChange={(e) => setDay(e.target.value)} required aria-label={t('Ngày hẹn')} />
-                <select value={time} onChange={(e) => setTime(e.target.value)} aria-label={t('Giờ hẹn')}>
-                    {slots.map((s) => <option key={s} value={s}>{s}</option>)}
-                </select>
-                <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={save.isPending || !time}>{save.isPending ? t('Đang lưu…') : t('Đặt lịch')}</button>
+                <AppointmentFields picker={picker} />
+                <button type="submit" className="se-btn se-btn-primary se-btn-sm" disabled={save.isPending || !picker.time}>{save.isPending ? t('Đang lưu…') : t('Đặt lịch')}</button>
             </div>
             <small className="se-hint">{t('Từ hôm nay đến ngày nhận kho {date}. Không đến đúng ngày hẹn, đơn sẽ hết hạn và tiền cọc không được hoàn.', { date: formatDate(r.moveInDate) })}</small>
             {save.isError && <div className="se-alert" role="alert">{errorMessage(save.error)}</div>}

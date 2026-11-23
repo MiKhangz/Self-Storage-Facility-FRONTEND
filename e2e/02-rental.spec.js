@@ -50,9 +50,9 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     await customer.getByRole('button', { name: /Xác nhận đặt kho/ }).click()
 
     await expect(customer).toHaveURL(/\/booking\/confirmed\//)
-    reservationId = Number(customer.url().split('/').pop())
+    reservationId = Number(new URL(customer.url()).pathname.split('/').pop())
     reservationCode = (await customer.locator('.se-ticket-head strong').innerText()).trim()
-    await customer.getByRole('button', { name: 'Thanh toán tiền cọc ngay' }).click()
+    // The deposit pop-up opens by itself: a booking only holds once it is paid.
     await customer.getByRole('button', { name: 'Xác nhận', exact: true }).click()
     await expect(customer.getByText('Tiền cọc của bạn đã được thanh toán.')).toBeVisible()
     await customer.getByRole('button', { name: 'Đóng' }).click()
@@ -61,6 +61,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
     const reservation = await staffApi.get(`/api/reservations/${reservationId}`)
     expect(reservation.status).toBe('Pending')
     expect(reservation.depositStatus).toBe('Paid')
+    expect(reservation.handoverSlot, 'the appointment is picked with the booking').toBeTruthy()
   })
 
   test('E03 staff assign a free unit', async () => {

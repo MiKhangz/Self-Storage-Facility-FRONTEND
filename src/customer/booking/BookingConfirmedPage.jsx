@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, useSearchParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
@@ -18,6 +18,8 @@ const CLOSED = ['Cancelled', 'Expired'];
 /** U08: the saved reservation, re-read from the API so a refresh still shows it. */
 export default function BookingConfirmedPage() {
     const { id } = useParams();
+    // Straight from booking: the deposit pop-up is already open.
+    const [params] = useSearchParams();
     const t = useT();
     const reservation = useQuery({ queryKey: ['reservations', Number(id)], queryFn: () => reservationsApi.getById(Number(id)) });
     const r = reservation.data;
@@ -50,7 +52,7 @@ export default function BookingConfirmedPage() {
                                 </dl>
                                 {depositOwed && (
                                     <PayInvoiceButton invoice={{ invoiceId: r.depositInvoiceId, outstandingAmount: r.depositAmount, invoiceNumber: `DEP${r.reservationCode}` }}
-                                        title="Thanh toán tiền cọc" paidText="Tiền cọc của bạn đã được thanh toán." className="se-btn se-btn-primary se-btn-block">{t('Thanh toán tiền cọc ngay')}</PayInvoiceButton>
+                                        title="Thanh toán tiền cọc" startOpen={params.get('pay') === '1'} paidText="Tiền cọc của bạn đã được thanh toán." className="se-btn se-btn-primary se-btn-block">{t('Thanh toán tiền cọc ngay')}</PayInvoiceButton>
                                 )}
                                 <HandoverAppointment reservation={r} />
                             </div>

@@ -39,9 +39,9 @@ export function renewedEndDate(start, end, months) {
     return rentalEndDate(start, billed + months);
 }
 
-const DEPOSIT_HOLD_HOURS = 24; // ReservationService.DepositHoldHours on the API
+const DEPOSIT_HOLD_HOURS = 1; // ReservationService.DepositHoldHours on the API
 
-/** When an unpaid booking lets its unit go: 24 hours after booking, or when move-in day ends if that is sooner. */
+/** When an unpaid booking lets its unit go: an hour after booking, or when move-in day ends if that is sooner. */
 export function depositDeadline(createdAt, moveInDate) {
     const held = Date.parse(createdAt) + DEPOSIT_HOLD_HOURS * 3_600_000;
     return new Date(Math.min(held, Date.parse(`${moveInDate}T23:59:00+07:00`))).toISOString();

@@ -30,13 +30,13 @@ export function PaidPopup({ children }) {
 }
 
 /** Pays an invoice's outstanding amount through the backend's online-gateway endpoint. */
-export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-outline se-btn-sm', title = 'Xác nhận thanh toán', paidText = 'Đã nhận thanh toán của bạn.', children = 'Thanh toán' }) {
+export default function PayInvoiceButton({ invoice, className = 'se-btn se-btn-outline se-btn-sm', title = 'Xác nhận thanh toán', paidText = 'Đã nhận thanh toán của bạn.', children = 'Thanh toán', startOpen = false }) {
     const queryClient = useQueryClient();
     const showPaid = useContext(PaidContext);
     const t = useT();
     // A page pop-up, not window.confirm: a browser that blocks dialogs answers "no" silently, and the button then
     // seems dead.
-    const [asking, setAsking] = useState(false);
+    const [asking, setAsking] = useState(startOpen);
     const pay = useMutation({
         // With VNPay configured the backend returns VNPay's checkout page: leave the site and pay there; VNPay sends
         // the customer back to VnPayReturnPage. Otherwise (demo) the development-only simulate-success pays at once.

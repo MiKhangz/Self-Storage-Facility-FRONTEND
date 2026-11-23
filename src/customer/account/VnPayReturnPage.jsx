@@ -38,7 +38,10 @@ export default function VnPayReturnPage() {
                 </>
             ))}
             {!vnp.vnp_TxnRef && <p>{t('Không có thông tin giao dịch.')}</p>}
-            <Link to="/payments" className="se-btn se-btn-primary">{t('Về trang thanh toán')}</Link>
+            {/* A deposit leads back to its booking, where the appointment is. */}
+            {result.data?.reservationId && !result.data.contractId
+                ? <Link to={`/booking/confirmed/${result.data.reservationId}`} className="se-btn se-btn-primary">{t('Xem đơn đặt kho')}</Link>
+                : <Link to="/payments" className="se-btn se-btn-primary">{t('Về trang thanh toán')}</Link>}
         </section>
     );
 }
