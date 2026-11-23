@@ -113,7 +113,7 @@ export default function BookingDetailsPage() {
                             {reserve.isError && <div className="se-alert" role="alert">{errorMessage(reserve.error)}</div>}
                             <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta"
                                 disabled={!agreed || !terms.data || !quote.data || !appointment.at || reserve.isPending} onClick={() => reserve.mutate()}>
-                                {reserve.isPending ? t('Đang đặt kho…') : <>{t('Xác nhận đặt kho và thanh toán cọc')} <Icon name="arrow" size={16} /></>}
+                                {reserve.isPending ? t('Đang đặt kho…') : <>{t('Đặt kho và thanh toán cọc')} <Icon name="arrow" size={16} /></>}
                             </button>
                         </BookingSummary>
                     </div>

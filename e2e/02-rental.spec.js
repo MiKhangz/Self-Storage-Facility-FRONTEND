@@ -47,7 +47,7 @@ test.describe.serial('rental: book, deposit, assign, contract, check in, rent, r
 
     await expect(customer).toHaveURL(/\/booking\/details/)
     await customer.getByRole('checkbox').check()
-    await customer.getByRole('button', { name: /Xác nhận đặt kho/ }).click()
+    await customer.getByRole('button', { name: /Đặt kho và thanh toán cọc/ }).click()
 
     await expect(customer).toHaveURL(/\/booking\/confirmed\//)
     reservationId = Number(new URL(customer.url()).pathname.split('/').pop())
