@@ -342,3 +342,17 @@
 .sa-history > summary::-webkit-details-marker, .sa-history-entry > summary::-webkit-details-marker { display: none; }
 .sa-history > summary::before, .sa-history-entry > summary::before { content: ""; width: 6px; height: 6px; margin: 0 4px 0 2px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(-45deg); transition: transform .15s; }
 .sa-history[open] > summary::before, .sa-history-entry[open] > summary::before { transform: rotate(45deg); }
+
+/* Weekly timetable: tick a staff member's usual morning/afternoon slots per weekday. */
+.sa-timetable-head { display: flex; flex-wrap: wrap; gap: 12px; align-items: flex-end; justify-content: space-between; }
+.sa-timetable-presets { display: flex; flex-wrap: wrap; gap: 8px; }
+.sa-timetable-grid th, .sa-timetable-grid td { text-align: center; min-width: 64px; }
+.sa-timetable-grid th[scope="row"] { text-align: left; white-space: nowrap; }
+.sa-timetable-grid th[scope="row"] small { display: block; font-weight: 400; color: var(--se-muted); }
+.sa-slot { display: grid; place-items: center; height: 40px; border: 1px dashed var(--se-border, #d0d5dd); border-radius: 8px; cursor: pointer; font-weight: 700; color: var(--se-dark); }
+.sa-slot input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.sa-slot:has(input:focus-visible) { outline: 2px solid var(--se-primary); outline-offset: 2px; }
+.sa-slot.on { border-style: solid; border-color: var(--se-primary); background: var(--se-primary-soft); }
+.sa-slot.Afternoon.on { background: #fef3c7; border-color: #d97706; }
+.sa-timetable-note { margin: 0; color: var(--se-muted); font-size: 13px; }
+.sa-timetable .se-alert ul { margin: 4px 0 0 18px; }

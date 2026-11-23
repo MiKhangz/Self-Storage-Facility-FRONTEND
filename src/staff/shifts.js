@@ -22,3 +22,19 @@ export function shiftsOn(shifts, day) {
         .map((s) => ({ ...s, from: s.shiftDate === day ? s.startTime.slice(0, 5) : '00:00' }))
         .sort((a, b) => a.from.localeCompare(b.from));
 }
+
+/** The weekly timetable: Monday first, and only the day shifts (no night). */
+export const WEEKDAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+export const SLOT_TYPES = ['Morning', 'Afternoon'];
+const cells = (days, shiftType) => days.map((day) => ({ day, shiftType }));
+export const PRESETS = {
+    'Full time Mon–Sat': cells(WEEKDAYS.slice(0, 6), 'Morning'),
+    'Mon · Wed · Fri': cells(['Monday', 'Wednesday', 'Friday'], 'Morning'),
+    Clear: [],
+};
+
+/** Ticks or unticks one cell of the timetable. */
+export const toggleSlot = (slots, day, shiftType) =>
+    slots.some((s) => s.day === day && s.shiftType === shiftType)
+        ? slots.filter((s) => !(s.day === day && s.shiftType === shiftType))
+        : [...slots, { day, shiftType }];

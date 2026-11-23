@@ -370,6 +370,8 @@
  * @property {number} [openTickets] int32
  */
 
+/** @typedef {"Sunday"|"Monday"|"Tuesday"|"Wednesday"|"Thursday"|"Friday"|"Saturday"} DayOfWeek */
+
 /**
  * @typedef {Object} DepositRefundDto
  * @property {number} [depositRefundId] int32
@@ -1160,6 +1162,13 @@
  */
 
 /**
+ * @typedef {Object} SaveTimetableRequest
+ * @property {number} [userId] int32
+ * @property {number} [facilityId] int32
+ * @property {(Array<TimetableSlot>|null)} [slots]
+ */
+
+/**
  * @typedef {Object} SessionResponse
  * @property {number} [userId] int32
  * @property {(string|null)} [fullName]
@@ -1362,6 +1371,21 @@
  * @property {number} [pageSize] int32
  * @property {number} [totalCount] int32
  * @property {number} [totalPages] int32
+ */
+
+/**
+ * @typedef {Object} TimetableDto
+ * @property {number} [userId] int32
+ * @property {number} [facilityId] int32
+ * @property {(Array<TimetableSlot>|null)} [slots]
+ * @property {(string|null)} [through] date
+ * @property {(Array<string>|null)} [skipped]
+ */
+
+/**
+ * @typedef {Object} TimetableSlot
+ * @property {DayOfWeek} [day]
+ * @property {ShiftType} [shiftType]
  */
 
 /**

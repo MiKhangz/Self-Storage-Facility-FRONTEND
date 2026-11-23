@@ -10,6 +10,7 @@ import { initials } from '../../customer/layout/CustomerLayout.jsx';
 import { PageHeader, SelectFilter } from '../components/ui.jsx';
 import { useFacilities, useShifts, useStaff, useTasks } from '../queries.js';
 import { TIMES, nextShift } from '../shifts.js';
+import Timetable from './Timetable.jsx';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
 
@@ -44,6 +45,7 @@ export default function ShiftsPage() {
         && s.facilities.some((f) => f.facilityId === fid));
 
     const [form, setForm] = useState(null);
+    const [timetable, setTimetable] = useState(false);
     const create = useMutation({
         mutationFn: () => shiftsApi.create({ userId: Number(form.userId), facilityId: fid, shiftDate: form.shiftDate, startTime: `${form.startTime}:00`, endTime: `${form.endTime}:00`, shiftType: form.shiftType }),
         onSuccess: () => { setStart(weekStart(form.shiftDate)); setForm(null); queryClient.invalidateQueries({ queryKey: ['shifts'] }); },
@@ -52,6 +54,7 @@ export default function ShiftsPage() {
     const openForm = () => {
         const now = new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Ho_Chi_Minh' });
         create.reset();
+        setTimetable(false);
         setForm({ userId: people[0]?.userId ?? '', ...nextShift(days.includes(todayIso()) ? todayIso() : days[0], todayIso(), now) });
     };
 
@@ -61,14 +64,16 @@ export default function ShiftsPage() {
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, -7))} aria-label={tr('Previous week')}><Icon name="arrowLeft" size={16} /></button>
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(weekStart(todayIso()))}>{tr('This week')}</button>
                 <button type="button" className="se-btn se-btn-ghost" onClick={() => setStart(addDays(start, 7))} aria-label={tr('Next week')}><Icon name="arrow" size={16} /></button>
+                {canWrite && fid && <button type="button" className="se-btn se-btn-ghost" onClick={() => { setForm(null); setTimetable(true); }}><Icon name="calendar" size={16} /> {tr('Weekly timetable')}</button>}
                 {canWrite && <button type="button" className="se-btn se-btn-primary" onClick={openForm}><Icon name="calendar" size={16} /> {tr('Add shift')}</button>}
             </PageHeader>
             {!ownWeek && (
                 <div className="sa-filters">
-                    <SelectFilter label="Facility" value={fid ?? ''} onChange={(id) => { setFacilityId(id); setForm(null); }} all="Choose facility" options={facilities.map((f) => ({ value: f.facilityId, label: f.name }))} />
+                    <SelectFilter label="Facility" value={fid ?? ''} onChange={(id) => { setFacilityId(id); setForm(null); setTimetable(false); }} all="Choose facility" options={facilities.map((f) => ({ value: f.facilityId, label: f.name }))} />
                 </div>
             )}
 
+            {timetable && fid && <Timetable key={fid} facilityId={fid} people={people} onClose={() => setTimetable(false)} />}
             {form && (
                 <form className="sa-inline-form" onSubmit={(e) => { e.preventDefault(); create.mutate(); }}>
                     <div className="se-panel-grid">

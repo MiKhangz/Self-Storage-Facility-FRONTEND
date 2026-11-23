@@ -2,8 +2,10 @@
 import { api } from '../axiosClient.js'
 
 /** @typedef {import('./schemas.js').CreateShiftRequest} CreateShiftRequest */
+/** @typedef {import('./schemas.js').SaveTimetableRequest} SaveTimetableRequest */
 /** @typedef {import('./schemas.js').ShiftDto} ShiftDto */
 /** @typedef {import('./schemas.js').ShiftDtoPagedResult} ShiftDtoPagedResult */
+/** @typedef {import('./schemas.js').TimetableDto} TimetableDto */
 /** @typedef {import('./schemas.js').UpdateShiftRequest} UpdateShiftRequest */
 
 export const shiftsApi = {
@@ -43,4 +45,18 @@ export const shiftsApi = {
    */
   remove: (id) =>
     api.delete(`/api/shifts/${id}`).then((r) => r.data),
+  /**
+   * GET /api/shifts/timetable
+   * @param {{ userId?: number, facilityId?: number }} [params] query string
+   * @returns {Promise<TimetableDto>}
+   */
+  getTimetable: (params) =>
+    api.get(`/api/shifts/timetable`, { params }).then((r) => r.data),
+  /**
+   * PUT /api/shifts/timetable
+   * @param {SaveTimetableRequest} body
+   * @returns {Promise<TimetableDto>}
+   */
+  putTimetable: (body) =>
+    api.put(`/api/shifts/timetable`, body).then((r) => r.data),
 }

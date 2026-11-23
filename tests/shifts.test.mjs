@@ -27,3 +27,14 @@ test("a day's schedule has its own shifts and the night before until it ends", (
   ]
   assert.deepEqual(shiftsOn(all, '2026-11-23').map((s) => `${s.shiftId} ${s.from}`), ['1 00:00', '4 07:00', '5 23:00'])
 })
+
+test('the timetable ticks and unticks a cell, and presets fill the usual weeks', async () => {
+  const { PRESETS, toggleSlot } = await import('../src/staff/shifts.js')
+  const on = toggleSlot([], 'Monday', 'Morning')
+  assert.deepEqual(on, [{ day: 'Monday', shiftType: 'Morning' }])
+  assert.deepEqual(toggleSlot(on, 'Monday', 'Afternoon').length, 2)
+  assert.deepEqual(toggleSlot(on, 'Monday', 'Morning'), [])
+  assert.equal(PRESETS['Full time Mon–Sat'].length, 6)
+  assert.ok(!PRESETS['Full time Mon–Sat'].some((s) => s.day === 'Sunday'))
+  assert.deepEqual(PRESETS['Mon · Wed · Fri'].map((s) => s.day), ['Monday', 'Wednesday', 'Friday'])
+})
