@@ -1,0 +1,510 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-16T15:22:54+00:00",
+  "title": "Design System: StorEase",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Storage Orange",
+        "canonical": "#cc4b09",
+        "tonalRamp": [
+          "#491b03",
+          "#7f2f06",
+          "#b54208",
+          "#ea560a",
+          "#f67837",
+          "#f99c6c",
+          "#fbc4a7",
+          "#feeee7"
+        ]
+      },
+      "primary-dark": {
+        "role": "primary",
+        "displayName": "Rust",
+        "canonical": "#9a3412",
+        "tonalRamp": [
+          "#441708",
+          "#77280e",
+          "#a93914",
+          "#db4a1a",
+          "#e96d44",
+          "#ef9476",
+          "#f5bfad",
+          "#fcede8"
+        ]
+      },
+      "primary-light": {
+        "role": "primary",
+        "displayName": "Apricot",
+        "canonical": "#fdba74",
+        "tonalRamp": [
+          "#4b2701",
+          "#834402",
+          "#ba6003",
+          "#f17d03",
+          "#fc9931",
+          "#fdb468",
+          "#fed2a5",
+          "#fff3e6"
+        ]
+      },
+      "primary-soft": {
+        "role": "primary",
+        "displayName": "Orange Mist",
+        "canonical": "#fff1e6",
+        "tonalRamp": [
+          "#4c2200",
+          "#853a00",
+          "#bd5300",
+          "#f56c00",
+          "#ff8a2e",
+          "#ffa966",
+          "#ffcca3",
+          "#fff1e5"
+        ]
+      },
+      "primary-tint": {
+        "role": "primary",
+        "displayName": "Peach",
+        "canonical": "#fed7aa",
+        "tonalRamp": [
+          "#4c2901",
+          "#834702",
+          "#bb6502",
+          "#f28303",
+          "#fd9e30",
+          "#fdb868",
+          "#fed4a4",
+          "#fff3e6"
+        ]
+      },
+      "signal-cyan": {
+        "role": "secondary",
+        "displayName": "Signal Cyan",
+        "canonical": "#06b6d4",
+        "tonalRamp": [
+          "#02404a",
+          "#046f81",
+          "#059eb8",
+          "#07ccee",
+          "#34dcf9",
+          "#6ae6fb",
+          "#a6f0fc",
+          "#e6fbfe"
+        ]
+      },
+      "charcoal": {
+        "role": "neutral",
+        "displayName": "Charcoal",
+        "canonical": "#1f2937",
+        "tonalRamp": [
+          "#1c2431",
+          "#303f55",
+          "#445a79",
+          "#58759d",
+          "#7992b4",
+          "#9dafc8",
+          "#c4cfde",
+          "#eff2f6"
+        ]
+      },
+      "charcoal-deep": {
+        "role": "neutral",
+        "displayName": "Night",
+        "canonical": "#111827",
+        "tonalRamp": [
+          "#172135",
+          "#28395c",
+          "#395183",
+          "#4a69aa",
+          "#6d88c0",
+          "#94a8d1",
+          "#bfcbe3",
+          "#edf0f7"
+        ]
+      },
+      "charcoal-raised": {
+        "role": "neutral",
+        "displayName": "Raised Charcoal",
+        "canonical": "#374151",
+        "tonalRamp": [
+          "#1f252e",
+          "#363f4f",
+          "#4c5a70",
+          "#637592",
+          "#8292aa",
+          "#a4afc1",
+          "#c8cfda",
+          "#f0f2f5"
+        ]
+      },
+      "on-dark-muted": {
+        "role": "neutral",
+        "displayName": "Fog",
+        "canonical": "#c7ccd4",
+        "tonalRamp": [
+          "#21252b",
+          "#3a404b",
+          "#525b6b",
+          "#6a778a",
+          "#8993a4",
+          "#a8b0bd",
+          "#cbd0d7",
+          "#f1f2f4"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Ink",
+        "canonical": "#1c1917",
+        "tonalRamp": [
+          "#2a2622",
+          "#49413c",
+          "#685c55",
+          "#86786e",
+          "#a1948c",
+          "#bab1ab",
+          "#d6d0cd",
+          "#f4f2f1"
+        ]
+      },
+      "stone-muted": {
+        "role": "neutral",
+        "displayName": "Stone",
+        "canonical": "#57534e",
+        "tonalRamp": [
+          "#282624",
+          "#46433f",
+          "#635f59",
+          "#817b74",
+          "#9c9791",
+          "#b7b3ae",
+          "#d4d1cf",
+          "#f3f2f2"
+        ]
+      },
+      "stone-faint": {
+        "role": "neutral",
+        "displayName": "Pebble",
+        "canonical": "#a8a29e",
+        "tonalRamp": [
+          "#282624",
+          "#46423f",
+          "#635d59",
+          "#817974",
+          "#9c9591",
+          "#b7b2ae",
+          "#d4d1cf",
+          "#f3f2f2"
+        ]
+      },
+      "line": {
+        "role": "neutral",
+        "displayName": "Hairline",
+        "canonical": "#e7e5e4",
+        "tonalRamp": [
+          "#282624",
+          "#46413e",
+          "#645d59",
+          "#827873",
+          "#9d9490",
+          "#b7b1ae",
+          "#d4d0ce",
+          "#f3f2f2"
+        ]
+      },
+      "paper": {
+        "role": "neutral",
+        "displayName": "Paper",
+        "canonical": "#fafaf9",
+        "tonalRamp": [
+          "#2a2a23",
+          "#48483c",
+          "#676756",
+          "#86866f",
+          "#a0a08d",
+          "#b9b9ac",
+          "#d5d5cd",
+          "#f3f3f1"
+        ]
+      },
+      "white": {
+        "role": "neutral",
+        "displayName": "White",
+        "canonical": "#ffffff",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#5e5e5e",
+          "#7a7a7a",
+          "#969696",
+          "#b2b2b2",
+          "#d1d1d1",
+          "#f2f2f2"
+        ]
+      },
+      "ok-bg": {
+        "role": "status",
+        "displayName": "Green Wash",
+        "canonical": "#e3f6ec",
+        "tonalRamp": [
+          "#133a25",
+          "#206441",
+          "#2e8f5c",
+          "#3cb977",
+          "#61cc94",
+          "#8bdab0",
+          "#bae9d0",
+          "#ecf9f2"
+        ]
+      },
+      "ok-text": {
+        "role": "status",
+        "displayName": "Green",
+        "canonical": "#1a7f55",
+        "tonalRamp": [
+          "#0d402b",
+          "#176e4a",
+          "#209d69",
+          "#2acb88",
+          "#51dba2",
+          "#80e5bb",
+          "#b3efd6",
+          "#eafbf4"
+        ]
+      },
+      "warn-bg": {
+        "role": "status",
+        "displayName": "Amber Wash",
+        "canonical": "#fef3c7",
+        "tonalRamp": [
+          "#4b3c01",
+          "#826902",
+          "#b99503",
+          "#f1c104",
+          "#fbd332",
+          "#fcdf69",
+          "#fdeca5",
+          "#fffae6"
+        ]
+      },
+      "warn-text": {
+        "role": "status",
+        "displayName": "Amber",
+        "canonical": "#b45309",
+        "tonalRamp": [
+          "#492204",
+          "#7e3a06",
+          "#b45309",
+          "#e96c0c",
+          "#f58a38",
+          "#f8a96d",
+          "#fbcca8",
+          "#fef1e7"
+        ]
+      },
+      "danger-bg": {
+        "role": "status",
+        "displayName": "Red Wash",
+        "canonical": "#fdecec",
+        "tonalRamp": [
+          "#450707",
+          "#780d0d",
+          "#ab1212",
+          "#dd1717",
+          "#eb4242",
+          "#f07575",
+          "#f6acac",
+          "#fde8e8"
+        ]
+      },
+      "danger-text": {
+        "role": "status",
+        "displayName": "Red",
+        "canonical": "#d92d20",
+        "tonalRamp": [
+          "#430e0a",
+          "#741811",
+          "#a42218",
+          "#d52c1f",
+          "#e45449",
+          "#eb827a",
+          "#f3b4af",
+          "#fceae9"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display",
+        "purpose": "Home hero headline only; 38px under 640px."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Section headings and page-head titles; 30px on phones."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Card titles, panel headings, unit codes, summary prices."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Paragraphs, table cells, form text."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "Table headers (uppercase), field labels, badges."
+      }
+    },
+    "shadows": [
+      {
+        "name": "float",
+        "value": "0 10px 30px rgba(17, 24, 39, 0.08)",
+        "purpose": "Home search bar, booking ticket."
+      },
+      {
+        "name": "callout",
+        "value": "0 8px 24px rgba(17, 24, 39, 0.15)",
+        "purpose": "Hero illustration badges, map tooltip."
+      },
+      {
+        "name": "pin",
+        "value": "0 4px 12px rgba(17, 24, 39, 0.2)",
+        "purpose": "Map pins."
+      },
+      {
+        "name": "selected-tab",
+        "value": "0 1px 3px rgba(17, 24, 39, 0.1)",
+        "purpose": "Active segment of a segmented tab control."
+      }
+    ],
+    "motion": [],
+    "breakpoints": [
+      {
+        "name": "desktop-collapse",
+        "value": "1100px"
+      },
+      {
+        "name": "admin-sidebar",
+        "value": "900px"
+      },
+      {
+        "name": "phone",
+        "value": "640px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "The one main action on a screen.",
+      "html": "<button class=\"ds-btn-primary\">Reserve this unit</button>",
+      "css": ".ds-btn-primary{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 22px;border-radius:8px;font-family:'Be Vietnam Pro', system-ui, sans-serif;font-size:15px;font-weight:600;cursor:pointer;border:1px solid transparent;background:#cc4b09;color:#fff}.ds-btn-primary:hover{background:#9a3412}.ds-btn-primary:focus-visible{outline:2px solid #cc4b09;outline-offset:2px}"
+    },
+    {
+      "name": "Outline Button",
+      "kind": "button",
+      "refersTo": "button-outline",
+      "description": "Secondary action beside a primary.",
+      "html": "<button class=\"ds-btn-outline\">See sizes &amp; prices</button>",
+      "css": ".ds-btn-outline{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 22px;border-radius:8px;font-family:'Be Vietnam Pro', system-ui, sans-serif;font-size:15px;font-weight:600;cursor:pointer;border:1px solid #cc4b09;background:#fff;color:#cc4b09}.ds-btn-outline:hover{background:#fff1e6}.ds-btn-outline:focus-visible{outline:2px solid #cc4b09;outline-offset:2px}"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Neutral actions: Cancel, Log in, filters.",
+      "html": "<button class=\"ds-btn-ghost\">Cancel</button>",
+      "css": ".ds-btn-ghost{display:inline-flex;align-items:center;justify-content:center;height:44px;padding:0 22px;border-radius:8px;font-family:'Be Vietnam Pro', system-ui, sans-serif;font-size:15px;font-weight:600;cursor:pointer;border:1px solid #e7e5e4;background:#fff;color:#1f2937}.ds-btn-ghost:hover{background:#fafaf9}.ds-btn-ghost:focus-visible{outline:2px solid #cc4b09;outline-offset:2px}"
+    },
+    {
+      "name": "Search Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "44px field with a leading outline icon; the border turns orange on focus.",
+      "html": "<label class=\"ds-field\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" aria-hidden=\"true\"><path d=\"M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16z M21 21l-4.3-4.3\"/></svg><input placeholder=\"Search by district or address\" aria-label=\"Search\"></label>",
+      "css": ".ds-field{display:flex;align-items:center;gap:10px;height:44px;padding:0 12px;border:1px solid #e7e5e4;border-radius:8px;background:#fff;color:#57534e;width:320px}.ds-field:focus-within{border-color:#cc4b09}.ds-field input{flex:1;border:0;outline:0;background:transparent;font-family:'Be Vietnam Pro', system-ui, sans-serif;font-size:14px;color:#1c1917}"
+    },
+    {
+      "name": "Choice Chip",
+      "kind": "chip",
+      "description": "Size, period and urgency choices; selected means a 2px orange border on Orange Mist.",
+      "html": "<div class=\"ds-chips\"><button class=\"ds-chip\">1 month</button><button class=\"ds-chip active\" aria-pressed=\"true\">3 months <small>-5%</small></button></div>",
+      "css": ".ds-chips{display:flex;gap:10px}.ds-chip{height:40px;padding:0 14px;border-radius:8px;border:1px solid #e7e5e4;background:#fff;font-family:'Be Vietnam Pro', system-ui, sans-serif;font-size:14px;color:#1c1917;cursor:pointer}.ds-chip.active{border:2px solid #cc4b09;background:#fff1e6;color:#9a3412;font-weight:600;padding:0 13px}.ds-chip:focus-visible{outline:2px solid #cc4b09;outline-offset:2px}"
+    },
+    {
+      "name": "Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Flat white card with 14px corners and a hairline border; no shadow at rest.",
+      "html": "<article class=\"ds-card\"><span class=\"ds-tile\">&#9634;</span><h3>Household items</h3><p>Furniture, appliances, seasonal things during a move.</p></article>",
+      "css": ".ds-card{width:220px;padding:20px;border:1px solid #e7e5e4;border-radius:14px;background:#fff;font-family:'Be Vietnam Pro', system-ui, sans-serif}.ds-tile{display:grid;place-items:center;width:44px;height:44px;border-radius:10px;background:#fff1e6;color:#cc4b09}.ds-card h3{margin:16px 0 8px;font-size:16px;font-weight:700;color:#1f2937}.ds-card p{margin:0;font-size:13px;line-height:1.6;color:#57534e}"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "custom",
+      "refersTo": "badge-ok",
+      "description": "A pill with a leading dot; every status carries its label and colour only reinforces it.",
+      "html": "<span class=\"ds-badge\">5 available</span> <span class=\"ds-badge low\">Only 3 left</span> <span class=\"ds-badge none\">Fully booked</span>",
+      "css": ".ds-badge{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border-radius:999px;background:#e3f6ec;color:#1a7f55;font-family:'Be Vietnam Pro', system-ui, sans-serif;font-size:12px;font-weight:600}.ds-badge::before{content:'';width:5px;height:5px;border-radius:50%;background:currentColor}.ds-badge.low{background:#fef3c7;color:#b45309}.ds-badge.none{background:#fdecec;color:#d92d20}"
+    },
+    {
+      "name": "Admin Sidebar Item",
+      "kind": "nav",
+      "refersTo": "nav-admin-active",
+      "description": "Charcoal sidebar; the active item is filled orange and queue counters are cyan.",
+      "html": "<nav class=\"ds-side\"><a href=\"#\">Dashboard</a><a href=\"#\" class=\"active\">Reservations <span>12</span></a><a href=\"#\">Support Tickets <span>4</span></a></nav>",
+      "css": ".ds-side{width:240px;padding:14px;background:#1f2937;border-radius:8px;font-family:'Be Vietnam Pro', system-ui, sans-serif}.ds-side a{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;border-radius:8px;color:#e5e7eb;font-size:14px;text-decoration:none}.ds-side a:hover{background:#374151}.ds-side a.active{background:#cc4b09;color:#fff;font-weight:600}.ds-side a span{min-width:22px;padding:1px 7px;border-radius:999px;background:#06b6d4;color:#1f2937;font-size:11px;font-weight:700;text-align:center}.ds-side a:focus-visible{outline:2px solid #fdba74}"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Bright Roll-Up Door",
+    "overview": "StorEase is the orange door you can spot from the street: warm, easy to open, and plainly marked. Everything around the door is calm stone and charcoal, so the one bright thing tells you where to go. The customer site is the friendly front of a facility a first-time renter is about to trust with their belongings. It uses soft corners, tinted bands and generous padding, and every price and status is stated plainly. The admin portal is the same building seen from the front desk. It has a charcoal sidebar with denser tables and the same components. It shares the tokens rather than inventing a second look.\n\nThe system is light-first and flat at rest. Cards are separated by a hairline border, not a shadow. Depth appears only where something floats: the hero illustration's badges, the booking search bar, a sticky summary. Type is one family, Be Vietnam Pro, chosen because it renders Vietnamese diacritics cleanly at every weight. Hierarchy comes from weight (400 to 800) and size, never from a second typeface.",
+    "keyCharacteristics": [
+      "One loud colour (storage orange), used as a signal, on a quiet charcoal-and-stone base.",
+      "Soft, friendly forms: 14px cards, 8px controls, pill badges.",
+      "Flat surfaces with hairline borders; shadows only for floating elements.",
+      "One type family, Be Vietnam Pro, carrying every role.",
+      "Customer site and admin portal share every token and component; the admin side is simply denser."
+    ],
+    "rules": [
+      {
+        "name": "The One Door Rule",
+        "section": "colors",
+        "body": "Storage Orange marks the single thing to do next. A screen has one orange-filled button. Everything else uses outline, ghost or link buttons."
+      },
+      {
+        "name": "The Apricot-Stays-Dark Rule",
+        "section": "colors",
+        "body": "Apricot is for charcoal backgrounds only. On white, use Storage Orange or Rust."
+      },
+      {
+        "name": "The One Family Rule",
+        "section": "typography",
+        "body": "Every role is Be Vietnam Pro. Hierarchy comes from weight and size, never from a second typeface."
+      },
+      {
+        "name": "The Flat-By-Default Rule",
+        "section": "elevation",
+        "body": "A card at rest has a border and no shadow. Shadow means \"this floats above the page\", not \"this is important\"."
+      }
+    ],
+    "dos": [
+      "Do keep one Storage Orange filled button per screen, and use Outline or Ghost for the rest.",
+      "Do separate cards with a 1px Hairline border, and save shadows for floating elements.",
+      "Do pair every status colour with a text label (WCAG 2.1 AA: never colour alone).",
+      "Do use Rust, not Storage Orange, for text on Orange Mist backgrounds.",
+      "Do format money with `vi-VN` VND and dates as `dd/mm/yyyy` in the Ho Chi Minh City time zone."
+    ],
+    "donts": [
+      "Don't put Apricot or white text on light backgrounds; Apricot exists only for charcoal surfaces.",
+      "Don't put white text on Signal Cyan; it is always paired with Charcoal text.",
+      "Don't introduce a second typeface or a second brand colour.",
+      "Don't use MyStorage branding, logos or copy anywhere.",
+      "Don't drop the footer line stating this is an SWP391 student project and not a real service."
+    ]
+  }
+}

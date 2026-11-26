@@ -1,0 +1,264 @@
+import { useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { checkInsApi, contractsApi, renewalsApi } from '../../api/generated';
+import { errorMessage } from '../../api/axiosClient';
+import Icon from '../components/Icon.jsx';
+import { formatDate, formatVnd, renewedEndDate, todayIso } from '../components/format.js';
+import PayInvoiceButton from './PayInvoiceButton.jsx';
+import { discountLabel, useTerms } from '../components/terms.js';
+import { CONTRACT_BADGE, OPEN_INVOICE, invoiceBadge, periodUsed, useMyInvoices, useMyReservations } from './queries.js';
+import './MyStoragePage.css';
+import './UnitDetailPage.css';
+import { useT } from '../../i18n/I18n.jsx';
+
+const RENEW_OPTIONS = [1, 3, 6, 12];
+/** How a visit was closed when the customer did not check out at the desk themselves. */
+const LEFT_HOW = { MarkedByStaff: 'nhân viên ghi nhận', AutoAtClosing: 'tự động lúc đóng cửa' };
+const formatTime = (iso) => new Date(iso).toLocaleString('vi-VN', { timeZone: 'Asia/Ho_Chi_Minh', day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+
+function AccessCodeCard({ contract }) {
+    const queryClient = useQueryClient();
+    const [issued, setIssued] = useState(null);
+    const t = useT();
+    // Hidden until the customer taps "Hiện mã", so it is not on screen for anyone looking over their shoulder.
+    const [shown, setShown] = useState(false);
+    const summary = useQuery({
+        queryKey: ['contracts', contract.contractId, 'access-code'],
+        queryFn: () => contractsApi.accessCode(contract.contractId),
+        enabled: contract.status === 'Active',
+    });
+    const issue = useMutation({
+        mutationFn: () => contractsApi.accessCodesRequest(contract.contractId),
+        onSuccess: (dto) => {
+            setIssued(dto.code);
+            setShown(true);
+            queryClient.invalidateQueries({ queryKey: ['contracts', contract.contractId, 'access-code'] });
+        },
+    });
+
+    if (contract.status !== 'Active') {
+        return (
+            <section className="se-code-card">
+                <h2><Icon name="key" size={18} /> {t('Mã ra vào cá nhân')}</h2>
+                <p className="se-code-note">{t('Mã được cấp khi bạn đến cơ sở nhận kho.')}</p>
+            </section>
+        );
+    }
+
+    // The current code comes back from the account; codes issued before codes were kept readable cannot.
+    const code = issued ?? summary.data?.code ?? null;
+    const digits = code ? code.split('') : Array(6).fill('•');
+    return (
+        <section className="se-code-card">
+            <h2><Icon name="key" size={18} /> {t('Mã ra vào cá nhân')}</h2>
+            <div className="se-code-digits" aria-label={code && shown ? t('Mã ra vào {code}', { code }) : t('Mã ra vào đang ẩn')}>
+                {digits.map((d, i) => <span key={i}>{code && shown ? d : '•'}</span>)}
+            </div>
+            <div className="se-code-actions">
+                {code && <button type="button" onClick={() => setShown(!shown)}><Icon name={shown ? 'eyeOff' : 'eye'} size={14} /> {t(shown ? 'Ẩn mã' : 'Hiện mã')}</button>}
+                <button type="button" onClick={() => issue.mutate()} disabled={issue.isPending}><Icon name="key" size={14} /> {t(issue.isPending ? 'Đang cấp mã…' : 'Cấp mã mới')}</button>
+            </div>
+            {issue.isError && <p className="se-code-note error">{errorMessage(issue.error)}</p>}
+            <p className="se-code-note">
+                {summary.data?.isActive
+                    ? t('Đọc mã này cho nhân viên khi vào và ra cơ sở. Mã đổi sau mỗi lần bạn rời cơ sở, hãy xem mã mới tại đây trước mỗi lần đến.')
+                    : t('Chưa có mã đang dùng. Hãy cấp mã mới.')}{' '}
+                {summary.data?.isActive && !code ? `${t('Mã cũ không xem lại được, hãy cấp mã mới.')} ` : ''}
+                {t('Không chia sẻ mã cho người khác.')}
+            </p>
+        </section>
+    );
+}
+
+function RenewCard({ contract, facilityId, unitTypeId, quiet }) {
+    const terms = useTerms({ facilityId }).data;
+    const queryClient = useQueryClient();
+    const t = useT();
+    const [months, setMonths] = useState(6);
+    const renewals = useQuery({ queryKey: ['renewals', contract.contractId], queryFn: () => renewalsApi.list({ contractId: contract.contractId, page: 1, pageSize: 10 }) });
+    const renew = useMutation({
+        mutationFn: () => renewalsApi.create({ contractId: contract.contractId, extendMonths: months }),
+        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['renewals', contract.contractId] }),
+    });
+    const pending = renewals.data?.items?.find((r) => r.status === 'Requested');
+    // The next customer booked this unit: the manager offered another one of the same size.
+    const offer = renewals.data?.items?.find((r) => r.status === 'AwaitingCustomer');
+    const answer = useMutation({
+        mutationFn: (accept) => (accept ? renewalsApi.acceptTransfer(offer.renewalId) : renewalsApi.declineTransfer(offer.renewalId)),
+        onSuccess: () => ['renewals', 'contracts', 'returns'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
+    });
+
+    return (
+        <section className="se-panel">
+            <h2><Icon name="calendar" size={18} /> {t('Gia hạn thuê')}</h2>
+            <p className="se-hint">{t('Thời hạn hiện tại kết thúc ngày {date}. Gia hạn để giữ kho; quản lý sẽ duyệt ngày kết thúc và giá thuê mới.', { date: formatDate(contract.endDate) })}</p>
+            {offer ? (
+                <div className="se-alert info se-proposal">
+                    <p><strong>{t('Gia hạn được duyệt nếu bạn chuyển sang kho {code}', { code: offer.transferUnitCode })}</strong></p>
+                    <p>{t('Kho {old} đã có khách đặt sau ngày {date}. Kho {code} cùng cỡ: đồng ý thì hợp đồng chuyển sang kho mới, kéo dài đến {end}; hãy chuyển đồ trước ngày {date}. Không đồng ý thì bạn trả kho vào ngày {date} và nhận lại toàn bộ tiền cọc sau khi kiểm tra kho.', { old: contract.unitCode, code: offer.transferUnitCode, date: formatDate(contract.endDate), end: formatDate(offer.newEndDate) })}</p>
+                    {answer.isError && <div className="se-alert" role="alert">{errorMessage(answer.error)}</div>}
+                    <div className="se-proposal-actions">
+                        <button type="button" className="se-btn se-btn-primary se-btn-sm" disabled={answer.isPending} onClick={() => answer.mutate(true)}>{t('Đồng ý chuyển sang {code}', { code: offer.transferUnitCode })}</button>
+                        <button type="button" className="se-btn se-btn-ghost se-btn-sm" disabled={answer.isPending} onClick={() => answer.mutate(false)}>{t('Không gia hạn, trả kho')}</button>
+                    </div>
+                </div>
+            ) : pending ? (
+                <div className="se-alert info">
+                    {t('Đã gửi yêu cầu gia hạn thêm {months} tháng: ngày kết thúc mới {date}, {rent} / tháng. Đang chờ duyệt.', { months: pending.extendMonths, date: formatDate(pending.newEndDate), rent: formatVnd(pending.newMonthlyRent) })}
+                </div>
+            ) : (
+                <>
+                    <div className="se-chips" role="radiogroup" aria-label={t('Thời gian gia hạn')}>
+                        {RENEW_OPTIONS.map((m) => {
+                            const note = discountLabel(terms, m, unitTypeId);
+                            return (
+                                <button key={m} type="button" role="radio" aria-checked={months === m}
+                                    className={`se-chip${months === m ? ' active' : ''}`} onClick={() => setMonths(m)}>
+                                    {months === m && <Icon name="check" size={14} />}+{t('{months} tháng', { months: m })} {note && <small>{note}</small>}
+                                </button>
+                            );
+                        })}
+                    </div>
+                    <div className="se-renew-preview">{t('Ngày kết thúc mới:')} <strong>{formatDate(renewedEndDate(contract.startDate, contract.endDate, months))}</strong></div>
+                    {renew.isError && <div className="se-alert" role="alert">{errorMessage(renew.error)}</div>}
+                    <button type="button" className={`se-btn se-btn-block ${quiet ? 'se-btn-outline' : 'se-btn-primary'}`} onClick={() => renew.mutate()} disabled={renew.isPending}>
+                        {t(renew.isPending ? 'Đang gửi…' : 'Gửi yêu cầu gia hạn')}
+                    </button>
+                </>
+            )}
+        </section>
+    );
+}
+
+/** U10: one rented unit — access code, renewal, contract, payments and access log. */
+export default function UnitDetailPage() {
+    const contractId = Number(useParams().contractId);
+    const t = useT();
+    const queryClient = useQueryClient();
+    const contract = useQuery({ queryKey: ['contracts', contractId], queryFn: () => contractsApi.getById(contractId) });
+    const reservations = useMyReservations();
+    const invoices = useMyInvoices();
+    // Every coming and going is checked in and out at the desk (the handover counts as the first visit).
+    const visits = useQuery({ queryKey: ['check-ins', contractId], queryFn: () => checkInsApi.list({ contractId, page: 1, pageSize: 6 }) });
+    const sign = useMutation({
+        mutationFn: () => contractsApi.sign(contractId),
+        onSuccess: (dto) => {
+            queryClient.setQueryData(['contracts', contractId], dto);
+            queryClient.invalidateQueries({ queryKey: ['contracts'] });
+        },
+    });
+
+    if (contract.isLoading) return <p className="se-empty">{t('Đang tải thông tin kho…')}</p>;
+    if (contract.isError) return <div className="se-alert" role="alert">{errorMessage(contract.error)}</div>;
+
+    const c = contract.data;
+    const r = reservations.data?.items?.find((x) => x.reservationId === c.reservationId);
+    const mine = (invoices.data?.items ?? []).filter((i) => i.contractId === contractId);
+    const due = mine.filter((i) => OPEN_INVOICE.includes(i.status)).sort((a, b) => a.dueDate.localeCompare(b.dueDate))[0];
+    const myVisits = visits.data?.items ?? [];
+    const live = ['Active', 'Overdue', 'Suspended'].includes(c.status);
+    // The API renews and moves out only Active contracts; an overdue one must be paid up first.
+    const active = c.status === 'Active';
+    const used = periodUsed(c.startDate, c.endDate, todayIso());
+    const daysLeft = Math.round((Date.parse(c.endDate) - Date.parse(todayIso())) / 86_400_000);
+
+    return (
+        <>
+            <Link to="/my-storage" className="se-back"><Icon name="arrowLeft" size={16} /> {t('Quay lại Kho của tôi')}</Link>
+            <div className="se-account-title">
+                <div>
+                    <h1>{t('Kho')} {c.unitCode} <span className={`se-badge ${CONTRACT_BADGE[c.status]?.[0] ?? 'low'}`}>{t(CONTRACT_BADGE[c.status]?.[1] ?? c.status)}</span></h1>
+                    <p>{[r?.unitTypeName, r?.facilityName].filter(Boolean).join(' · ')}</p>
+                </div>
+                <div className="se-title-actions">
+                    <Link to={`/support/new?contractId=${contractId}`} className="se-btn se-btn-ghost"><Icon name="shield" size={16} /> {t('Báo sự cố')}</Link>
+                    {(active || c.status === 'Overstay') && <Link to={`/return?contractId=${contractId}`} className="se-btn se-btn-danger">{t('Yêu cầu trả kho')}</Link>}
+                </div>
+            </div>
+
+            {c.status === 'Overstay' && (
+                <div className="se-alert" role="alert">{t('Kỳ thuê đã kết thúc ngày {date} nhưng kho chưa được trả. Mã ra vào đã khóa và phí quá hạn được tính mỗi ngày. Hãy yêu cầu trả kho để mở lại mã và dọn đồ; quá hạn lâu, đồ sẽ được chuyển về kho tổng và phí trừ vào tiền cọc.', { date: formatDate(c.endDate) })}</div>
+            )}
+            {active && daysLeft >= 0 && daysLeft <= 10 && (
+                <div className="se-alert info" role="status">{t('Kỳ thuê kết thúc ngày {date} (còn {days} ngày). Hãy gia hạn bên dưới hoặc yêu cầu trả kho.', { date: formatDate(c.endDate), days: daysLeft })}</div>
+            )}
+            {c.status === 'Draft' && !c.signedAt && (
+                <div className="se-due">
+                    <Icon name="file" size={20} />
+                    <div><strong>{t('Vui lòng ký hợp đồng thuê kho')}</strong><small>{t('Sau khi bạn ký, nhân viên sẽ giao kho và kích hoạt hợp đồng khi bạn đến nhận.')}</small></div>
+                    <button type="button" className="se-btn se-btn-primary se-btn-sm" onClick={() => sign.mutate()} disabled={sign.isPending}>{t(sign.isPending ? 'Đang ký…' : 'Ký hợp đồng')}</button>
+                </div>
+            )}
+            {sign.isError && <div className="se-alert" role="alert">{errorMessage(sign.error)}</div>}
+
+            <div className="se-detail-grid">
+                <div>
+                    <AccessCodeCard contract={c} />
+                    {active && <RenewCard contract={c} facilityId={r?.facilityId} unitTypeId={r?.unitTypeId} quiet={!!due} />}
+                    {live && !active && <div className="se-alert info">{t('Hãy thanh toán tiền thuê quá hạn để có thể gia hạn hoặc yêu cầu trả kho.')}</div>}
+                    <section className="se-panel">
+                        <h2>{t('Lịch sử thanh toán')}</h2>
+                        <div className="se-table-wrap">
+                            <table className="se-table se-stack">
+                                <thead><tr><th>{t('Ngày lập')}</th><th>{t('Nội dung')}</th><th>{t('Số tiền')}</th><th>{t('Trạng thái')}</th></tr></thead>
+                                <tbody>
+                                    {mine.map((inv) => {
+                                        const [tone, label] = invoiceBadge(inv, t);
+                                        return (
+                                            <tr key={inv.invoiceId}>
+                                                <td data-label={t('Ngày lập')}>{formatDate(inv.issueDate)}</td>
+                                                <td data-label={t('Nội dung')}>{inv.items?.[0]?.description ?? inv.invoiceNumber}</td>
+                                                <td data-label={t('Số tiền')} className="price">{formatVnd(inv.totalAmount)}</td>
+                                                <td data-label={t('Trạng thái')}><span className={`se-badge ${tone}`}>{label}</span></td>
+                                            </tr>
+                                        );
+                                    })}
+                                    {!mine.length && <tr><td colSpan={4} className="se-empty">{t('Kho này chưa có hóa đơn nào.')}</td></tr>}
+                                </tbody>
+                            </table>
+                        </div>
+                    </section>
+                </div>
+
+                <aside>
+                    {due && (
+                        <div className="se-due-card">
+                            <strong>{formatVnd(due.outstandingAmount)} · {t('hạn {date}', { date: formatDate(due.dueDate) })}</strong>
+                            <small>{due.items?.[0]?.description ?? due.invoiceNumber}</small>
+                            <PayInvoiceButton invoice={due} className="se-btn se-btn-primary se-btn-block se-btn-sm">{t('Thanh toán ngay')}</PayInvoiceButton>
+                        </div>
+                    )}
+                    <section className="se-panel">
+                        <h2>{t('Hợp đồng')}</h2>
+                        <dl className="se-kv">
+                            <div><dt>{t('Số hợp đồng')}</dt><dd>{c.contractNumber}</dd></div>
+                            <div><dt>{t('Ngày bắt đầu')}</dt><dd>{formatDate(c.startDate)}</dd></div>
+                            <div><dt>{t('Ngày kết thúc')}</dt><dd>{formatDate(c.endDate)}</dd></div>
+                            <div><dt>{t('Tiền thuê mỗi tháng')}</dt><dd>{formatVnd(c.monthlyRent)}</dd></div>
+                            <div><dt>{t('Tiền cọc đang giữ')}</dt><dd>{formatVnd(c.depositAmount)}</dd></div>
+                            <div><dt>{t('Ngày thanh toán')}</dt><dd>{t('Ngày {day} hằng tháng', { day: c.paymentDay })}</dd></div>
+                            <div><dt>{t('Ngày ký')}</dt><dd>{c.signedAt ? formatDate(c.signedAt) : t('Chưa ký')}</dd></div>
+                        </dl>
+                        {live && <>
+                            <p className="se-hint">{t('Đã dùng {used}% thời hạn thuê', { used })}</p>
+                            <div className="se-progress flat"><span style={{ width: `${used}%` }} /></div>
+                        </>}
+                    </section>
+                    <section className="se-panel">
+                        <h2>{t('Lịch sử ra vào')}</h2>
+                        <ul className="se-log">
+                            {myVisits.map((v) => (
+                                <li key={v.checkInId}>
+                                    <span>{t('Vào')} <strong>{formatTime(v.checkInAt)}</strong>
+                                        {v.checkOutAt ? <> · {t('ra')} <strong>{formatTime(v.checkOutAt)}</strong>{LEFT_HOW[v.checkOutMethod] ? ` (${t(LEFT_HOW[v.checkOutMethod])})` : ''}</> : ` · ${t('đang ở trong cơ sở')}`}</span>
+                                </li>
+                            ))}
+                            {!myVisits.length && <li className="se-hint">{t(visits.isLoading ? 'Đang tải…' : 'Chưa có lượt ra vào nào.')}</li>}
+                        </ul>
+                    </section>
+                </aside>
+            </div>
+        </>
+    );
+}

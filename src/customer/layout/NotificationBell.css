@@ -1,0 +1,46 @@
+.se-bell { position: relative; }
+.se-bell-btn {
+    position: relative; display: grid; place-items: center; width: 44px; height: 44px; padding: 0;
+    border: 1px solid var(--se-line); border-radius: 999px; background: #fff; color: var(--se-dark); cursor: pointer;
+}
+.se-bell-count {
+    position: absolute; top: -3px; right: -3px; min-width: 20px; height: 20px; padding: 0 5px;
+    border-radius: 999px; background: #b42318; color: #fff; font-size: 11px; font-weight: 700; line-height: 20px; text-align: center;
+}
+.se-bell-panel {
+    position: absolute; top: calc(100% + 10px); right: 0; z-index: 60; width: 380px; max-height: min(480px, calc(100vh - 96px));
+    overflow-y: auto; border: 1px solid var(--se-line); border-radius: 12px; background: #fff; text-align: left;
+}
+.se-bell-panel[hidden] { display: none; }
+.se-bell-title { display: block; padding: 14px 16px; border-bottom: 1px solid var(--se-line); color: var(--se-dark); }
+.se-bell-panel ul { margin: 0; padding: 0; list-style: none; }
+.se-bell-panel li + li { border-top: 1px solid var(--se-line); }
+.se-bell-item { display: grid; gap: 4px; padding: 12px 16px; color: var(--se-ink); font-size: 13px; line-height: 1.5; text-decoration: none; }
+.se-bell-item.unread { background: #fff1e8; }
+.se-bell-item:hover { text-decoration: underline; }
+.se-bell-item:focus-visible { outline-offset: -2px; }
+.se-bell-item strong { color: var(--se-dark); font-size: 14px; }
+.se-bell-item span { white-space: pre-line; overflow-wrap: anywhere; }
+.se-bell-item small { font-size: 12px; }
+.se-bell-empty { margin: 0; padding: 16px; font-size: 14px; }
+
+/* Below the desktop width the bell is too far from the right edge for its panel, which hangs from the header instead. */
+@media (max-width: 1100px) {
+    .se-bell { position: static; }
+    .se-bell-panel { top: 100%; right: 8px; width: min(380px, calc(100% - 16px)); }
+}
+
+/* The bell takes a place in the header, so the signed-in header tightens where it would no longer fit. */
+@media (min-width: 561px) and (max-width: 700px) {
+    .se-header:has(.se-bell) .se-header-row { gap: 12px; }
+    .se-header:has(.se-bell) .se-account { padding-right: 6px; font-size: 0; gap: 0; }
+}
+@media (max-width: 480px), (min-width: 561px) and (max-width: 620px) {
+    .se-header:has(.se-bell) .se-brand-name { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+}
+@media (max-width: 370px) {
+    .se-header:has(.se-bell) .se-header-row,
+    .se-header:has(.se-bell) .se-header-actions { gap: 5px; }
+    .se-header:has(.se-bell) .se-header-row { padding-inline: 10px; }
+    .se-header:has(.se-bell) .se-lang select { padding: 0 2px 0 6px; }
+}
