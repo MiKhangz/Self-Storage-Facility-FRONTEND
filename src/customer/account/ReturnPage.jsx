@@ -177,7 +177,7 @@ export default function ReturnPage() {
                     </section>
                     <div className="se-due-card">
                         <strong>{t('Trả kho trước hạn')}</strong>
-                        <small>{t('Hợp đồng của bạn có hiệu lực đến ngày {date}. Trả kho sớm hơn thì chỉ trả tiền thuê đến khi trả kho xong, không tính các tháng còn lại; hóa đơn chưa trả được trừ vào tiền cọc.', { date: formatDate(contract.endDate) })}</small>
+                        <small>{t('Hợp đồng của bạn có hiệu lực đến ngày {date}. Trả kho sớm hơn thì tháng đang thuê vẫn tính trọn tháng, các tháng sau không tính; hóa đơn chưa trả được trừ vào tiền cọc.', { date: formatDate(contract.endDate) })}</small>
                     </div>
                 </aside>
             </div>

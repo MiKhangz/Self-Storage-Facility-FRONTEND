@@ -399,7 +399,7 @@ export default {
     "Số tiền hoàn lại cuối cùng được xác nhận sau khi kiểm tra kho.": "The final refund is confirmed after the inspection.",
     "Các bước tiếp theo": "Next steps",
     "Trả kho trước hạn": "Returning early",
-    "Hợp đồng của bạn có hiệu lực đến ngày {date}. Trả kho sớm hơn thì chỉ trả tiền thuê đến khi trả kho xong, không tính các tháng còn lại; hóa đơn chưa trả được trừ vào tiền cọc.": "Your contract runs until {date}. Return earlier and you pay rent only until the hand-back, not for the remaining months; unpaid invoices come out of the deposit.",
+    "Hợp đồng của bạn có hiệu lực đến ngày {date}. Trả kho sớm hơn thì tháng đang thuê vẫn tính trọn tháng, các tháng sau không tính; hóa đơn chưa trả được trừ vào tiền cọc.": "Your contract runs until {date}. Return earlier and the month you are in is still paid in full; later months are not charged. Unpaid invoices come out of the deposit.",
     "Xin chào, {name}": "Hello, {name}",
     "Mọi thông tin về các kho bạn đang thuê.": "Everything about the units you rent.",
     "Thuê thêm kho": "Rent another unit",
