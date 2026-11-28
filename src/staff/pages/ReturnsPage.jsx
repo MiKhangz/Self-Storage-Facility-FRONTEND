@@ -33,7 +33,7 @@ function Approve({ request, onDone }) {
     return (
         <>
             <label><span className="se-label">{tr('Inspection appointment')}</span>
-                <div className="se-input"><input type="datetime-local" value={slot} onChange={(e) => setSlot(e.target.value)} /></div></label>
+                <div className="se-input"><input type="datetime-local" value={slot} max={`${request.moveOutDeadline}T23:59`} onChange={(e) => setSlot(e.target.value)} /></div></label>
             {approve.isError && <div className="se-alert" role="alert">{errorMessage(approve.error)}</div>}
             <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!slot || approve.isPending} onClick={() => approve.mutate()}>{tr('Approve & book inspection')}</button>
         </>
