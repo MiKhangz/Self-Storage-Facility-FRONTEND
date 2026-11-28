@@ -5,7 +5,7 @@ import { errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
-import { formatDate, formatVnd } from '../../customer/components/format.js';
+import { formatDate, formatVnd, todayIso } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
 import HandoverPhotos from '../components/HandoverPhotos.jsx';
 import { Modal, PageHeader, Stat, Status, TableState } from '../components/ui.jsx';
@@ -33,7 +33,7 @@ function Approve({ request, onDone }) {
     return (
         <>
             <label><span className="se-label">{tr('Inspection appointment')}</span>
-                <div className="se-input"><input type="datetime-local" value={slot} max={`${request.moveOutDeadline}T23:59`} onChange={(e) => setSlot(e.target.value)} /></div></label>
+                <div className="se-input"><input type="datetime-local" value={slot} max={request.moveOutDeadline >= todayIso() ? `${request.moveOutDeadline}T23:59` : undefined} onChange={(e) => setSlot(e.target.value)} /></div></label>
             {approve.isError && <div className="se-alert" role="alert">{errorMessage(approve.error)}</div>}
             <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!slot || approve.isPending} onClick={() => approve.mutate()}>{tr('Approve & book inspection')}</button>
         </>
