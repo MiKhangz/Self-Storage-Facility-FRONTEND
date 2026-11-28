@@ -168,7 +168,10 @@ export default function UnitDetailPage() {
             <Link to="/my-storage" className="se-back"><Icon name="arrowLeft" size={16} /> {t('Quay lại Kho của tôi')}</Link>
             <div className="se-account-title">
                 <div>
-                    <h1>{t('Kho')} {c.unitCode} <span className={`se-badge ${CONTRACT_BADGE[c.status]?.[0] ?? 'low'}`}>{t(CONTRACT_BADGE[c.status]?.[1] ?? c.status)}</span></h1>
+                    <h1>
+                        {(c.signedAt || c.status !== 'Draft') ? `${t('Kho')} ${c.unitCode}` : (r?.reservationCode ?? c.contractNumber)}{' '}
+                        <span className={`se-badge ${CONTRACT_BADGE[c.status]?.[0] ?? 'low'}`}>{t(CONTRACT_BADGE[c.status]?.[1] ?? c.status)}</span>
+                    </h1>
                     <p>{[r?.unitTypeName, r?.facilityName].filter(Boolean).join(' · ')}</p>
                 </div>
                 <div className="se-title-actions">

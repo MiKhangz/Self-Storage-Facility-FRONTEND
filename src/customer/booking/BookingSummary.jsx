@@ -99,7 +99,6 @@ export default function BookingSummary({ facility, type, moveInDate, rentalMonth
     const isSameDay = sameDay ?? q?.sameDay ?? false;
     const cancelHours = isSameDay ? 0 : policyCancelHours;
     const isStaffAssisted = unitAssignmentMode === 'STAFF_ASSISTED';
-    const displayUnitCode = isStaffAssisted ? null : (unitCode || q?.expectedUnitCode);
     const dueNow = q ? (isSameDay ? (q.upfrontAmount || q.monthlyRent) : q.depositAmount) : 0;
     const remainingRent = q ? Math.max((q.rentSubtotal ?? 0) - (isSameDay ? (q.upfrontAmount || q.monthlyRent) : 0), 0) : 0;
     const keptDeposit = q ? (isSameDay ? (q.depositAmount || Math.max(Math.round((q.monthlyRent || dueNow) / 30), 100000)) : q.depositAmount) : 100000;
@@ -117,9 +116,7 @@ export default function BookingSummary({ facility, type, moveInDate, rentalMonth
         : `${t('Kho')} …`;
     const unitSubtitle = isStaffAssisted
         ? t('Nhân viên sẽ giúp chọn kho cụ thể cho bạn')
-        : displayUnitCode
-            ? `${t(unitCode ? 'Kho đã chọn' : 'Kho dự kiến')}: ${displayUnitCode}${facility?.name ? ` · ${facility.name}` : ''}`
-            : (facility?.name ?? t('Kho sẽ được hệ thống tự động xếp.'));
+        : (facility?.name ?? t('Kho sẽ được hệ thống tự động xếp.'));
 
     return (
         <aside className="se-panel se-summary se-summary-v2">

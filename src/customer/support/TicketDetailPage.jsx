@@ -47,7 +47,7 @@ export default function TicketDetailPage() {
             <div className="se-account-title">
                 <div>
                     <h1>{t.subject} <span className={`se-badge ${tone}`}>{tr(label)}</span></h1>
-                    <p>{[t.ticketCode, tr('gửi lúc {time}', { time: formatDateTime(t.createdAt) }), t.unitCode && `${tr('Kho')} ${t.unitCode}`, t.facilityName].filter(Boolean).join(' · ')}</p>
+                    <p>{[t.ticketCode, tr('gửi lúc {time}', { time: formatDateTime(t.createdAt) }), t.reservationCode || (t.unitCode && `${tr('Kho')} ${t.unitCode}`), t.facilityName].filter(Boolean).join(' · ')}</p>
                 </div>
                 {!closed && (
                     <button type="button" className="se-btn se-btn-ghost" onClick={() => confirmAction(tr('Đóng yêu cầu này? Sau khi đóng, bạn không thể trả lời thêm.')).then((ok) => ok && close.mutate())} disabled={close.isPending}>
@@ -98,7 +98,7 @@ export default function TicketDetailPage() {
                                 <dd><Link to={`/booking/confirmed/${t.reservationId}`} className="se-link">{t.reservationCode || `#${t.reservationId}`}</Link></dd>
                             </div>
                         )}
-                        {t.unitCode && <div><dt>{tr('Kho')}</dt><dd>{t.unitCode}</dd></div>}
+                        {!t.reservationId && t.unitCode && <div><dt>{tr('Kho')}</dt><dd>{t.unitCode}</dd></div>}
                         {t.reservationPreferences?.length > 0 && <div><dt>{tr('Ưu tiên vị trí')}</dt><dd>{t.reservationPreferences.map((p) => tr(p)).join(', ')}</dd></div>}
                         {t.reservationPreferenceNote && <div><dt>{tr('Ghi chú')}</dt><dd>{t.reservationPreferenceNote}</dd></div>}
                         <div><dt>{tr('Cơ sở')}</dt><dd>{t.facilityName}</dd></div>

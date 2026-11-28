@@ -92,9 +92,6 @@ export default function ChooseUnitPage() {
     const availableCount = stock.data?.availableUnits;
     const soldOut = availableCount === 0;
     const isStaffAssisted = form.unitAssignmentMode === 'STAFF_ASSISTED';
-    const availableUnits = (stock.data?.units ?? []).filter((unit) => unit.isAvailable);
-    const selectedUnit = form.sameDay && !isStaffAssisted
-        ? availableUnits.find((unit) => unit.storageUnitId === form.storageUnitId) : null;
 
     const discountPercent = discountFor(terms, form.rentalMonths, unitTypeId);
     const rentSubtotal = quote.data?.rentSubtotal;
@@ -116,10 +113,6 @@ export default function ChooseUnitPage() {
             sameDay: String(form.sameDay),
             unitAssignmentMode: form.unitAssignmentMode,
         });
-        if (selectedUnit) {
-            q.set('storageUnitId', selectedUnit.storageUnitId);
-            q.set('unitCode', selectedUnit.unitCode);
-        }
         if (isStaffAssisted && form.preferences.length > 0) {
             q.set('preferences', form.preferences.join(','));
         }
@@ -252,8 +245,8 @@ export default function ChooseUnitPage() {
                                 <button
                                     type="button"
                                     role="radio"
-                                    aria-checked={!isStaffAssisted && !selectedUnit}
-                                    className={`se-assign-card${!isStaffAssisted && !selectedUnit ? ' active' : ''}`}
+                                    aria-checked={!isStaffAssisted}
+                                    className={`se-assign-card${!isStaffAssisted ? ' active' : ''}`}
                                     onClick={() => set({ unitAssignmentMode: 'AUTO', storageUnitId: null })}
                                 >
                                     <span className="se-assign-radio" aria-hidden="true" />
@@ -262,23 +255,12 @@ export default function ChooseUnitPage() {
                                         <small>{tr('Chúng tôi sẽ xếp kho trống tốt nhất cho bạn.')}</small>
                                     </span>
                                 </button>
-                                {form.sameDay && availableUnits.map((unit) => (
-                                    <button key={unit.storageUnitId} type="button" role="radio"
-                                        aria-checked={selectedUnit?.storageUnitId === unit.storageUnitId}
-                                        className={`se-assign-card${selectedUnit?.storageUnitId === unit.storageUnitId ? ' active' : ''}`}
-                                        onClick={() => set({ unitAssignmentMode: 'AUTO', storageUnitId: unit.storageUnitId })}>
-                                        <span className="se-assign-radio" aria-hidden="true" />
-                                        <span className="se-assign-body"><strong>{unit.unitCode}</strong>
-                                            <small>{[unit.floorName, unit.zone].filter(Boolean).join(' · ')}</small>
-                                        </span>
-                                    </button>
-                                ))}
                                 <button
                                     type="button"
                                     role="radio"
                                     aria-checked={isStaffAssisted}
                                     className={`se-assign-card secondary${isStaffAssisted ? ' active' : ''}`}
-                                    onClick={() => set({ unitAssignmentMode: 'STAFF_ASSISTED' })}
+                                    onClick={() => set({ unitAssignmentMode: 'STAFF_ASSISTED', storageUnitId: null })}
                                 >
                                     <span className="se-assign-radio" aria-hidden="true" />
                                     <span className="se-assign-body">
@@ -334,7 +316,7 @@ export default function ChooseUnitPage() {
                                 {quote.data ? <>{tr('Tiền thuê {rent} mỗi tháng khi thuê {months} tháng.', { rent: formatVnd(quote.data.monthlyRent), months: form.rentalMonths })} </> : null}
                                 {isStaffAssisted
                                     ? tr('Nhân viên sẽ giúp bạn chọn kho sau khi bạn xác nhận.')
-                                    : selectedUnit ? selectedUnit.unitCode : tr('Kho sẽ được hệ thống tự động xếp.')}
+                                    : tr('Kho sẽ được hệ thống tự động xếp.')}
                             </p>
                             {(quote.isError || stock.isError) && !soldOut && <div className="se-alert" role="alert">{tr('Chưa có giá cho lựa chọn này. Hãy thử cỡ kho, cơ sở hoặc ngày khác.')}</div>}
                         </section>
@@ -348,7 +330,6 @@ export default function ChooseUnitPage() {
                         quote={quote}
                         sameDay={form.sameDay}
                         unitAssignmentMode={form.unitAssignmentMode}
-                        unitCode={selectedUnit?.unitCode}
                     >
                         <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta" disabled={!ready || soldOut || !quote.data} onClick={next}>
                             {soldOut

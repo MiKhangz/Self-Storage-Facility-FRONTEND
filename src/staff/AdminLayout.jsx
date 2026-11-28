@@ -24,6 +24,7 @@ const NAV = [
             { to: '/admin/staff', icon: 'clock', label: 'Staff & Shifts', roles: [FS, FM, ADMIN] },
             { to: '/admin/contracts', icon: 'file', label: 'Customers & Contracts', roles: OPS },
             { to: '/admin/payments', icon: 'card', label: 'Payments', roles: [FS, FM, BOM] },
+            { to: '/admin/payment-history', icon: 'clock', label: 'Payment History', roles: OPS },
             { to: '/admin/overdue', icon: 'clock', label: 'Overdue Cases', roles: [FM, BOM] },
             { to: '/admin/maintenance', icon: 'shield', label: 'Maintenance', roles: OPS },
             { to: '/admin/tickets', icon: 'chat', label: 'Support Tickets', roles: OPS, badge: 'tickets' },

@@ -130,12 +130,16 @@ export default function MyStoragePage() {
                         : needsAppointment
                             ? ['low', 'Chọn thời gian nhận kho']
                             : CONTRACT_BADGE[c.status];
+                    const isSigned = Boolean(c.signedAt) || c.status !== 'Draft';
                     return (
                         <article key={c.contractId} className={`se-card se-unit${needsAppointment ? ' has-dot' : ''}`}>
                             {needsAppointment && <span className="se-red-dot" title={t('Hãy đặt thời gian hẹn nhận kho trong đơn đặt kho.')} aria-label={t('Hãy đặt thời gian hẹn nhận kho trong đơn đặt kho.')} />}
                             <header>
                                 <span className="se-unit-icon"><Icon name="box" size={20} /></span>
-                                <div><strong>{t('Kho')} {c.unitCode}</strong><small>{r?.unitTypeName ?? ''}</small></div>
+                                <div>
+                                    <strong>{isSigned ? `${t('Kho')} ${c.unitCode}` : (r?.reservationCode ?? c.contractNumber)}</strong>
+                                    <small>{r?.unitTypeName ?? ''}</small>
+                                </div>
                                 <span className={`se-badge ${tone}`}>{t(label)}</span>
                             </header>
                             <dl>
@@ -172,7 +176,7 @@ export default function MyStoragePage() {
                             {needsAppointment && <span className="se-red-dot" title={t('Hãy đặt thời gian hẹn nhận kho trong đơn đặt kho.')} aria-label={t('Hãy đặt thời gian hẹn nhận kho trong đơn đặt kho.')} />}
                             <header>
                                 <span className="se-unit-icon"><Icon name="box" size={20} /></span>
-                                <div><strong>{r.unitCode ? `${t('Kho')} ${r.unitCode}` : t('Kho đang chờ xếp')}</strong><small>{r.unitTypeName}</small></div>
+                                <div><strong>{r.reservationCode}</strong><small>{r.unitTypeName}</small></div>
                                 <span className="se-badge low">{t(awaitingRefund ? 'Đang chờ hoàn tiền' : needsAppointment ? 'Chọn thời gian hẹn nhận kho' : r.status === 'Confirmed' ? 'Chờ nhận kho' : r.status === 'PENDING_UNIT_SELECTION' ? 'Đang chờ chọn kho' : 'Đang chờ xếp kho')}</span>
                             </header>
                             <dl>

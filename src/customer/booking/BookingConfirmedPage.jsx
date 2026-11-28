@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { depositRefundsApi, reservationsApi } from '../../api/generated';
+import { contractsApi, depositRefundsApi, reservationsApi } from '../../api/generated';
 import { errorMessage } from '../../api/axiosClient';
 import Icon from '../components/Icon.jsx';
 import { depositDeadline, formatDate, formatVnd, rentalEndDate } from '../components/format.js';
@@ -53,6 +53,12 @@ export default function BookingConfirmedPage() {
     const reservation = useQuery({ queryKey: ['reservations', Number(id)], queryFn: () => reservationsApi.getById(Number(id)) });
     const refunds = useQuery({ queryKey: ['deposit-refunds', 'mine'], queryFn: () => depositRefundsApi.list({ page: 1, pageSize: 50 }) });
     const r = reservation.data;
+    const linkedContract = useQuery({
+        queryKey: ['contracts', r?.contractId],
+        queryFn: () => contractsApi.getById(r.contractId),
+        enabled: !!r?.contractId,
+    });
+    const isContractSigned = !!(linkedContract.data?.signedAt || r?.status === 'HandedOver');
     const depositOwed = !!r?.depositInvoiceId && r.depositStatus !== 'Paid' && !CLOSED.includes(r.status);
     const existingRefund = (refunds.data?.items ?? []).find((x) => x.reservationId === r?.reservationId);
     const canRequestSameDayRefund = !!(r && r.sameDay && CLOSED.includes(r.status) && r.depositStatus === 'Paid' && !existingRefund);
@@ -80,9 +86,9 @@ export default function BookingConfirmedPage() {
         : '';
 
     const unitHeading = r
-        ? (r.unitCode
+        ? (isContractSigned && r.unitCode
             ? `${t('Kho')} ${r.unitCode}${r.unitTypeName ? ` · ${r.unitTypeName}` : ''}`
-            : `${r.unitTypeName}`)
+            : `${r.reservationCode}${r.unitTypeName ? ` · ${r.unitTypeName}` : ''}`)
         : '';
 
     const retainedFund = r ? Math.max(Math.round((r.depositAmount ?? 0) / 30), 100000) : 100000;
@@ -194,10 +200,10 @@ export default function BookingConfirmedPage() {
 
                                     {(r.preferences?.length > 0 || r.preferenceNote || r.ticketId) && (
                                         <div className="se-ticket-v2-extra">
-                                            {!r.unitCode && (
+                                            {!isContractSigned && (
                                                 <div className="se-ticket-v2-extrarow">
-                                                    <span>{t('Kho')}</span>
-                                                    <strong>{t(isStaffAssisted ? 'nhân viên sẽ tư vấn và xếp kho cho bạn' : 'số kho được xếp trước ngày nhận')}</strong>
+                                                    <span>{t('Mã đặt kho')}</span>
+                                                    <strong>{r.reservationCode}</strong>
                                                 </div>
                                             )}
                                             {r.preferences?.length > 0 && (
@@ -217,9 +223,6 @@ export default function BookingConfirmedPage() {
                                                     <span>{t('Yêu cầu tư vấn')}</span>
                                                     <strong>
                                                         <Link to={`/support/requests/${r.ticketId}`} className="se-link">{r.ticketCode || `#${r.ticketId}`}</Link>
-                                                        {r.unitCode && !CLOSED.includes(r.status) && (
-                                                            <> · <Link to={`/support/requests/${r.ticketId}`} className="se-link">{t('Nhắn nhân viên nếu muốn đổi kho')}</Link></>
-                                                        )}
                                                     </strong>
                                                 </div>
                                             )}

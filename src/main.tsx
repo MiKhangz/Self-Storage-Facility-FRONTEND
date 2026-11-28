@@ -57,6 +57,7 @@ import WalkInBookingPage from './staff/pages/WalkInBookingPage.jsx'
 import OverdueCasesPage from './staff/pages/OverdueCasesPage.jsx'
 import MaintenancePage from './staff/pages/MaintenancePage.jsx'
 import DepositRefundsPage from './staff/pages/DepositRefundsPage.jsx'
+import PaymentHistoryPage from './staff/pages/PaymentHistoryPage.jsx'
 
 const queryClient = new QueryClient({
   // 4xx answers are final (validation, permission, not found); retrying them only delays the message.
@@ -99,6 +100,7 @@ createRoot(document.getElementById('root')!).render(
               <Route path="/admin/users/invite" element={<InviteUserPage />} />
               <Route path="/admin/tickets/:ticketId" element={<TicketDetailPageAdmin />} />
               <Route path="/admin/payments" element={<RecordPaymentPage />} />
+              <Route path="/admin/payment-history" element={<PaymentHistoryPage />} />
               <Route path="/admin/returns" element={<ReturnsPage />} />
               <Route path="/admin/customers/:customerId" element={<CustomerPage />} />
               <Route path="/admin/facilities/new" element={<AddFacilityPage />} />

@@ -683,4 +683,13 @@ export default {
     "Chi tiết": "Details",
     "Cọc giữ chỗ: 1/30 tháng (tối thiểu 100.000₫)": "Holding deposit: 1/30 month (min 100,000₫)",
     "Huỷ miễn phí trong 3 giờ · Sau 3 giờ hoặc quá 20:30 giữ cọc": "Cancel free within 3h · After 3h or past 20:30 deposit is retained",
+    "Số tiền cần thanh toán": "Amount due",
+    "Quét bằng app ngân hàng để tự động điền thông tin": "Scan with your banking app to auto-fill transfer details",
+    "Tải mã QR": "Download QR",
+    "HOẶC CHUYỂN KHOẢN THỦ CÔNG": "OR TRANSFER MANUALLY",
+    "Dữ liệu kỹ thuật (VietQR Payload · BIN {bin})": "Technical data (VietQR Payload · BIN {bin})",
+    "Chép": "Copy",
+    "Đã chép": "Copied",
+    "Giả lập đã chuyển khoản (Demo)": "Simulate transfer completed (Demo)",
+    "Đang đối soát…": "Reconciling…",
 };
