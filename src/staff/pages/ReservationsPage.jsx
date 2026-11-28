@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { reservationsApi } from '../../api/generated';
-import { errorMessage } from '../../api/axiosClient';
+import { api, errorMessage } from '../../api/axiosClient';
 import { useAuth } from '../../features/auth/AuthContext';
 import { Roles } from '../../features/auth/roles';
 import Icon from '../../customer/components/Icon.jsx';
 import { formatDate, formatVnd, rentalEndDate, todayIso } from '../../customer/components/format.js';
 import { formatDateTime } from '../../customer/support/support.js';
 import { Modal, PageHeader, Status, TableState } from '../components/ui.jsx';
-import { useReservations, useUnits } from '../queries.js';
+import { useReservations } from '../queries.js';
 import { useT } from '../../i18n/I18n.jsx';
 import { confirmAction } from '../../customer/components/confirm.js';
 
@@ -23,7 +23,8 @@ const TABS = [
 
 // The same test as the API: no no-show, and the whole deposit back on a cancel.
 const notReady = (r) => ['Pending', 'Confirmed'].includes(r.status) && !!(r.unitBlocked || r.proposedUnitCode);
-const waitingForUnit = (r) => r.status === 'Pending' || (r.status === 'Confirmed' && !r.storageUnitId);
+const waitingForUnit = (r) => ['Pending', 'PENDING_UNIT_SELECTION'].includes(r.status) || (r.status === 'Confirmed' && !r.storageUnitId);
+const matchesTab = (r, tab) => (tab === 'Pending' ? ['Pending', 'PENDING_UNIT_SELECTION'].includes(r.status) : r.status === tab);
 
 /** Staff end a booking before handover: cancel (deposit refunded) or, after the move-in date, a no-show (deposit kept). */
 function CloseBooking({ reservation }) {
@@ -36,7 +37,7 @@ function CloseBooking({ reservation }) {
         // Reservations refresh only on Done: the booking leaves this list, which would unmount the result before it is read.
         onSuccess: () => ['storage-units', 'invoices', 'deposit-refunds'].forEach((k) => queryClient.invalidateQueries({ queryKey: [k] })),
     });
-    const late = reservation.moveInDate < todayIso();
+    const late = reservation.sameDay ? Date.now() >= Date.parse(`${reservation.moveInDate}T20:30:00+07:00`) : reservation.moveInDate < todayIso();
     const blocked = notReady(reservation);
     const paid = reservation.depositStatus === 'Paid' ? reservation.depositAmount : 0;
 
@@ -64,12 +65,15 @@ function CloseBooking({ reservation }) {
                     {tr('Cancel booking')}</button>
                 {late && !blocked && (
                     <button type="button" className="se-btn se-btn-ghost" disabled={close.isPending}
-                        onClick={() => confirmAction(`${tr('Mark {code} as a no-show?', { code: reservation.reservationCode })}${paid ? ` ${tr('The {amount} deposit is kept.', { amount: formatVnd(paid) })}` : ''}`).then((ok) => ok && close.mutate(true))}>
+                        onClick={() => {
+                            const retained = Math.max(Math.round(paid / 30), 100000);
+                            return confirmAction(`${tr('Mark {code} as a no-show?', { code: reservation.reservationCode })}${paid ? ` ${reservation.sameDay ? tr('Refund {amount}; retain {fee}.', { amount: formatVnd(Math.max(paid - retained, 0)), fee: formatVnd(retained) }) : tr('The {amount} deposit is kept.', { amount: formatVnd(paid) })}` : ''}`).then((ok) => ok && close.mutate(true));
+                        }}>
                         {tr('Mark no-show')}</button>
                 )}
             </div>
             {blocked && <p className="se-hint">{tr('The unit is not ready, so this cannot be a no-show. Offer another unit or cancel with the deposit refunded.')}</p>}
-            {!late && !blocked && <p className="se-hint">No-show is possible once the move-in date ({formatDate(reservation.moveInDate)}) has passed.</p>}
+            {!late && !blocked && <p className="se-hint">{reservation.sameDay ? tr('Same-day no-show is possible from 20:30 (Vietnam time).') : `No-show is possible once the move-in date (${formatDate(reservation.moveInDate)}) has passed.`}</p>}
         </>
     );
 }
@@ -77,15 +81,19 @@ function CloseBooking({ reservation }) {
 function AssignPanel({ reservation, onClose }) {
     const tr = useT();
     const queryClient = useQueryClient();
-    const units = useUnits({ facilityId: reservation.facilityId });
+    const units = useQuery({
+        queryKey: ['reservations', reservation.reservationId, 'available-units', reservation.moveInDate, reservation.rentalMonths],
+        queryFn: () => api.get(`/api/reservations/${reservation.reservationId}/available-units`).then((r) => r.data),
+        refetchInterval: 30000,
+    });
     // The unit held at booking first (Expected), then other free ones under "Pick other units".
     const held = reservation.storageUnitId;
-    const allUnitsOfType = (units.data ?? []).filter((u) => u.unitTypeId === reservation.unitTypeId);
+    const allUnitsOfType = units.data ?? [];
     const expectedUnit = held ? allUnitsOfType.find((u) => u.storageUnitId === held) : null;
-    const otherUnits = allUnitsOfType.filter((u) => u.storageUnitId !== held && u.status === 'Available');
+    const otherUnits = allUnitsOfType.filter((u) => u.storageUnitId !== held);
     const candidates = [...(expectedUnit ? [expectedUnit] : []), ...otherUnits];
     const [unitId, setUnitId] = useState(null);
-    const chosen = unitId ?? candidates[0]?.storageUnitId;
+    const chosen = candidates.some((u) => u.storageUnitId === unitId) ? unitId : candidates[0]?.storageUnitId;
     const assign = useMutation({
         mutationFn: () => reservationsApi.assignUnit(reservation.reservationId, { storageUnitId: chosen }),
         onSuccess: () => {
@@ -109,6 +117,9 @@ function AssignPanel({ reservation, onClose }) {
                 <div><dt>{tr('Facility')}</dt><dd>{reservation.facilityName}</dd></div>
                 <div><dt>{tr('Requested')}</dt><dd>{reservation.unitTypeName}</dd></div>
                 <div><dt>{tr('Rental period')}</dt><dd>{formatDate(reservation.moveInDate)} → {formatDate(rentalEndDate(reservation.moveInDate, reservation.rentalMonths))}</dd></div>
+                {reservation.preferences?.length > 0 && <div><dt>{tr('Preferences')}</dt><dd>{reservation.preferences.join(', ')}</dd></div>}
+                {reservation.preferenceNote && <div><dt>{tr('Preference note')}</dt><dd>{reservation.preferenceNote}</dd></div>}
+                {reservation.ticketId && <div><dt>{tr('Consult ticket')}</dt><dd><Link to={`/admin/tickets/${reservation.ticketId}`} className="se-link">{reservation.ticketCode || `#${reservation.ticketId}`}</Link></dd></div>}
                 {reservation.unitCode && <div><dt>{tr(reservation.status === 'Pending' ? 'Expected unit' : 'Unit')}</dt><dd>{reservation.unitCode}</dd></div>}
                 {reservation.proposedUnitCode && <div><dt>{tr('Offered instead')}</dt><dd>{reservation.proposedUnitCode} · {tr('waiting for the customer')}</dd></div>}
                 <div><dt>{tr('Handover appointment')}</dt><dd>{reservation.handoverSlot ? formatDateTime(reservation.handoverSlot) : tr('Not booked yet (move-in day counts)')}</dd></div>
@@ -136,16 +147,17 @@ function AssignPanel({ reservation, onClose }) {
                                 ))}
                             </>
                         )}
-                        {!candidates.length && <p className="sa-muted">{units.isLoading ? tr('Loading units…') : tr('No available unit of this size at this facility.')}</p>}
+                        {units.isError && <p role="alert">{errorMessage(units.error)}</p>}
+                        {!candidates.length && !units.isError && <p className="sa-muted">{units.isLoading ? tr('Loading units…') : tr('No available unit of this size at this facility.')}</p>}
                     </div>
                     {held && chosen !== held && <p className="se-hint">{tr('The customer was promised {code}. Choosing another unit asks them to accept it or cancel with the deposit refunded.', { code: reservation.unitCode })}</p>}
                     {assign.isError && <div className="se-alert" role="alert">{errorMessage(assign.error)}</div>}
-                    <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!chosen || assign.isPending} onClick={() => assign.mutate()}>
+                    <button type="button" className="se-btn se-btn-primary se-btn-block" disabled={!chosen || units.isError || assign.isPending} onClick={() => assign.mutate()}>
                         <Icon name="check" size={16} /> {assign.isPending ? tr('Assigning…') : tr('Confirm & assign')}
                     </button>
                 </>
             )}
-            {['Pending', 'Confirmed'].includes(reservation.status) && <CloseBooking reservation={reservation} />}
+            {['Pending', 'PENDING_UNIT_SELECTION', 'Confirmed'].includes(reservation.status) && <CloseBooking reservation={reservation} />}
         </div>
     );
 }
@@ -157,7 +169,7 @@ export default function ReservationsPage() {
     const [selected, setSelected] = useState(null);
     const reservations = useReservations();
     const all = reservations.data ?? [];
-    const shown = all.filter((r) => r.status === tab);
+    const shown = all.filter((r) => matchesTab(r, tab));
     const current = all.find((r) => r.reservationId === selected);
     const blocked = all.filter(notReady);
     // The API lets facility staff and managers assign units; admins only view the queue.
@@ -176,7 +188,7 @@ export default function ReservationsPage() {
             <div className="se-tabs se-tabs-line" role="tablist">
                 {TABS.map((t) => (
                     <button key={t.status} role="tab" aria-selected={tab === t.status} className={tab === t.status ? 'active' : ''} onClick={() => { setTab(t.status); setSelected(null); }}>
-                        {tr(t.label)} <span className="se-count">{all.filter((r) => r.status === t.status).length}</span>
+                        {tr(t.label)} <span className="se-count">{all.filter((r) => matchesTab(r, t.status)).length}</span>
                     </button>
                 ))}
             </div>
@@ -188,7 +200,13 @@ export default function ReservationsPage() {
                             <tr key={r.reservationId} className={selected === r.reservationId ? 'active' : ''} onClick={() => setSelected(r.reservationId)}>
                                 <td className="strong">{r.reservationCode}</td>
                                 <td>{r.customerName}</td>
-                                <td>{r.unitTypeName}{r.unitCode ? ` · ${r.unitCode}` : ''}{notReady(r) && <div><span className="se-badge none">{tr('Unit not ready')}</span></div>}{r.proposedUnitCode && <div className="sa-muted">{tr('Offered {code}, waiting for the customer', { code: r.proposedUnitCode })}</div>}</td>
+                                <td>
+                                    {r.unitTypeName}{r.unitCode ? ` · ${r.unitCode}` : ''}
+                                    {r.status === 'PENDING_UNIT_SELECTION' && <div><span className="se-badge low">{tr('Pending unit selection')}</span></div>}
+                                    {r.ticketId && <div className="sa-muted"><Link to={`/admin/tickets/${r.ticketId}`} className="se-link" onClick={(e) => e.stopPropagation()}>{r.ticketCode || tr('Consult ticket')}</Link></div>}
+                                    {notReady(r) && <div><span className="se-badge none">{tr('Unit not ready')}</span></div>}
+                                    {r.proposedUnitCode && <div className="sa-muted">{tr('Offered {code}, waiting for the customer', { code: r.proposedUnitCode })}</div>}
+                                </td>
                                 <td>{r.facilityName}</td>
                                 <td>{formatDate(r.moveInDate)}{r.handoverSlot && <div className="sa-muted">{tr('Appointment {time}', { time: formatDateTime(r.handoverSlot) })}</div>}</td>
                                 <td>{tr('{n} month{n:s}', { n: r.rentalMonths })}</td>

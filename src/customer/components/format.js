@@ -5,6 +5,13 @@ export const formatVnd = (amount) => (amount == null ? '—' : vnd.format(amount
 // en-CA formats as YYYY-MM-DD; toISOString would give yesterday's date before 07:00 in Vietnam.
 export const todayIso = () => new Date().toLocaleDateString('en-CA', { timeZone: 'Asia/Ho_Chi_Minh' });
 
+/** Current HH:mm in Vietnam time (24-hour clock). */
+export const vietnamTimeHhMm = () =>
+    new Date().toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: 'Asia/Ho_Chi_Minh' });
+
+/** Same-day move-in bookings close at 20:00 Vietnam time. */
+export const isSameDayClosed = () => vietnamTimeHhMm() >= '20:00';
+
 /** Badge class and label for a count of free units; `tr` is the screen's t() (Vietnamese without it). */
 export function availability(count, tr = (text, vars) => text.replace('{count}', vars?.count)) {
     if (count == null) return null;
@@ -42,7 +49,8 @@ export function renewedEndDate(start, end, months) {
 const DEPOSIT_HOLD_HOURS = 24; // ReservationService.DepositHoldHours on the API
 
 /** When an unpaid booking lets its unit go: 24 hours after booking, or when move-in day ends if that is sooner. */
-export function depositDeadline(createdAt, moveInDate) {
+export function depositDeadline(createdAt, moveInDate, sameDay = false) {
+    if (sameDay) return new Date(`${moveInDate}T20:30:00+07:00`).toISOString();
     const held = Date.parse(createdAt) + DEPOSIT_HOLD_HOURS * 3_600_000;
     return new Date(Math.min(held, Date.parse(`${moveInDate}T23:59:00+07:00`))).toISOString();
 }

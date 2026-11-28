@@ -18,7 +18,13 @@
 .se-status-filter { height: 38px; background: #fff; min-width: 190px; }
 
 .se-units { display: grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap: 16px; }
-.se-unit { overflow: hidden; }
+.se-unit { position: relative; overflow: hidden; }
+.se-unit.has-dot { overflow: visible; }
+.se-unit.has-dot header { border-radius: 13px 13px 0 0; }
+.se-red-dot {
+    position: absolute; top: -7px; right: -7px; width: 18px; height: 18px; border-radius: 50%;
+    background: #ef4444; border: 0; box-shadow: none; z-index: 2;
+}
 .se-unit header { background: var(--se-dark); color: #fff; padding: 16px 18px; display: flex; align-items: center; gap: 12px; }
 .se-unit header div { flex: 1; }
 .se-unit header strong { display: block; font-size: 18px; }

@@ -92,7 +92,15 @@ export default function TicketDetailPage() {
                         <div><dt>{tr('Trạng thái')}</dt><dd><span className={`se-badge ${tone}`}>{tr(label)}</span></dd></div>
                         <div><dt>{tr('Mức độ khẩn')}</dt><dd><span className={`se-badge ${PRIORITY_TONE[t.priority] ?? ''}`}>{tr(PRIORITY_LABEL[t.priority] ?? t.priority)}</span></dd></div>
                         <div><dt>{tr('Loại vấn đề')}</dt><dd>{t.categoryName}</dd></div>
+                        {t.reservationId && (
+                            <div>
+                                <dt>{tr('Đơn đặt kho')}</dt>
+                                <dd><Link to={`/booking/confirmed/${t.reservationId}`} className="se-link">{t.reservationCode || `#${t.reservationId}`}</Link></dd>
+                            </div>
+                        )}
                         {t.unitCode && <div><dt>{tr('Kho')}</dt><dd>{t.unitCode}</dd></div>}
+                        {t.reservationPreferences?.length > 0 && <div><dt>{tr('Ưu tiên vị trí')}</dt><dd>{t.reservationPreferences.map((p) => tr(p)).join(', ')}</dd></div>}
+                        {t.reservationPreferenceNote && <div><dt>{tr('Ghi chú')}</dt><dd>{t.reservationPreferenceNote}</dd></div>}
                         <div><dt>{tr('Cơ sở')}</dt><dd>{t.facilityName}</dd></div>
                         <div><dt>{tr('Ngày gửi')}</dt><dd>{formatDateTime(t.createdAt)}</dd></div>
                         {t.resolvedAt && <div><dt>{tr('Ngày giải quyết')}</dt><dd>{formatDateTime(t.resolvedAt)}</dd></div>}

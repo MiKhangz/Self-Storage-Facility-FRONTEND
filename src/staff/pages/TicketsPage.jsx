@@ -24,7 +24,7 @@ export default function TicketsPage() {
     const [search, setSearch] = useState('');
     const [priority, setPriority] = useState('');
     const tickets = useTickets();
-    const shown = (tickets.data ?? []).filter((t) => (!priority || t.priority === priority) && matches(search, t.ticketCode, t.subject, t.customerName, t.unitCode));
+    const shown = (tickets.data ?? []).filter((t) => (!priority || t.priority === priority) && matches(search, t.ticketCode, t.subject, t.customerName, t.unitCode, t.reservationCode));
 
     return (
         <>
@@ -44,7 +44,12 @@ export default function TicketsPage() {
                                 <Link key={t.ticketId} to={`/admin/tickets/${t.ticketId}`} className="se-card sa-ticket">
                                     <div className="sa-ticket-top"><small>{t.ticketCode}</small><Status value={t.priority} /></div>
                                     <strong>{t.subject}</strong>
-                                    <div className="sa-tags"><span>{t.categoryName}</span>{t.unitCode && <span className="teal">{t.unitCode}</span>}</div>
+                                    <div className="sa-tags">
+                                        <span>{t.categoryName}</span>
+                                        {t.reservationCode && <span className="teal">{t.reservationCode}</span>}
+                                        {t.unitCode && <span className="teal">{t.unitCode}</span>}
+                                        {t.flaggedForReview && <span className="se-badge none">{tr('Needs review')}</span>}
+                                    </div>
                                     <div className="sa-ticket-foot">
                                         <span>{t.customerName}</span>
                                         <span>{age(t.createdAt)}{t.assignedToName && <span className="se-avatar sm" title={t.assignedToName}>{initials(t.assignedToName)}</span>}</span>

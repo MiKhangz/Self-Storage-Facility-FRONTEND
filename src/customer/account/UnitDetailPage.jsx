@@ -173,7 +173,20 @@ export default function UnitDetailPage() {
                 </div>
                 <div className="se-title-actions">
                     <Link to={`/support/new?contractId=${contractId}`} className="se-btn se-btn-ghost"><Icon name="shield" size={16} /> {t('Báo sự cố')}</Link>
-                    {(active || c.status === 'Overstay') && <Link to={`/return?contractId=${contractId}`} className="se-btn se-btn-danger">{t('Yêu cầu trả kho')}</Link>}
+                    {(active || c.status === 'Overstay') && (
+                        due ? (
+                            <span
+                                className="se-btn se-btn-danger"
+                                aria-disabled="true"
+                                style={{ opacity: 0.5, cursor: 'not-allowed', pointerEvents: 'none' }}
+                                title={t('Vui lòng thanh toán các hóa đơn chưa hoàn tất trước khi gửi yêu cầu trả kho.')}
+                            >
+                                {t('Yêu cầu trả kho')}
+                            </span>
+                        ) : (
+                            <Link to={`/return?contractId=${contractId}`} className="se-btn se-btn-danger">{t('Yêu cầu trả kho')}</Link>
+                        )
+                    )}
                 </div>
             </div>
 

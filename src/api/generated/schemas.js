@@ -267,6 +267,7 @@
  * @property {string} [moveInDate] date
  * @property {number} [rentalMonths] int32
  * @property {(number|null)} [storageUnitId] int32
+ * @property {boolean} [sameDay]
  */
 
 /**
@@ -1067,6 +1068,7 @@
  * @property {(string|null)} [proposedUnitCode]
  * @property {(string|null)} [handoverSlot] date-time
  * @property {boolean} [unitBlocked]
+ * @property {boolean} [sameDay]
  */
 
 /**
@@ -1443,6 +1445,8 @@
  * @property {number} [depositAmount] double
  * @property {number} [totalAmount] double
  * @property {(string|null)} [expectedUnitCode]
+ * @property {boolean} [sameDay]
+ * @property {number} [upfrontAmount] double
  */
 
 /**

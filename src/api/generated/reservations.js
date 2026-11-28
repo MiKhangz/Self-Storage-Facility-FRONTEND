@@ -57,6 +57,13 @@ export const reservationsApi = {
   noShow: (id) =>
     api.post(`/api/reservations/${id}/no-show`, undefined).then((r) => r.data),
   /**
+   * POST /api/reservations/{id}/request-refund
+   * @param {number} id
+   * @returns {Promise<ReservationCancellationDto>}
+   */
+  requestRefund: (id) =>
+    api.post(`/api/reservations/${id}/request-refund`, undefined).then((r) => r.data),
+  /**
    * POST /api/reservations/{id}/accept-unit
    * @param {number} id
    * @returns {Promise<ReservationDto>}
@@ -101,4 +108,12 @@ export const reservationsApi = {
    */
   changeUnit: (id, body) =>
     api.post(`/api/reservations/${id}/change-unit`, body).then((r) => r.data),
+  /**
+   * POST /api/reservations/{id}/dates
+   * @param {number} id
+   * @param {{ moveInDate: string, rentalMonths: number }} body
+   * @returns {Promise<ReservationDto>}
+   */
+  updateDates: (id, body) =>
+    api.post(`/api/reservations/${id}/dates`, body).then((r) => r.data),
 }

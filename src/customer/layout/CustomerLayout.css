@@ -173,6 +173,10 @@
     border: 1px solid var(--se-line); background: #fff; cursor: pointer; font-family: inherit; font-size: 14px; color: var(--se-ink);
 }
 .se-chip.active { border: 2px solid var(--se-primary); background: var(--se-primary-soft); color: var(--se-primary-dark); font-weight: 600; padding: 0 13px; }
+.se-chip:disabled, .se-chip.disabled {
+    background: #e5e7eb !important; border-color: #d1d5db !important; color: #9ca3af !important;
+    cursor: not-allowed !important; opacity: 0.75; pointer-events: none;
+}
 .se-chip small { color: inherit; opacity: 0.8; }
 
 

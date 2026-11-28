@@ -7,7 +7,7 @@ import Icon from '../components/Icon.jsx';
 import { formatDate, formatVnd, rentalEndDate, todayIso } from '../components/format.js';
 import {
     AWAITING_CHECK_IN, CONTRACT_BADGE, LIVE_CONTRACT, OPEN_INVOICE, OPEN_TICKET, invoiceBadge,
-    periodUsed, useMyContracts, useMyInvoices, useMyReservations, useMyTickets,
+    periodUsed, useMyContracts, useMyDepositRefunds, useMyInvoices, useMyReservations, useMyTickets,
 } from './queries.js';
 import './MyStoragePage.css';
 import { useT } from '../../i18n/I18n.jsx';
@@ -24,7 +24,7 @@ function Stat({ icon, label, value, note }) {
     );
 }
 
-const STATUS_OPTIONS = ['Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended', 'Overstay'];
+const STATUS_OPTIONS = ['Pending', 'Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended', 'Overstay', 'PendingRefund'];
 
 /** U09: the signed-in customer's units, what is due and recent invoices. */
 export default function MyStoragePage() {
@@ -36,12 +36,25 @@ export default function MyStoragePage() {
     const reservations = useMyReservations();
     const invoices = useMyInvoices();
     const tickets = useMyTickets();
+    const depositRefunds = useMyDepositRefunds();
 
-    const live = (contracts.data?.items ?? []).filter((c) => LIVE_CONTRACT.includes(c.status));
+    const pendingRefundByRes = Object.fromEntries(
+        (depositRefunds.data?.items ?? [])
+            .filter((d) => d.status === 'Pending')
+            .map((d) => [d.reservationId, d]),
+    );
+    const allContracts = contracts.data?.items ?? [];
+    // Keep closed/terminated contracts visible on the customer page until their deposit refund is resolved (Paid).
+    const live = allContracts.filter((c) => LIVE_CONTRACT.includes(c.status) || !!pendingRefundByRes[c.reservationId]);
     const allReservations = reservations.data?.items ?? [];
-    const waiting = allReservations.filter((r) => AWAITING_CHECK_IN.includes(r.status) && !r.contractId);
+    const contractByRes = Object.fromEntries(allContracts.map((c) => [c.reservationId, c]));
+    // Keep cancelled/expired reservations visible on the customer page until their deposit refund is resolved (Paid).
+    const waiting = allReservations.filter((r) =>
+        (AWAITING_CHECK_IN.includes(r.status) && !r.contractId)
+        || (['Cancelled', 'Expired'].includes(r.status) && !contractByRes[r.reservationId] && !!pendingRefundByRes[r.reservationId]),
+    );
     const reservationOf = Object.fromEntries(allReservations.map((r) => [r.reservationId, r]));
-    const unitOf = Object.fromEntries((contracts.data?.items ?? []).map((c) => [c.contractId, c.unitCode]));
+    const unitOf = Object.fromEntries(allContracts.map((c) => [c.contractId, c.unitCode]));
     const allInvoices = invoices.data?.items ?? [];
     const due = allInvoices.filter((i) => OPEN_INVOICE.includes(i.status)).sort((a, b) => a.dueDate.localeCompare(b.dueDate));
     const next = due[0];
@@ -93,20 +106,33 @@ export default function MyStoragePage() {
                     <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} aria-label={t('Trạng thái')}>
                         <option value="ALL">{t('Tất cả')} ({live.length + waiting.length})</option>
                         {STATUS_OPTIONS.map((s) => (
-                            <option key={s} value={s}>{t(CONTRACT_BADGE[s][1])}</option>
+                            <option key={s} value={s}>{t(s === 'Pending' ? 'Đang chờ xếp kho' : s === 'PendingRefund' ? 'Đang chờ hoàn tiền' : CONTRACT_BADGE[s][1])}</option>
                         ))}
                     </select>
                 </label>
             </div>
             <div className="se-units">
-                {live.filter((c) => statusFilter === 'ALL' || c.status === statusFilter).map((c) => {
-                    const [tone, label] = CONTRACT_BADGE[c.status];
+                {live.filter((c) => {
+                    const awaitingRefund = !LIVE_CONTRACT.includes(c.status) && !!pendingRefundByRes[c.reservationId];
+                    if (statusFilter === 'ALL') return true;
+                    if (statusFilter === 'PendingRefund') return awaitingRefund;
+                    return c.status === statusFilter;
+                }).map((c) => {
+                    const pendingRefund = pendingRefundByRes[c.reservationId];
+                    const awaitingRefund = !LIVE_CONTRACT.includes(c.status) && !!pendingRefund;
                     const r = reservationOf[c.reservationId];
                     const code = codeOf[c.contractId];
                     const used = periodUsed(c.startDate, c.endDate, today);
                     const offered = c.status === 'Draft' && r?.proposedUnitCode;
+                    const needsAppointment = c.status === 'Draft' && r?.status === 'Confirmed' && r?.depositStatus === 'Paid' && !r?.handoverSlot;
+                    const [tone, label] = awaitingRefund
+                        ? ['low', 'Đang chờ hoàn tiền']
+                        : needsAppointment
+                            ? ['low', 'Chọn thời gian nhận kho']
+                            : CONTRACT_BADGE[c.status];
                     return (
-                        <article key={c.contractId} className="se-card se-unit">
+                        <article key={c.contractId} className={`se-card se-unit${needsAppointment ? ' has-dot' : ''}`}>
+                            {needsAppointment && <span className="se-red-dot" title={t('Hãy đặt thời gian hẹn nhận kho trong đơn đặt kho.')} aria-label={t('Hãy đặt thời gian hẹn nhận kho trong đơn đặt kho.')} />}
                             <header>
                                 <span className="se-unit-icon"><Icon name="box" size={20} /></span>
                                 <div><strong>{t('Kho')} {c.unitCode}</strong><small>{r?.unitTypeName ?? ''}</small></div>
@@ -117,6 +143,7 @@ export default function MyStoragePage() {
                                 <div><dt>{t('Cơ sở')}</dt><dd>{r?.facilityName ?? '—'}</dd></div>
                                 <div><dt>{t('Mã ra vào')}</dt><dd>{code?.isActive ? t('Đang dùng · hết hạn {date}', { date: formatDate(code.expiresAt) }) : t(c.status === 'Draft' ? 'Cấp khi nhận kho' : 'Chưa có mã đang dùng')}</dd></div>
                                 <div><dt>{t('Thời hạn thuê')}</dt><dd>{formatDate(c.startDate)} → {formatDate(c.endDate)}</dd></div>
+                                {pendingRefund && <div><dt>{t('Tiền hoàn lại')}</dt><dd>{formatVnd(pendingRefund.amount)} · {t('Đang chờ hoàn')}</dd></div>}
                             </dl>
                             {offered && <p className="se-alert info">{t('Kho cần đổi sang {code}: hãy xác nhận trong đơn đặt kho.', { code: r.proposedUnitCode })}</p>}
                             <p className="se-unit-progress-label">{c.status === 'Draft' ? t('Bắt đầu tính sau khi nhận kho') : t('Đã dùng {used}% thời hạn thuê', { used })}</p>
@@ -129,34 +156,56 @@ export default function MyStoragePage() {
                         </article>
                     );
                 })}
-                {(statusFilter === 'ALL' || statusFilter === 'Draft') && waiting.map((r) => (
-                    <article key={`r${r.reservationId}`} className="se-card se-unit">
-                        <header>
-                            <span className="se-unit-icon"><Icon name="box" size={20} /></span>
-                            <div><strong>{r.unitCode ? `${t('Kho')} ${r.unitCode}` : t('Kho đang chờ xếp')}</strong><small>{r.unitTypeName}</small></div>
-                            <span className="se-badge low">{t('Chờ nhận kho')}</span>
-                        </header>
-                        <dl>
-                            <div><dt>{t('Cơ sở')}</dt><dd>{r.facilityName}</dd></div>
-                            <div><dt>{t('Mã ra vào')}</dt><dd>{t('Được cấp khi nhận kho ngày {date}', { date: formatDate(r.moveInDate) })}</dd></div>
-                            <div><dt>{t('Thời hạn thuê')}</dt><dd>{formatDate(r.moveInDate)} → {formatDate(rentalEndDate(r.moveInDate, r.rentalMonths))}</dd></div>
-                        </dl>
-                        {r.proposedUnitCode
-                            ? <p className="se-alert info">{t('Kho cần đổi sang {code}: hãy xác nhận trong đơn đặt kho.', { code: r.proposedUnitCode })}</p>
-                            : r.depositStatus === 'Paid' && !r.handoverSlot && <p className="se-alert info">{t('Hãy đặt lịch hẹn nhận kho trong đơn đặt kho.')}</p>}
-                        <p className="se-unit-progress-label">{r.handoverSlot ? t('Lịch hẹn nhận kho: {time}', { time: formatDateTime(r.handoverSlot) }) : t('Bắt đầu tính sau khi nhận kho')}</p>
-                        <div className="se-progress"><span style={{ width: '1%' }} /></div>
-                        <div className="se-unit-actions">
-                            <Link to={`/booking/confirmed/${r.reservationId}`} className="se-btn se-btn-outline se-btn-sm">{t('Xem đơn đặt kho')}</Link>
-                        </div>
-                    </article>
-                ))}
+                {waiting.filter((r) => {
+                    const awaitingRefund = ['Cancelled', 'Expired'].includes(r.status) && !!pendingRefundByRes[r.reservationId];
+                    if (statusFilter === 'ALL') return true;
+                    if (statusFilter === 'PendingRefund') return awaitingRefund;
+                    if (statusFilter === 'Pending') return !awaitingRefund && ['Pending', 'PENDING_UNIT_SELECTION'].includes(r.status);
+                    if (statusFilter === 'Draft') return !awaitingRefund && r.status === 'Confirmed';
+                    return false;
+                }).map((r) => {
+                    const pendingRefund = pendingRefundByRes[r.reservationId];
+                    const awaitingRefund = ['Cancelled', 'Expired'].includes(r.status) && !!pendingRefund;
+                    const needsAppointment = !awaitingRefund && r.status === 'Confirmed' && r.depositStatus === 'Paid' && !r.handoverSlot;
+                    return (
+                        <article key={`r${r.reservationId}`} className={`se-card se-unit${needsAppointment ? ' has-dot' : ''}`}>
+                            {needsAppointment && <span className="se-red-dot" title={t('Hãy đặt thời gian hẹn nhận kho trong đơn đặt kho.')} aria-label={t('Hãy đặt thời gian hẹn nhận kho trong đơn đặt kho.')} />}
+                            <header>
+                                <span className="se-unit-icon"><Icon name="box" size={20} /></span>
+                                <div><strong>{r.unitCode ? `${t('Kho')} ${r.unitCode}` : t('Kho đang chờ xếp')}</strong><small>{r.unitTypeName}</small></div>
+                                <span className="se-badge low">{t(awaitingRefund ? 'Đang chờ hoàn tiền' : needsAppointment ? 'Chọn thời gian hẹn nhận kho' : r.status === 'Confirmed' ? 'Chờ nhận kho' : r.status === 'PENDING_UNIT_SELECTION' ? 'Đang chờ chọn kho' : 'Đang chờ xếp kho')}</span>
+                            </header>
+                            <dl>
+                                <div><dt>{t('Cơ sở')}</dt><dd>{r.facilityName}</dd></div>
+                                <div><dt>{t('Mã ra vào')}</dt><dd>{awaitingRefund ? '—' : t('Được cấp khi nhận kho ngày {date}', { date: formatDate(r.moveInDate) })}</dd></div>
+                                <div><dt>{t('Thời hạn thuê')}</dt><dd>{formatDate(r.moveInDate)} → {formatDate(rentalEndDate(r.moveInDate, r.rentalMonths))}</dd></div>
+                                {pendingRefund && <div><dt>{t('Tiền hoàn lại')}</dt><dd>{formatVnd(pendingRefund.amount)} · {t('Đang chờ hoàn')}</dd></div>}
+                            </dl>
+                            {!awaitingRefund && r.proposedUnitCode && (
+                                <p className="se-alert info">{t('Kho cần đổi sang {code}: hãy xác nhận trong đơn đặt kho.', { code: r.proposedUnitCode })}</p>
+                            )}
+                            <p className="se-unit-progress-label">{awaitingRefund ? t('Kho sẽ ẩn sau khi hoàn tiền hoàn tất') : r.handoverSlot ? t('thời gian hẹn nhận kho: {time}', { time: formatDateTime(r.handoverSlot) }) : t('Bắt đầu tính sau khi nhận kho')}</p>
+                            <div className="se-progress"><span style={{ width: '1%' }} /></div>
+                            <div className="se-unit-actions">
+                                <Link to={`/booking/confirmed/${r.reservationId}`} className="se-btn se-btn-outline se-btn-sm">{t('Xem đơn đặt kho')}</Link>
+                                {r.ticketId && !awaitingRefund && <Link to={`/support/requests/${r.ticketId}`} className="se-btn se-btn-primary se-btn-sm">{t('Trò chuyện với nhân viên')}</Link>}
+                                {awaitingRefund && <Link to="/payments" className="se-btn se-btn-primary se-btn-sm">{t('Xem hoàn tiền')}</Link>}
+                            </div>
+                        </article>
+                    );
+                })}
                 {!live.length && !waiting.length && !contracts.isLoading && !reservations.isLoading ? (
                     <div className="se-card se-empty">{t('Bạn chưa thuê kho nào.')} <Link to="/booking" className="se-link">{t('Đặt kho đầu tiên')}</Link></div>
                 ) : statusFilter !== 'ALL'
-                    && !live.some((c) => c.status === statusFilter)
-                    && !(statusFilter === 'Draft' && waiting.length)
-                    && !contracts.isLoading && !reservations.isLoading && (
+                && !live.some((c) => statusFilter === 'PendingRefund' ? (!LIVE_CONTRACT.includes(c.status) && !!pendingRefundByRes[c.reservationId]) : c.status === statusFilter)
+                && !waiting.some((r) => {
+                    const awaitingRefund = ['Cancelled', 'Expired'].includes(r.status) && !!pendingRefundByRes[r.reservationId];
+                    if (statusFilter === 'PendingRefund') return awaitingRefund;
+                    if (statusFilter === 'Pending') return !awaitingRefund && r.status === 'Pending';
+                    if (statusFilter === 'Draft') return !awaitingRefund && r.status === 'Confirmed';
+                    return false;
+                })
+                && !contracts.isLoading && !reservations.isLoading && (
                     <div className="se-card se-empty">{t('Không có kho nào ở trạng thái này.')}</div>
                 )}
             </div>

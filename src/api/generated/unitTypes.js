@@ -53,7 +53,7 @@ export const unitTypesApi = {
   /**
    * GET /api/unit-types/{id}/quote
    * @param {number} id
-   * @param {{ facilityId?: number, moveInDate?: string, rentalMonths?: number, storageUnitId?: number }} [params] query string
+   * @param {{ facilityId?: number, moveInDate?: string, rentalMonths?: number, storageUnitId?: number, sameDay?: boolean }} [params] query string
    * @returns {Promise<UnitPriceQuoteDto>}
    */
   quote: (id, params) =>

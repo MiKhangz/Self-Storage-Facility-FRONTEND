@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { formatDate } from '../components/format.js';
 import { fill } from '../../i18n/I18n.jsx';
-import { contractsApi, invoicesApi, reservationsApi, ticketQueueApi } from '../../api/generated';
+import { contractsApi, depositRefundsApi, invoicesApi, reservationsApi, ticketQueueApi } from '../../api/generated';
 
 // ponytail: one page of 50 covers a customer's own records; add paging if anyone ever rents more.
 const PAGE = { page: 1, pageSize: 50 };
@@ -11,10 +11,11 @@ export const useMyContracts = () => useQuery({ queryKey: ['contracts', PAGE], qu
 export const useMyReservations = () => useQuery({ queryKey: ['reservations', PAGE], queryFn: () => reservationsApi.list(PAGE) });
 export const useMyInvoices = () => useQuery({ queryKey: ['invoices', PAGE], queryFn: () => invoicesApi.list(PAGE) });
 export const useMyTickets = () => useQuery({ queryKey: ['tickets', PAGE], queryFn: () => ticketQueueApi.list(PAGE) });
+export const useMyDepositRefunds = () => useQuery({ queryKey: ['deposit-refunds', 'mine'], queryFn: () => depositRefundsApi.list(PAGE) });
 
 export const OPEN_INVOICE = ['Issued', 'Overdue'];
 export const OPEN_TICKET = ['New', 'InProgress', 'WaitingForCustomer'];
-export const AWAITING_CHECK_IN = ['Pending', 'Confirmed'];
+export const AWAITING_CHECK_IN = ['Pending', 'PENDING_UNIT_SELECTION', 'Confirmed'];
 // A contract the customer still holds; Draft is signed-or-signing before handover.
 export const LIVE_CONTRACT = ['Draft', 'Active', 'PendingReturn', 'Overdue', 'Suspended', 'Overstay'];
 

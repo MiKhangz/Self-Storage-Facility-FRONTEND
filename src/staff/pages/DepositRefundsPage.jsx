@@ -23,7 +23,10 @@ function PayPanel({ refund, onClose }) {
     const [reference, setReference] = useState('');
     const pay = useMutation({
         mutationFn: () => depositRefundsApi.paid(refund.depositRefundId, { method, referenceNo: reference.trim() || null }),
-        onSuccess: () => queryClient.invalidateQueries({ queryKey: ['deposit-refunds'] }),
+        onSuccess: () => {
+            queryClient.invalidateQueries({ queryKey: ['deposit-refunds'] });
+            queryClient.invalidateQueries({ queryKey: ['returns'] });
+        },
     });
     const needsReference = method === 'BankTransfer' && !reference.trim();
     return (

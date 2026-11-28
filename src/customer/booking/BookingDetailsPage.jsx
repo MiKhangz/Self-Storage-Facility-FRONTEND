@@ -9,10 +9,17 @@ import { useFacilities } from '../sizes/SizesPage.jsx';
 import BookingStepper from './BookingStepper.jsx';
 import BookingSummary from './BookingSummary.jsx';
 import { earlyReturnText, lateFeeText, useTerms } from '../components/terms.js';
+import { isSameDayClosed } from '../components/format.js';
 import { useT } from '../../i18n/I18n.jsx';
 
 /** The rules the customer agrees to, worded from the terms the backend enforces. */
-const agreement = (terms, t) => [
+const agreement = (terms, t, sameDay) => sameDay ? [
+    t('Cọc nhận kho trong ngày bằng 1/30 tiền thuê tháng sau giảm giá (tối thiểu 100.000₫). Thanh toán trước 1 tháng tiền thuê sau giảm giá. Huỷ trong 3 giờ sau khi đặt được hoàn đủ; huỷ sau 3 giờ hoặc không nhận kho trước 20:30 sẽ giữ lại 1/30 tiền thuê tháng (tối thiểu 100.000₫).'),
+    t('Chưa nhận kho lúc 20:30: đơn hết hạn và kho được giải phóng.'),
+    `${t('Tiền thuê các tháng tiếp theo thanh toán hằng tháng.')} ${lateFeeText(terms, t)}`,
+    earlyReturnText(terms, t),
+    t('Không cất hàng dễ cháy nổ, hàng dễ hư hỏng và hàng cấm theo quy định pháp luật.'),
+] : [
     t('Tiền cọc (bằng {months} tháng tiền thuê) được hoàn lại sau khi trả kho trong tình trạng tốt, trừ các khoản phí phát sinh.', { months: terms.depositMonths }),
     `${t('Tiền thuê thanh toán hằng tháng.')} ${lateFeeText(terms, t)}`,
     t('Chưa thanh toán tiền cọc trong 24 giờ sau khi đặt, hoặc đến hết ngày nhận kho nếu sớm hơn, đơn sẽ tự động bị huỷ và kho được nhường cho khách khác.'),
@@ -37,6 +44,11 @@ export default function BookingDetailsPage() {
     const unitCode = params.get('unitCode') || null;
     const moveInDate = params.get('moveInDate') ?? '';
     const rentalMonths = Number(params.get('rentalMonths'));
+    const sameDay = params.get('sameDay') === 'true';
+    const sameDayCutoffPassed = sameDay && isSameDayClosed();
+    const unitAssignmentMode = params.get('unitAssignmentMode') === 'STAFF_ASSISTED' ? 'STAFF_ASSISTED' : 'AUTO';
+    const preferences = (params.get('preferences') ?? '').split(',').map((s) => s.trim()).filter(Boolean);
+    const preferenceNote = params.get('preferenceNote') ?? '';
     const valid = facilityId > 0 && unitTypeId > 0 && /^\d{4}-\d{2}-\d{2}$/.test(moveInDate) && rentalMonths > 0;
 
     const facility = useFacilities().data?.items?.find((f) => f.facilityId === facilityId);
@@ -45,6 +57,7 @@ export default function BookingDetailsPage() {
         facilityId,
         moveInDate,
         rentalMonths,
+        sameDay,
         ...(storageUnitId ? { storageUnitId } : {}),
     };
     const quote = useQuery({
@@ -59,10 +72,17 @@ export default function BookingDetailsPage() {
             unitTypeId,
             moveInDate,
             rentalMonths,
+            sameDay,
+            unitAssignmentMode,
+            ...(preferences.length ? { preferences } : {}),
+            ...(preferenceNote ? { preferenceNote } : {}),
             ...(storageUnitId ? { storageUnitId } : {}),
         }),
         onSuccess: (reservation) => {
+            queryClient.invalidateQueries({ queryKey: ['availability'] });
+            queryClient.invalidateQueries({ queryKey: ['quote'] });
             queryClient.invalidateQueries({ queryKey: ['reservations'] });
+            queryClient.invalidateQueries({ queryKey: ['tickets'] });
             navigate(`/booking/confirmed/${reservation.reservationId}`, { replace: true });
         },
     });
@@ -94,13 +114,17 @@ export default function BookingDetailsPage() {
 
                             <section className="se-panel">
                                 <h2>{t('Thanh toán')}</h2>
-                                <div className="se-alert info">{t('Khi đặt kho, hệ thống tạo hóa đơn tiền cọc. Bạn có thể thanh toán trực tuyến ngay ở bước sau hoặc trong mục Thanh toán; cần đóng cọc trong 24 giờ và không muộn hơn ngày nhận kho.')}</div>
+                                <div className="se-alert info">
+                                    {sameDay
+                                        ? t('Cọc nhận kho trong ngày bằng 1/30 tiền thuê tháng sau giảm giá (tối thiểu 100.000₫). Thanh toán trước 1 tháng tiền thuê sau giảm giá. Huỷ trong 3 giờ sau khi đặt được hoàn đủ; huỷ sau 3 giờ hoặc không nhận kho trước 20:30 sẽ giữ lại 1/30 tiền thuê tháng (tối thiểu 100.000₫).')
+                                        : t('Khi đặt kho, hệ thống tạo hóa đơn tiền cọc. Bạn có thể thanh toán trực tuyến ngay ở bước sau hoặc trong mục Thanh toán; cần đóng cọc trong 24 giờ và không muộn hơn ngày nhận kho.')}
+                                </div>
                             </section>
 
                             <section className="se-panel">
                                 <h2>{t('Quy định thuê kho')}</h2>
                                 {terms.isError && <div className="se-alert" role="alert">{t('Không tải được quy định thuê kho nên hiện chưa thể đặt kho. Vui lòng tải lại trang.')}</div>}
-                                {terms.data && <ul className="se-rules-box">{agreement(terms.data, t).map((r) => <li key={r}>{r}</li>)}</ul>}
+                                {terms.data && <ul className="se-rules-box">{agreement(terms.data, t, sameDay).map((r) => <li key={r}>{r}</li>)}</ul>}
                                 <label className="se-check">
                                     <input type="checkbox" checked={agreed} onChange={(e) => setAgreed(e.target.checked)} />
                                     <span>{t('Tôi đã đọc và đồng ý với quy định thuê kho, bao gồm danh sách hàng cấm.')}</span>
@@ -108,10 +132,11 @@ export default function BookingDetailsPage() {
                             </section>
                         </div>
 
-                        <BookingSummary facility={facility} type={type} moveInDate={moveInDate} rentalMonths={rentalMonths} quote={quote} unitCode={unitCode}>
+                        <BookingSummary facility={facility} type={type} moveInDate={moveInDate} rentalMonths={rentalMonths} quote={quote} unitCode={unitCode} sameDay={sameDay} unitAssignmentMode={unitAssignmentMode}>
+                            {sameDayCutoffPassed && <div className="se-alert" role="alert">{t('Đặt kho nhận trong ngày chỉ áp dụng trước 20:00. Vui lòng quay lại và chọn đặt trước cho các ngày sau.')}</div>}
                             {reserve.isError && <div className="se-alert" role="alert">{errorMessage(reserve.error)}</div>}
                             <button type="button" className="se-btn se-btn-primary se-btn-block se-booking-cta"
-                                disabled={!agreed || !terms.data || !quote.data || reserve.isPending} onClick={() => reserve.mutate()}>
+                                disabled={!agreed || !terms.data || !quote.data || reserve.isPending || sameDayCutoffPassed} onClick={() => reserve.mutate()}>
                                 {reserve.isPending ? t('Đang đặt kho…') : <>{t('Xác nhận đặt kho')} <Icon name="arrow" size={16} /></>}
                             </button>
                         </BookingSummary>

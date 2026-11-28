@@ -34,12 +34,14 @@ export const useStaff = (params, enabled = true) => useQuery({ ...all('staff', s
 /** Badge tone per status value, shared by every admin table. */
 export const TONE = {
     Available: '', Active: '', Paid: '', Completed: '', Done: '', Resolved: '', Confirmed: '', HandedOver: '', Succeeded: '', Success: '', Good: '',
-    Reserved: 'low', Pending: 'low', Draft: 'low', Issued: 'low', Requested: 'low', Approved: 'low', Inspected: 'low', InProgress: 'low',
+    Reserved: 'low', Pending: 'low', PENDING_UNIT_SELECTION: 'low', Draft: 'low', Issued: 'low', Requested: 'low', Approved: 'low', Inspected: 'low', AwaitingPayout: 'low', InProgress: 'low',
     New: 'low', Scheduled: 'low', ToDo: 'low', WaitingForCustomer: 'low', PendingReturn: 'low', MinorDamage: 'low', Open: 'low',
     Occupied: 'info', Overstay: 'none', AwaitingCustomer: 'low', Maintenance: 'none', Overdue: 'none', Suspended: 'none', Rejected: 'none', Cancelled: 'muted', Expired: 'muted',
     Closed: 'muted', Terminated: 'muted', Retired: 'muted', Superseded: 'muted', WrittenOff: 'muted', Inactive: 'muted', Disabled: 'muted', MajorDamage: 'none',
     Failure: 'none', Urgent: 'none', High: 'low', Normal: '', Low: 'muted',
 };
 
-/** "WaitingForCustomer" → "Waiting for customer". */
-export const humanize = (value = '') => value.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase()).replace(/ (\w)/g, (m) => m.toLowerCase());
+/** "WaitingForCustomer" → "Waiting for customer"; "PENDING_UNIT_SELECTION" → "Pending unit selection". */
+export const humanize = (value = '') => (value.includes('_')
+    ? value.toLowerCase().replace(/_/g, ' ').replace(/^./, (c) => c.toUpperCase())
+    : value.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase()).replace(/ (\w)/g, (m) => m.toLowerCase()));
