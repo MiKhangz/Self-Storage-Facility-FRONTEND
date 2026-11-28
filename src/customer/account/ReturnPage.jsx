@@ -12,14 +12,14 @@ import { useT } from '../../i18n/I18n.jsx';
 
 const CHECKS = [
     'Tôi sẽ dọn trống và quét sạch kho',
-    'Tôi sẽ tháo ổ khóa riêng và mang theo thẻ ra vào',
+    'Tôi sẽ tháo ổ khóa và mang theo khi kiểm tra kho',
     'Tôi hiểu phí vệ sinh hoặc sửa chữa (nếu có) sẽ trừ vào tiền cọc',
     'Tôi sẽ có mặt khi kiểm tra kho, hoặc cử người có giấy ủy quyền',
 ];
 const NEXT_STEPS = [
     'Nhân viên xác nhận yêu cầu và hẹn giờ kiểm tra kho.',
     'Bạn dọn trống kho và tháo ổ khóa trước giờ hẹn.',
-    'Nhân viên cùng bạn kiểm tra kho và thu lại ổ khóa, thẻ ra vào.',
+    'Nhân viên cùng bạn kiểm tra kho và thu lại ổ khóa.',
     'Tiền cọc, sau khi trừ các khoản phí (nếu có), được hoàn theo cách bạn chọn.',
 ];
 const MOVE_OUT_BADGE = {
@@ -177,7 +177,7 @@ export default function ReturnPage() {
                     </section>
                     <div className="se-due-card">
                         <strong>{t('Trả kho trước hạn')}</strong>
-                        <small>{t('Hợp đồng của bạn có hiệu lực đến ngày {date}. Bạn vẫn có thể trả kho sớm hơn; hãy hỏi nhân viên về tiền thuê của những tháng còn lại.', { date: formatDate(contract.endDate) })}</small>
+                        <small>{t('Hợp đồng của bạn có hiệu lực đến ngày {date}. Trả kho sớm hơn thì chỉ trả tiền thuê đến khi trả kho xong, không tính các tháng còn lại; hóa đơn chưa trả được trừ vào tiền cọc.', { date: formatDate(contract.endDate) })}</small>
                     </div>
                 </aside>
             </div>
